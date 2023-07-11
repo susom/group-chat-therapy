@@ -7,6 +7,7 @@ use \REDCap;
 use \Exception;
 // use \Logging;
 
+require_once "classes/Action.php";
 
 class GroupChatTherapy extends \ExternalModules\AbstractExternalModule {
     use emLoggerTrait;
@@ -62,6 +63,38 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule {
                     "count" => $count
                 ];
                 $_SESSION['count']++;
+                break;
+            case "getActions":
+                // session_start();
+                // $count = $_SESSION['count'] ?? 0;
+
+                $sql = "select reml.log_id,
+                           reml.timestamp,
+                           reml.record,
+                           remlp1.value as 'payload'
+                    from
+                        redcap_external_modules_log reml
+                    left join redcap_external_modules_log_parameters remlp1 on reml.log_id = remlp1.log_id and remlp1.name='payload'
+                    where
+                         reml.message = 'Action'
+                    and  reml.project_id = ?";
+                $q = $this->query($sql,[$this->getProjectId()]);
+                $results = [];
+                while ($row = db_fetch_row($q)) $results[] = $row;
+                $result = [
+                    "data" => $results
+                ];
+                break;
+            case "addAction":
+                $this->emDebug("Adding action", $payload);
+                $action = new Action($this);
+                $action->setValue('payload', $payload);
+                $action->save();
+                $result = [
+                    "new_action_id" => $action->getId(),
+                    "data" => $payload
+                ];
+                $this->emDebug("Added action " . $action->getId());
                 break;
             default:
                 // Action not defined

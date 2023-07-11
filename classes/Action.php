@@ -14,7 +14,8 @@ class Action extends SimpleEmLogObject
 
     CONST OBJECT_NAME = 'Action';   // This is the 'name' of the object and stored in the message column
 
-    private $payload;   // A json object with a bunch of stuff
+    // private $payload;   // A json object with a bunch of stuff
+
 
 
     /**

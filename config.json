@@ -37,11 +37,16 @@
     "enable-ajax-logging": false,
 
     "auth-ajax-actions": [
-        "TestAction"
+        "TestAction",
+        "getActions",
+        "deleteActions",
+        "addAction"
     ],
 
     "no-auth-ajax-actions": [
-        "TestAction"
+        "TestAction",
+        "getActions",
+        "addAction"
     ],
 
     "links": {

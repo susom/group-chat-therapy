@@ -22,6 +22,47 @@
                 // Handle error
                 console.log(err);
             });
+        },
+
+        // Get a list of all the actions from the log tables
+        getActions: function () {
+            console.log("getActions");
+
+            module.ajax('getActions').then(function (response) {
+                console.log("RESPONSE", response);
+
+                $('#example').DataTable({
+                    data: response.data
+                    // "ajax": function(data, callback, settings) {
+                    //     callback(
+                    //         ExternalModules.Stanford.EnhancedSMSConversation.getConversations()
+                    //     )
+                    // }
+                });
+                return response;
+            }).catch(function (err) {
+                console.log("Error", err);
+            })
+        },
+
+        deleteActions: function() {
+            module.ajax('deleteActions').then(function (response) {
+                console.log("RESPONSE", response);
+            }).catch(function (err) {
+                console.log("Error", err);
+            })
+        },
+
+        addAction: function(payload) {
+            module.ajax('addAction', payload).then(function (response) {
+                console.log("RESPONSE", response);
+            }).catch(function (err) {
+                console.log("Error", err);
+            })
         }
+
+
+
+
     });
 }
