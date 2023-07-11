@@ -33,7 +33,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule {
     public function injectJSMO($data = null, $init_method = null) {
         echo $this->initializeJavascriptModuleObject();
         $cmds = [
-            "const module = " . $this-getJavascriptModuleObjectName()
+            "const module = " . $this->getJavascriptModuleObjectName()
         ];
         if (!empty($data)) $cmds[] = "module.data = " . json_encode($data);
         if (!empty($init_method)) $cmds[] = "module.afterRender(module." . $init_method . ")";
@@ -50,11 +50,18 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule {
     {
         switch($action) {
             case "TestAction":
+                session_start();
+                $count = $_SESSION['count'] ?? 0;
+
                 \REDCap::logEvent("Test Action Received");
                 $result = [
                     "success"=>true,
-                    "user_id"=>$user_id
+                    "user_id"=>$user_id,
+                    "session_id" => session_id(),
+                    "session" => session_encode(),
+                    "count" => $count
                 ];
+                $_SESSION['count']++;
                 break;
             default:
                 // Action not defined

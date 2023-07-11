@@ -1,7 +1,7 @@
 // This file extends the default JSMO object with methods for this EM
 ;{
     // Define the jsmo in IIFE so we can reference object in our new function methods
-    const module = ExternalModules..;
+    const module = ExternalModules.Stanford.GroupChatTherapy;
 
     // Extend the official JSMO with new methods
     Object.assign(module, {
@@ -23,5 +23,5 @@
                 console.log(err);
             });
         }
-            });
+    });
 }
