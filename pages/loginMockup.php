@@ -1,7 +1,7 @@
 <?php
 
-namespace Stanford\GroupTherapy;
-/** @var \Stanford\ApiAllowlist\GroupTherapy $module */
+namespace Stanford\GroupChatTherapy;
+/** @var \Stanford\GroupChatTherapy\GroupChatTherapy $module */
 $module->injectJavascript('login');
 
 ?>

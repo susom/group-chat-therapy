@@ -1,70 +1,116 @@
 {
-  "name": "GroupTherapy",
-  "namespace": "Stanford\\GroupTherapy",
-  "description": "Group therapy SMS application",
-  "framework-version": 8,
-  "authors": [
-    {
-      "name": "Jordan Schultz",
-      "email": "jmschult@stanford.edu",
-      "institution": "Stanford University"
+    "name": "Group Chat Therapy",
+    "namespace": "Stanford\\GroupChatTherapy",
+    "description": "A group chat-based therapy application",
+    "framework-version": 8,
+    "authors": [
+        {
+            "name": "Jordan Schultz",
+            "email": "jmschult@stanford.edu",
+            "institution": "Stanford University"
+        },
+        {
+            "name": "Andrew Martin",
+            "email": "andy123@stanford.edu",
+            "institution": "Stanford University"
+        }
+    ],
+    "permissions": [
+        "redcap_every_page_before_render",
+        "redcap_module_system_enable",
+        "redcap_module_link_check_display",
+        "redcap_module_save_configuration"
+    ],
+
+    "enable-every-page-hooks-on-system-pages": false,
+
+    "no-auth-pages": [
+        "pages/mockup",
+        "pages/home",
+        "pages/test"
+    ],
+    "no-csrf-pages": [
+        "pages/mockup",
+        "pages/home"
+    ],
+
+    "enable-ajax-logging": false,
+
+    "auth-ajax-actions": [
+        "TestAction",
+        "getActions",
+        "deleteActions",
+        "addAction"
+    ],
+
+    "no-auth-ajax-actions": [
+        "TestAction",
+        "getActions",
+        "addAction"
+    ],
+
+    "links": {
+        "project": [
+            {
+                "name": "TEST",
+                "icon": "fas fa-door-open",
+                "url": "pages/test.php",
+                "show-header-and-footer": false
+            },
+            {
+                "name": "Login Mockup",
+                "icon": "fas fa-door-open",
+                "url": "pages/loginMockup.php",
+                "show-header-and-footer": false
+            },
+            {
+                "name": "Home Mockup",
+                "icon": "fas fa-door-open",
+                "url": "pages/home.php",
+                "show-header-and-footer": false
+            },
+            {
+                "name": "Chat Completed Surveys Mockup",
+                "icon": "fas fa-door-open",
+                "url": "pages/chat.php",
+                "show-header-and-footer": false
+            },
+            {
+                "name": "Chat Incomplete Surveys Mockup",
+                "icon": "fas fa-door-open",
+                "url": "pages/chatIncomplete.php",
+                "show-header-and-footer": false
+            }
+        ]
+    },
+    "system-settings": [
+        {
+            "key": "enable-system-debug-logging",
+            "name": "<b>Enable Debug Logging (system-wide)</b><i>(optional)</i> Requires installation and configuration of emLogger",
+            "required": false,
+            "type": "checkbox"
+        }
+    ],
+
+    "project-settings": [
+        {
+            "key": "mapping-json",
+            "name": "Mapping Json",
+            "required": true,
+            "type":"json"
+        },{
+            "key": "enable-project-debug-logging",
+            "name": "<b>Enable Debug Logging</b><br><i>(optional)</i> Requires installation and configuration of emLogger",
+            "required": false,
+            "type": "checkbox"
+        }
+    ],
+
+
+    "compatibility": {
+        "php-version-min": "",
+        "php-version-max": "",
+        "redcap-version-min": "11.1.1",
+        "redcap-version-max": ""
     }
-  ],
-  "permissions": [
-    "redcap_every_page_before_render",
-    "redcap_module_system_enable",
-    "redcap_module_link_check_display",
-    "redcap_module_save_configuration"
-  ],
-
-  "enable-every-page-hooks-on-system-pages": false,
-
-  "no-auth-pages": [
-    "pages/mockup.php",
-    "pages/home.php"
-  ],
-  "no-csrf-pages": [
-    "pages/mockup.php",
-    "pages/home.php"
-  ],
-
-  "links": {
-    "project": [
-      {
-        "name": "Login Mockup",
-        "icon": "fas fa-door-open",
-        "url": "pages/loginMockup.php",
-        "show-header-and-footer": false
-      },
-      {
-        "name": "Home Mockup",
-        "icon": "fas fa-door-open",
-        "url": "pages/home.php",
-        "show-header-and-footer": false
-      },
-      {
-        "name": "Chat Completed Surveys Mockup",
-        "icon": "fas fa-door-open",
-        "url": "pages/chat.php",
-        "show-header-and-footer": false
-      },
-      {
-        "name": "Chat Incomplete Surveys Mockup",
-        "icon": "fas fa-door-open",
-        "url": "pages/chatIncomplete.php",
-        "show-header-and-footer": false
-      }
-    ]
-  },
-  "system-settings": [
-  ],
-  "project-settings": [
-
-  ],
-  "compatibility": {
-    "php-version-min": "",
-    "php-version-max": "",
-    "redcap-version-min": "11.1.1",
-    "redcap-version-max": ""
-  }
 }
