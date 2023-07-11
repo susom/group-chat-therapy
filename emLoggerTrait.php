@@ -1,6 +1,6 @@
 <?php
-namespace Stanford\GroupTherapy;
-/** @var GroupTherapy $this */
+namespace Stanford\GroupChatTherapy;
+/** @var GroupChatTherapy $this */
 
 /**
  * This trait can be used with External Modules to enable the Stanford emLogger module

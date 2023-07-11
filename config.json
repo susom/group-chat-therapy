@@ -1,12 +1,17 @@
 {
-  "name": "GroupTherapy",
-  "namespace": "Stanford\\GroupTherapy",
-  "description": "Group therapy SMS application",
+  "name": "Group Chat Therapy",
+  "namespace": "Stanford\\GroupChatTherapy",
+  "description": "A group chat-based therapy application",
   "framework-version": 8,
   "authors": [
     {
       "name": "Jordan Schultz",
       "email": "jmschult@stanford.edu",
+      "institution": "Stanford University"
+    },
+    {
+      "name": "Andrew Martin",
+      "email": "andy123@stanford.edu",
       "institution": "Stanford University"
     }
   ],
@@ -26,6 +31,16 @@
   "no-csrf-pages": [
     "pages/mockup.php",
     "pages/home.php"
+  ],
+
+  "enable-ajax-logging": false,
+
+  "auth-ajax-actions": [
+    "TestAction"
+  ],
+
+  "no-auth-ajax-actions": [
+    "TestAction"
   ],
 
   "links": {
@@ -57,10 +72,29 @@
     ]
   },
   "system-settings": [
+    {
+      "key": "enable-system-debug-logging",
+      "name": "<b>Enable Debug Logging (system-wide)</b><i>(optional)</i> Requires installation and configuration of emLogger",
+      "required": false,
+      "type": "checkbox"
+    }
   ],
-  "project-settings": [
 
+  "project-settings": [
+    {
+      "key": "mapping-json",
+      "name": "Mapping Json",
+      "required": true,
+      "type":"json"
+    },{
+      "key": "enable-project-debug-logging",
+      "name": "<b>Enable Debug Logging</b><br><i>(optional)</i> Requires installation and configuration of emLogger",
+      "required": false,
+      "type": "checkbox"
+    }
   ],
+
+
   "compatibility": {
     "php-version-min": "",
     "php-version-max": "",

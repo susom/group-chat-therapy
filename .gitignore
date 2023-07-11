@@ -1,0 +1,9 @@
+# Operating system garbage
+.DS_Store
+[Tt]humbs.db
+
+# Emacs backup files
+*~
+
+# JetBrains Editor Files
+/.idea/*
