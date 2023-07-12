@@ -27,7 +27,8 @@
     "no-auth-pages": [
         "pages/mockup",
         "pages/home",
-        "pages/test"
+        "pages/test",
+        "pages/root"
     ],
     "no-csrf-pages": [
         "pages/mockup",
@@ -70,9 +71,9 @@
                 "show-header-and-footer": false
             },
             {
-                "name": "Chat Completed Surveys Mockup",
+                "name": "Group Therapy",
                 "icon": "fas fa-door-open",
-                "url": "pages/chat.php",
+                "url": "pages/root.php",
                 "show-header-and-footer": false
             },
             {

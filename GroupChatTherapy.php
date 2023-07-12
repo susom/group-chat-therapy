@@ -1,17 +1,21 @@
 <?php
+
 namespace Stanford\GroupChatTherapy;
 
 include_once "emLoggerTrait.php";
 
 use \REDCap;
 use \Exception;
+
 // use \Logging;
 
 require_once "classes/Action.php";
 
-class GroupChatTherapy extends \ExternalModules\AbstractExternalModule {
+class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
+{
     use emLoggerTrait;
 
+    const BUILD_FILE_DIR = 'group-chat-therapy-ui/dist/assets';
 
 //     public function injectJavascript($page)
 //     {
@@ -29,9 +33,38 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule {
 //         }
 //     }
 
+    /**
+     * @return array
+     * Scans dist directory for frontend build files for dynamic injection
+     */
+    public function generateAssetFiles(): array
+    {
+        $cwd = $this->getModulePath();
+        $dir_files = scandir($cwd . self::BUILD_FILE_DIR);
 
+        if (!$dir_files)
+            return [];
 
-    public function injectJSMO($data = null, $init_method = null) {
+        // Remove extraneous dir values
+        foreach ($dir_files as $key => $file) {
+            if ($file === '.' || $file === '..') {
+                unset($dir_files[$key]);
+            } else { //Generate url and script html
+                $url = $this->getUrl(self::BUILD_FILE_DIR . '/' . $file);
+                $html = '';
+                if (str_contains($url, 'js?'))
+                    $html = "<script type='module' crossorigin src='{$url}'></script>";
+                elseif (str_contains($url, '.css?'))
+                    $html = "<link rel='stylesheet' href='{$url}'>";
+                $dir_files[$key] = $html;
+            }
+        }
+
+        return $dir_files;
+    }
+
+    public function injectJSMO($data = null, $init_method = null)
+    {
         echo $this->initializeJavascriptModuleObject();
         $cmds = [
             "const module = " . $this->getJavascriptModuleObjectName()
@@ -39,9 +72,9 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule {
         if (!empty($data)) $cmds[] = "module.data = " . json_encode($data);
         if (!empty($init_method)) $cmds[] = "module.afterRender(module." . $init_method . ")";
         ?>
-        <script src="<?=$this->getUrl("assets/jsmo.js",true)?>"></script>
+        <script src="<?= $this->getUrl("assets/jsmo.js", true) ?>"></script>
         <script>
-            $(function() { <?php echo implode(";\n", $cmds) ?> })
+            $(function () { <?php echo implode(";\n", $cmds) ?> })
         </script>
         <?php
     }
@@ -49,15 +82,15 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule {
     public function redcap_module_ajax($action, $payload, $project_id, $record, $instrument, $event_id, $repeat_instance,
                                        $survey_hash, $response_id, $survey_queue_hash, $page, $page_full, $user_id, $group_id)
     {
-        switch($action) {
+        switch ($action) {
             case "TestAction":
                 session_start();
                 $count = $_SESSION['count'] ?? 0;
 
                 \REDCap::logEvent("Test Action Received");
                 $result = [
-                    "success"=>true,
-                    "user_id"=>$user_id,
+                    "success" => true,
+                    "user_id" => $user_id,
                     "session_id" => session_id(),
                     "session" => session_encode(),
                     "count" => $count
@@ -78,7 +111,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule {
                     where
                          reml.message = 'Action'
                     and  reml.project_id = ?";
-                $q = $this->query($sql,[$this->getProjectId()]);
+                $q = $this->query($sql, [$this->getProjectId()]);
                 $results = [];
                 while ($row = db_fetch_row($q)) $results[] = $row;
                 $result = [
