@@ -7,3 +7,5 @@
 
 # JetBrains Editor Files
 /.idea/*
+
+*node_modules
