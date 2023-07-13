@@ -27,8 +27,20 @@ html h2 {
 .submit:active{
     background-color: rgb(140,21,21) !important;
 }
+.submit:disabled{
+    background-color: rgb(140,21,21) !important;
+}
 
 .react-tel-input .form-control {
     width: 100% !important;
     padding: 6px 7px 6px 60px !important;
+}
+
+.code-shown {
+    opacity: 1;
+    transition: all 250ms linear ;
+}
+.code-hidden{
+    opacity: 0;
+    transition: all 250ms linear ;
 }
