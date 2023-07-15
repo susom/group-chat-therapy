@@ -41,7 +41,8 @@
         "TestAction",
         "getActions",
         "deleteActions",
-        "addAction"
+        "addAction",
+        "validateUserPhone"
     ],
 
     "no-auth-ajax-actions": [

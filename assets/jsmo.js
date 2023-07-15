@@ -59,10 +59,23 @@
             }).catch(function (err) {
                 console.log("Error", err);
             })
+        },
+
+        /**
+         * Validates last
+         * @param lastName
+         * @param phone
+         * @param callback
+         */
+        validateUserPhone: (lastName, phone, callback) => {
+            let payload = [lastName, phone]
+             module
+                .ajax('validateUserPhone', payload)
+                .then(res=> {
+                    callback(res)
+                })
+                .catch(err => console.log("Validate error, ", err))
         }
-
-
-
 
     });
 }

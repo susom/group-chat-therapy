@@ -14,22 +14,28 @@ import Spinner from 'react-bootstrap/Spinner';
 
 export default function Login() {
     const [phone, setPhone] = useState('')
-    const [sunet, setSunet] = useState('')
+    const [lastName, setLastName] = useState('')
     const [loading, setLoading] = useState(false)
     const [code, setCode] = useState('')
     const [showCode, setShowCode] = useState(false)
+    const [userValid, setUserValid] = useState(false)
 
     const [error, setError] = useState('')
-    const [sunetError, setSunetError] = useState(false)
+    const [lastNameError, setLastNameError] = useState(false)
+
+    const callAjax = () => {
+        const module = ExternalModules.Stanford.GroupChatTherapy
+        module.validateUserPhone(lastName, phone, setUserValid)
+    }
 
     const submit = () => {
-        if(!sunet){
-            setSunetError(true)
+        if(!lastName){
+            setLastNameError(true)
         }
 
         if(showCode) {
-            console.log('code sent')
-        } else if(sunet && phone){
+            callAjax()
+        } else if(lastName && phone){ // User needs to be verified as part of study, sent OTP
             setLoading(true)
             setTimeout(() => {
                 setLoading(false)
@@ -41,6 +47,7 @@ export default function Login() {
         }
 
     }
+
 
     const getButtonState = () => {
         if(!loading){
@@ -67,22 +74,23 @@ export default function Login() {
                 <Row className="align-items-center h-100">
                     <Col md={{ span: 6, offset: 3 }}>
                         <Card className="card-body">
+                            {userValid ? 'VALID': 'NOT'}
                             <h2 className="text-center">Login</h2>
                             <div className="text-center mb-5">
                                 <img src="https://storage.googleapis.com/group-chat-therapy/stanford-logo.svg" alt="logo-shield" className="logo-shield my-3"/>
                             </div>
                             <InputGroup hasValidation className={`mb-3 ${showCode ? 'code-hidden' : 'code-shown'}`}>
-                                <InputGroup.Text id="sunet">@</InputGroup.Text>
+                                <InputGroup.Text id="lastname">@</InputGroup.Text>
                                 <Form.Control
-                                    onChange={e => setSunet(e?.target?.value)}
+                                    onChange={e => setLastName(e?.target?.value)}
                                     required
-                                    isInvalid={sunetError}
-                                    placeholder="Sunet"
-                                    aria-label="Sunet"
-                                    aria-describedby="sunet"
+                                    isInvalid={lastNameError}
+                                    placeholder="Last Name"
+                                    aria-label="lastname"
+                                    aria-describedby="lastname"
                                 />
                                 <Form.Control.Feedback type="invalid">
-                                    Please enter a sunet id
+                                    Please enter a valid name
                                 </Form.Control.Feedback>
                             </InputGroup>
                             <InputGroup className={`mb-3 ${showCode ? 'code-hidden' : 'code-shown'}`}>
@@ -98,7 +106,7 @@ export default function Login() {
                                 <InputGroup.Text id="code">#</InputGroup.Text>
                                 <Form.Control
                                     onChange={e => setCode(e?.target?.value)}
-                                    placeholder={`Please enter your code`}
+                                    placeholder={`Please enter your one-time code`}
                                     aria-label="code"
                                     aria-describedby="code"
                                 />

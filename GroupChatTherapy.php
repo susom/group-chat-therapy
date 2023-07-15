@@ -63,6 +63,12 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
         return $dir_files;
     }
 
+    public function validateUserPhone($payload): string
+    {
+        return true;
+    }
+
+
     public function injectJSMO($data = null, $init_method = null)
     {
         echo $this->initializeJavascriptModuleObject();
@@ -128,6 +134,10 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
                     "data" => $payload
                 ];
                 $this->emDebug("Added action " . $action->getId());
+                break;
+            case "validateUserPhone":
+                return $this->validateUserPhone($payload);
+
                 break;
             default:
                 // Action not defined
