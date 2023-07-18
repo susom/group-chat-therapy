@@ -1,5 +1,5 @@
 import React, {useState} from "react";
-import {Link} from 'react-router-dom';
+import {useNavigate} from 'react-router-dom';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
@@ -8,9 +8,10 @@ import Form from "react-bootstrap/Form";
 import Button from 'react-bootstrap/Button';
 import Card from 'react-bootstrap/Card';
 import './login.css';
-import PhoneInput from 'react-phone-input-2'
-import 'react-phone-input-2/lib/bootstrap.css'
+import PhoneInput from 'react-phone-input-2';
+import 'react-phone-input-2/lib/bootstrap.css';
 import Spinner from 'react-bootstrap/Spinner';
+import Alert from 'react-bootstrap/Alert';
 
 export default function Login() {
     const [phone, setPhone] = useState('')
@@ -18,39 +19,61 @@ export default function Login() {
     const [loading, setLoading] = useState(false)
     const [code, setCode] = useState('')
     const [showCode, setShowCode] = useState(false)
-    const [userValid, setUserValid] = useState(false)
 
     const [error, setError] = useState('')
     const [lastNameError, setLastNameError] = useState(false)
 
-    const callAjax = () => {
-        const module = ExternalModules.Stanford.GroupChatTherapy
-        module.validateUserPhone(lastName, phone, setUserValid)
+    const jsmoModule = ExternalModules.Stanford.GroupChatTherapy
+    const navigate = useNavigate()
+    /**
+     * Callback passed to execute react functions in JSMO
+     * @param type String : Possible values = 'validateCode' and 'validateUserPhone'
+     * @param res Bool
+     */
+    const callback = (type, res) => {
+        if (type === 'validateCode') { //User is inputting code from OTP
+            res ? setError('') : setError('Invalid code entered')
+            navigate(`/chat`)
+
+        } else { //User is checking existence within study
+            res ? setError('') : setError('Invalid credentials supplied')
+            setShowCode(res)
+        }
+        setLoading(false)
     }
 
+    /**
+     * Callback passed to jsmo to handle react state
+     * @param type
+     * @param res
+     */
+    const errorCallback = (type, res) => {
+        setError(res?.msg)
+        setLoading(false)
+    }
+
+    /**
+     * Function to handle jsmo calls and loading UI
+     */
     const submit = () => {
-        if(!lastName){
+        if (!lastName) {
             setLastNameError(true)
         }
 
-        if(showCode) {
-            callAjax()
-        } else if(lastName && phone){ // User needs to be verified as part of study, sent OTP
+        if (showCode) {
             setLoading(true)
-            setTimeout(() => {
-                setLoading(false)
-                setShowCode(true)
-            }, 2000)
-
+            jsmoModule.validateCode(code, callback, errorCallback)
+        } else if (lastName && phone) { // User needs to be verified as part of study, sent OTP
+            setLoading(true)
+            jsmoModule.validateUserPhone(lastName, phone, callback, errorCallback)
         } else {
             setError('Something went wrong')
         }
-
     }
 
 
     const getButtonState = () => {
-        if(!loading){
+        if (!loading) {
             return (<>Submit</>)
         } else {
             return (
@@ -72,12 +95,15 @@ export default function Login() {
         <>
             <Container className="h-100 ct">
                 <Row className="align-items-center h-100">
-                    <Col md={{ span: 6, offset: 3 }}>
+                    <Col md={{span: 6, offset: 3}}>
                         <Card className="card-body">
-                            {userValid ? 'VALID': 'NOT'}
+                            {error &&
+                                <Alert key='danger' variant='danger'>{error}</Alert>
+                            }
                             <h2 className="text-center">Login</h2>
                             <div className="text-center mb-5">
-                                <img src="https://storage.googleapis.com/group-chat-therapy/stanford-logo.svg" alt="logo-shield" className="logo-shield my-3"/>
+                                <img src="https://storage.googleapis.com/group-chat-therapy/stanford-logo.svg"
+                                     alt="logo-shield" className="logo-shield my-3"/>
                             </div>
                             <InputGroup hasValidation className={`mb-3 ${showCode ? 'code-hidden' : 'code-shown'}`}>
                                 <InputGroup.Text id="lastname">@</InputGroup.Text>
@@ -98,6 +124,7 @@ export default function Login() {
                                     country={'us'}
                                     onlyCountries={['us']}
                                     value={phone}
+                                    disabled={showCode}
                                     placeholder="+1"
                                     onChange={phone => setPhone(phone)}
                                 />
@@ -105,6 +132,7 @@ export default function Login() {
                             <InputGroup className={`mb-3 ${showCode ? 'code-shown' : 'code-hidden'}`}>
                                 <InputGroup.Text id="code">#</InputGroup.Text>
                                 <Form.Control
+                                    disabled={!showCode}
                                     onChange={e => setCode(e?.target?.value)}
                                     placeholder={`Please enter your one-time code`}
                                     aria-label="code"
@@ -121,8 +149,7 @@ export default function Login() {
                                     {getButtonState()}
                                 </Button>
                             </div>
-                            <p className="text-center"><i>Not registered? Contact <a href="#">here</a></i> </p>
-                            {/*<Link to={"/chat"}>Click</Link>*/}
+                            <p className="text-center"><i>Not registered? Contact <a href="#">here</a></i></p>
                         </Card>
                     </Col>
                 </Row>
