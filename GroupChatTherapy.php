@@ -17,22 +17,6 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
 
     const BUILD_FILE_DIR = 'group-chat-therapy-ui/dist/assets';
 
-//     public function injectJavascript($page)
-//     {
-//         try {
-//
-//             $jsFilePath = $this->getUrl("scripts/$page.js");
-// //            $csrfToken = json_encode($this->getCSRFToken());
-//             print "<script type='module' src=$jsFilePath></script>";
-// //            print "<script type='text/javascript'>var ajaxUrl = $ajaxFilePath; var csrfToken = $csrfToken</script>";
-//
-//
-//         } catch (\Exception $e) {
-//             \REDCap::logEvent("Error injecting js: $e");
-//             $this->emError($e);
-//         }
-//     }
-
     /**
      * @return array
      * Scans dist directory for frontend build files for dynamic injection
@@ -61,6 +45,61 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
         }
 
         return $dir_files;
+    }
+
+    /**
+     *
+     * @param $payload
+     * @return bool
+     */
+    public function validateUserPhone($payload)
+    {
+        try {
+
+            //Sanitize inputs
+            $last_name = filter_var($payload[0], FILTER_SANITIZE_STRING);
+            $phone_number = filter_var($payload[1], FILTER_SANITIZE_STRING);
+            $phone_number = ltrim($phone_number, '1');
+
+            $params = array(
+                "return_format" => "json",
+                "fields" => array("phone", "last_name")
+            );
+
+            $json       = REDCap::getData($params);
+            $decoded = current(json_decode($json, true));
+
+            return $decoded['last_name'] === $last_name && $decoded['phone'] === $phone_number;
+        } catch (\Exception $e) {
+            $msg = $e->getMessage();
+            \REDCap::logEvent("Error: $msg");
+            $this->emError("Error: $msg");
+
+            echo json_encode(array(
+                'error' => array(
+                    'msg' => $e->getMessage(),
+                ),
+            ));
+            die;
+        }
+    }
+
+    /**
+     * @param $code
+     * @return bool
+     */
+    public function validateCode($code): bool
+    {
+        //Sanitize input
+        $code = filter_var($code, FILTER_SANITIZE_STRING);
+
+        $params = array(
+            "return_format" => "json",
+            "fields" => array("code")
+        );
+        $json       = REDCap::getData($params);
+        $decoded = current(json_decode($json, true));
+        return ($decoded['code'] === $code);
     }
 
     public function injectJSMO($data = null, $init_method = null)
@@ -129,6 +168,10 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
                 ];
                 $this->emDebug("Added action " . $action->getId());
                 break;
+            case "validateUserPhone":
+                return $this->validateUserPhone($payload);
+            case "validateCode":
+                return $this->validateCode($payload);
             default:
                 // Action not defined
                 throw new Exception ("Action $action is not defined");

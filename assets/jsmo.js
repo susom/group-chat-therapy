@@ -59,10 +59,37 @@
             }).catch(function (err) {
                 console.log("Error", err);
             })
+        },
+
+        /**
+         * Validates Last name, phone to determine user participation in study & send OTP
+         * @param lastName
+         * @param phone
+         * @param callback
+         * @param errorCallback
+         */
+        validateUserPhone: (lastName, phone, callback, errorCallback) => {
+            let payload = [lastName, phone]
+             module
+                .ajax('validateUserPhone', payload)
+                .then(res=> {
+                    callback('validateUserPhone', res)
+                })
+                .catch(err => errorCallback('validateUserPhone', err))
+        },
+        /**
+         * Validates code to login user
+         * @param code
+         * @param callback
+         * @param errorCallback
+         */
+        validateCode: (code, callback, errorCallback) => {
+            module
+                .ajax('validateCode', code)
+                .then(res=> {
+                    callback('validateCode', res)
+                })
+                .catch(err => errorCallback('validateCode', err))
         }
-
-
-
-
     });
 }
