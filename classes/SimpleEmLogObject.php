@@ -47,6 +47,7 @@ class SimpleEmLogObject
 
     const LOG_CHANGES_TYPE = 'SELO_CHANGE_LOG'; // This will be the 'message' attribute for change logs related to this object
     const LOG_CHANGES = false;  // TODO: Move to parent object
+
     public $change_log = [];
 
     // These are the columns in the `external_modules_log` table
@@ -58,16 +59,15 @@ class SimpleEmLogObject
 
     /**
      * @param AbstractExternalModule $module
-     * @param string $type Name of Object
-     * @param integer $log_id
+     * @param integer $log_id leave Null for a new module
      * @param array $limit_params Leave blank for ALL parameters, otherwise specific array of desired
+     * @param string $type Name of Object (stored in message column) - will use class name if not specified
      * @throws Exception
      */
-    public function __construct($module, $type, $log_id = null, $limit_params = []) {
+    public function __construct($module, $log_id = null, $limit_params = [], $type = null) {
         // Other code to run when object is instantiated
         $this->module = $module;
-        $this->type = $type;
-
+        $this->type = is_null($type) ? substr(strrchr(get_class($this), '\\'), 1) : $type;
         if($log_id) {
             // Try to get all available EAV parameter entries for log_id
             if (empty($limit_params)) {
@@ -97,11 +97,11 @@ class SimpleEmLogObject
             } else {
                 $this->last_error = "Requested log_id $log_id not found for type $type";
                 $this->module->emDebug($this->last_error);
-                throw new Exception ($this->last_error);
+                // throw new Exception ($this->last_error);
             }
         } else {
             // Create a new object - not yet saved
-            $this->module->emDebug("Creating new $type");
+            $this->module->emDebug("Creating new $this->type");
         }
     }
 
@@ -385,11 +385,13 @@ class SimpleEmLogObject
     /**
      * This method will purge the redcap_external_module_logs table of all of the change_event
      * logs for this object that are older than the $age_in_days
-     * @param string $object_type  The type of object, e.g. "CS"
      * @param integer $age_in_days
+     * @param string $object_type  The type of object, e.g. "CS"
      * @return void
      */
-    public static function purgeChangeLogs($module, $object_type, $age_in_days = 30) {
+    public static function purgeChangeLogs($module, $age_in_days = 30, $object_type = null) {
+        $object_type = is_null($object_type) ? substr(strrchr(static::class, '\\'), 1) : $object_type;
+
         $dt = new \DateTime();
         $interval = new \DateInterval("P" . $age_in_days . "D");
         $timestamp = $dt->sub($interval)->format("Y-m-d H:i:s");
@@ -408,8 +410,11 @@ class SimpleEmLogObject
      * @return array
      * @throws Exception
      */
-    public static function queryIds($module, $object_type, $filter_clause = "", $parameters = []) {
+    public static function queryIds($module, $filter_clause = "", $parameters = [], $object_type = null) {
         $framework = new \ExternalModules\Framework($module);
+
+        // Default the object_type to the class
+        $object_type = is_null($object_type) ? substr(strrchr(static::class, '\\'), 1) : $object_type;
 
         // Trim leading where if it exists
         if (substr(trim(mb_strtolower($filter_clause)),0,5) === "where") {
@@ -442,11 +447,12 @@ class SimpleEmLogObject
      * @return array
      * @throws Exception
      */
-    public static function queryObjects($module, $object_type, $filter_clause = "", $parameters = []) {
-        $ids = static::queryIds($module,$object_type,$filter_clause,$parameters);
+    public static function queryObjects($module, $filter_clause = "", $parameters = [], $object_type = null) {
+        $object_type = is_null($object_type) ? substr(strrchr(static::class, '\\'), 1) : $object_type;
+        $ids = static::queryIds($module, $filter_clause, $parameters, $object_type);
         $results = [];
         foreach ($ids as $id) {
-            $obj = new static($module, $object_type, $id);
+            $obj = new static($module, $id, [], $object_type);
             $results[] = $obj;
         }
         return $results;

@@ -2,7 +2,7 @@
     "name": "Group Chat Therapy",
     "namespace": "Stanford\\GroupChatTherapy",
     "description": "A group chat-based therapy application",
-    "framework-version": 8,
+    "framework-version": 13,
     "authors": [
         {
             "name": "Jordan Schultz",
@@ -27,7 +27,8 @@
     "no-auth-pages": [
         "pages/mockup",
         "pages/home",
-        "pages/test"
+        "pages/test",
+        "pages/asemlo_test"
     ],
     "no-csrf-pages": [
         "pages/mockup",
@@ -55,6 +56,12 @@
                 "name": "TEST",
                 "icon": "fas fa-door-open",
                 "url": "pages/test.php",
+                "show-header-and-footer": false
+            },
+            {
+                "name": "ASELMO TEST",
+                "icon": "fas fa-door-open",
+                "url": "pages/asemlo_test.php",
                 "show-header-and-footer": false
             },
             {
@@ -93,6 +100,24 @@
     ],
 
     "project-settings": [
+        {
+            "key": "therapy-session-event-id",
+            "name": "Select the arm/event where therapy sessions are stored",
+            "required": true,
+            "type":"event-list"
+        },
+        {
+            "key": "participant-event-id",
+            "name": "Select the arm/event where participants are stored",
+            "required": true,
+            "type":"event-list"
+        },
+        {
+            "key": "assessment-event-id",
+            "name": "Select the arm/event where assessments are stored",
+            "required": true,
+            "type":"event-list"
+        },
         {
             "key": "mapping-json",
             "name": "Mapping Json",

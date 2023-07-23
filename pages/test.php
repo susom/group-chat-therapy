@@ -1,10 +1,12 @@
 <?php
 
-// namespace Stanford\GroupChatTherapy;
+namespace Stanford\GroupChatTherapy;
 /** @var \Stanford\GroupChatTherapy\GroupChatTherapy $module */
 
 // $module->injectJavascript('login');
 
+$logged_in = $module->isAuthenticated();
+$module->emDebug("Is Auth? ", $logged_in);
 
 ?>
 <html>
@@ -117,6 +119,36 @@
                 <button class="btn btn-success" id="save_action">Save</button>
             </div>
         </div>
+    </div>
+    <div>
+        <pre>
+            <?php
+                /**
+
+                // LOAD an existing REO and modify a value and save it again.
+                $ts = new RecordEventObject($module, $module->getProjectId(), $module->getProjectSetting('therapy-session-event-id'),1);
+                $ts->setValue('session_whiteboard', "Foo");
+                $result = $ts->save();
+                var_dump($ts, $result);
+
+                // TEST that you can create a record with one of these REOs.
+                $ts2 = new RecordEventObject($module, $module->getProjectId(),
+                    $module->getProjectSetting('therapy-session-event-id'));
+                $ts2->setValue('record_id', 'foo');
+                $result = $ts2->save();
+                var_dump($ts2, $result);
+
+                */
+
+
+
+            $a = new ASEMLO($module);
+            var_dump($a);
+
+
+
+            ?>
+        </pre>
     </div>
 </main>
 </body>
