@@ -60,7 +60,7 @@ export default function Login() {
             setLastNameError(true)
         }
 
-        if (showCode) {
+        if (showCode) { //User has entered a code
             setLoading(true)
             jsmoModule.validateCode(code, callback, errorCallback)
         } else if (lastName && phone) { // User needs to be verified as part of study, sent OTP
@@ -105,30 +105,36 @@ export default function Login() {
                                 <img src="https://storage.googleapis.com/group-chat-therapy/stanford-logo.svg"
                                      alt="logo-shield" className="logo-shield my-3"/>
                             </div>
-                            <InputGroup hasValidation className={`mb-3 ${showCode ? 'code-hidden' : 'code-shown'}`}>
-                                <InputGroup.Text id="lastname">@</InputGroup.Text>
-                                <Form.Control
-                                    onChange={e => setLastName(e?.target?.value)}
-                                    required
-                                    isInvalid={lastNameError}
-                                    placeholder="Last Name"
-                                    aria-label="lastname"
-                                    aria-describedby="lastname"
-                                />
-                                <Form.Control.Feedback type="invalid">
-                                    Please enter a valid name
-                                </Form.Control.Feedback>
-                            </InputGroup>
-                            <InputGroup className={`mb-3 ${showCode ? 'code-hidden' : 'code-shown'}`}>
-                                <PhoneInput
-                                    country={'us'}
-                                    onlyCountries={['us']}
-                                    value={phone}
-                                    disabled={showCode}
-                                    placeholder="+1"
-                                    onChange={phone => setPhone(phone)}
-                                />
-                            </InputGroup>
+
+
+                                <InputGroup hasValidation className={`mb-3 ${showCode ? 'code-greyed' : 'code-showed'}`}>
+                                    <InputGroup.Text id="lastname">@</InputGroup.Text>
+                                    <Form.Control
+                                        onChange={e => setLastName(e?.target?.value)}
+                                        required
+                                        isInvalid={lastNameError}
+                                        disabled={showCode}
+                                        placeholder="Last Name"
+                                        aria-label="lastname"
+                                        aria-describedby="lastname"
+                                    />
+                                    <Form.Control.Feedback type="invalid">
+                                        Please enter a valid name
+                                    </Form.Control.Feedback>
+                                </InputGroup>
+
+                                <InputGroup className={`mb-3 ${showCode ? 'code-greyed' : 'code-showed'}`}>
+                                    <PhoneInput
+                                        country={'us'}
+                                        onlyCountries={['us']}
+                                        value={phone}
+                                        disabled={showCode}
+                                        placeholder="+1"
+                                        onChange={phone => setPhone(phone)}
+                                    />
+                                </InputGroup>
+
+
                             <InputGroup className={`mb-3 ${showCode ? 'code-shown' : 'code-hidden'}`}>
                                 <InputGroup.Text id="code">#</InputGroup.Text>
                                 <Form.Control
