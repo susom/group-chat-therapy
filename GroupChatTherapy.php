@@ -20,7 +20,16 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
 
     const BUILD_FILE_DIR = 'group-chat-therapy-ui/dist/assets';
 
-    private $UserSession;
+    public $UserSession;    // make private
+
+    public function __construct() {
+        parent::__construct();
+        // Other code to run when object is instantiated
+
+        // Load the user session
+        $this->UserSession = UserSession::getInstance();
+    }
+
 
     /**
      * @return array
@@ -152,8 +161,6 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
     public function redcap_module_ajax($action, $payload, $project_id, $record, $instrument, $event_id, $repeat_instance,
                                        $survey_hash, $response_id, $survey_queue_hash, $page, $page_full, $user_id, $group_id)
     {
-        // Load the user session
-        if (empty($this->UserSession)) $this->UserSession = UserSession::getInstance();
         switch ($action) {
             case "TestAction":
                 session_start();
@@ -216,7 +223,6 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
 
 
     public function isAuthenticated() {
-        if (empty($this->UserSession)) $this->UserSession = UserSession::getInstance();
         return ($this->UserSession->isAuthenticated());
     }
 

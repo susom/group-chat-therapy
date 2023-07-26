@@ -6,6 +6,7 @@ namespace Stanford\GroupChatTherapy;
  */
 class UserSession
 {
+    const SESSION_PREFIX = "GroupChatTherapy";
     const SESSION_STARTED = TRUE;
     const SESSION_NOT_STARTED = FALSE;
 
@@ -18,24 +19,59 @@ class UserSession
     // THE only instance of the class
     private static $instance;
 
-    private $participant_id;    // ID of participant
-    private $last_activity_ts;  // Time of last activity
-    private $signon_ts;         // Time of sign-on
 
     private function __construct()
     {
+        if (session_status() === PHP_SESSION_NONE) session_start();
+        $this->setKey('hit_count', ($this->getValue('hit_count') ?? 0) + 1);
     }
 
     public function isAuthenticated() {
-        $participant_id = $this->participant_id;
-
         //TODO: Check timestamps for expiration...
-        $is_inactive = (strtotime("NOW") - $this->last_activity_ts) > self::INACTIVITY_TIMEOUT;
-        $is_expired = (strtotime("NOW") - $this->signon_ts) > self::MAXIMUM_SESSION_LIFE;
-
-        return !empty($participant_id);
+        if ($this->isSessionInactive()) return false;
+        if ($this->isSessionExpired()) return false;
+        return !empty($this->getParticipantId());
     }
 
+
+    private function isSessionInactive() {
+        $last_activity = $this->getValue('last_activity_ts');
+        if ($last_activity) {
+            $age = strtotime("NOW") - $last_activity;
+            return $age > self::INACTIVITY_TIMEOUT;
+        }
+        return false;
+    }
+
+    private function isSessionExpired() {
+        $signon_ts = $this->getValue('signon_ts');
+        if ($signon_ts) {
+            $age = strtotime("NOW") - $signon_ts;
+            return $age > self::MAXIMUM_SESSION_LIFE;
+        }
+        return true;    // no sign-on - must be expired
+    }
+
+
+    public function setParticipantId($participant_id) {
+        if (empty($participant_id)) {
+            $this->unsetKey('participant_id');
+            $this->unsetKey('signon_ts');
+        } elseif ($this->getValue('participant_id') !== $participant_id) {
+            $this->setKey("participant_id", $participant_id);
+            $this->setKey("signon_ts", strtotime("NOW"));
+        } else {
+            // no change
+        }
+    }
+
+    public function getParticipantId() {
+        return $this->getValue('participant_id');
+    }
+
+    public function getSessionId() {
+        return session_id();
+    }
 
     /**
      *    Returns THE instance of 'Session'.
@@ -64,71 +100,33 @@ class UserSession
     {
         if ($this->sessionState == self::SESSION_NOT_STARTED) {
             $this->sessionState = session_start();
-            $this->signon_ts = strtotime("NOW");
         }
-        $this->last_activity_ts = strtotime("NOW");
+        $this->setKey("last_activity_ts", strtotime("NOW"));
         return $this->sessionState;
     }
 
 
-    /**
-     *    Stores datas in the session.
-     *    Example: $instance->foo = 'bar';
-     *
-     * @param name    Name of the datas.
-     * @param value    Your datas.
-     * @return    void
-     **/
 
-    public function __set($name, $value)
-    {
-        $_SESSION[$name] = $value;
+    public function setKey($key, $value) {
+        $_SESSION[self::SESSION_PREFIX][$key] = $value;
     }
 
-
-    /**
-     *    Gets datas from the session.
-     *    Example: echo $instance->foo;
-     *
-     * @param name    Name of the datas to get.
-     * @return    mixed    Datas stored in session.
-     **/
-
-    public function __get($name)
-    {
-        if (isset($_SESSION[$name])) {
-            return $_SESSION[$name];
-        }
+    public function getValue($key) {
+        return $_SESSION[self::SESSION_PREFIX][$key] ?? null;
     }
 
-
-    public function __isset($name)
+    public function unsetKey($key)
     {
-        return isset($_SESSION[$name]);
+        unset($_SESSION[self::SESSION_PREFIX][$key]);
     }
-
-
-    public function __unset($name)
-    {
-        unset($_SESSION[$name]);
-    }
-
-
-    /**
-     *    Destroys the current session.
-     *
-     * @return    bool    TRUE is session has been deleted, else FALSE.
-     **/
 
     public function destroy()
     {
         if ($this->sessionState == self::SESSION_STARTED) {
             $this->sessionState = !session_destroy();
             unset($_SESSION);
-
             return !$this->sessionState;
         }
-
         return FALSE;
     }
 }
