@@ -3,19 +3,24 @@
 namespace Stanford\GroupChatTherapy;
 
 include_once "emLoggerTrait.php";
+require_once "classes/UserSession.php";
+require_once "classes/Action.php";
 
-use \REDCap;
-use \Exception;
+
+use App\User;
+use Exception;
+use REDCap;
 
 // use \Logging;
 
-require_once "classes/Action.php";
 
 class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
 {
     use emLoggerTrait;
 
     const BUILD_FILE_DIR = 'group-chat-therapy-ui/dist/assets';
+
+    private $UserSession;
 
     /**
      * @return array
@@ -102,6 +107,13 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
         return ($decoded['code'] === $code);
     }
 
+
+    /**
+     * Helper method for inserting the JSMO JS into a page along with any preload data
+     * @param $data
+     * @param $init_method
+     * @return void
+     */
     public function injectJSMO($data = null, $init_method = null)
     {
         echo $this->initializeJavascriptModuleObject();
@@ -118,9 +130,30 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
         <?php
     }
 
+    /**
+     * This is the primary ajax handler for JSMO calls
+     * @param $action
+     * @param $payload
+     * @param $project_id
+     * @param $record
+     * @param $instrument
+     * @param $event_id
+     * @param $repeat_instance
+     * @param $survey_hash
+     * @param $response_id
+     * @param $survey_queue_hash
+     * @param $page
+     * @param $page_full
+     * @param $user_id
+     * @param $group_id
+     * @return array|array[]|bool
+     * @throws Exception
+     */
     public function redcap_module_ajax($action, $payload, $project_id, $record, $instrument, $event_id, $repeat_instance,
                                        $survey_hash, $response_id, $survey_queue_hash, $page, $page_full, $user_id, $group_id)
     {
+        // Load the user session
+        if (empty($this->UserSession)) $this->UserSession = UserSession::getInstance();
         switch ($action) {
             case "TestAction":
                 session_start();
@@ -180,5 +213,13 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
         // Return is left as php object, is converted to json automatically
         return $result;
     }
+
+
+    public function isAuthenticated() {
+        if (empty($this->UserSession)) $this->UserSession = UserSession::getInstance();
+        return ($this->UserSession->isAuthenticated());
+    }
+
+
 
 }
