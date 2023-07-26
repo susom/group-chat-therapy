@@ -48,7 +48,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
     }
 
     /**
-     *
+     * Verifies phone number and last name fields are part of cohort
      * @param $payload
      * @return bool
      */
@@ -69,7 +69,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
             $json       = REDCap::getData($params);
             $decoded = current(json_decode($json, true));
 
-            return $decoded['last_name'] === $last_name && $decoded['phone'] === $phone_number;
+            return strtolower($decoded['last_name']) === strtolower($last_name) && $decoded['phone'] === $phone_number;
         } catch (\Exception $e) {
             $msg = $e->getMessage();
             \REDCap::logEvent("Error: $msg");
