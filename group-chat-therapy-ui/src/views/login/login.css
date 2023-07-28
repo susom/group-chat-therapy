@@ -7,8 +7,8 @@ html h2 {
     font-family: 'Source Sans Pro', sans-serif;
 }
 
-.card-body{
-    background-color: rgb(247,247,245);
+.login-body{
+    /*background-color: rgb(247,247,245);*/
     margin-top: 5px;
     margin-bottom: 5px;
     border-radius: 15px;

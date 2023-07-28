@@ -5,10 +5,16 @@ import {
     createHashRouter,
 } from 'react-router-dom';
 import ChatRoom from './views/chatroom/chatroom.jsx'
+import Landing from './views/landing/landing.jsx'
 import Error from './views/error/error.jsx'
-import Login from './views/login/login.jsx';
+import Login from './views/login/login.jsx'
 
 const router = createHashRouter([
+    {
+        path: "/landing",
+        element: <Landing />,
+        errorElement: <Error/>
+    },
     {
         path: "/chat",
         element: <ChatRoom />,

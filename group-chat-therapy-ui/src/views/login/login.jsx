@@ -96,7 +96,7 @@ export default function Login() {
             <Container className="h-100 ct">
                 <Row className="align-items-center h-100">
                     <Col md={{span: 6, offset: 3}}>
-                        <Card className="card-body">
+                        <Card className="card-body login-body">
                             {error &&
                                 <Alert key='danger' variant='danger'>{error}</Alert>
                             }
@@ -106,7 +106,8 @@ export default function Login() {
                                      alt="logo-shield" className="logo-shield my-3"/>
                             </div>
 
-
+                            {! showCode &&
+                                <>
                                 <InputGroup hasValidation className={`mb-3 ${showCode ? 'code-greyed' : 'code-showed'}`}>
                                     <InputGroup.Text id="lastname">@</InputGroup.Text>
                                     <Form.Control
@@ -133,7 +134,8 @@ export default function Login() {
                                         onChange={phone => setPhone(phone)}
                                     />
                                 </InputGroup>
-
+                            </>
+                            }
 
                             <InputGroup className={`mb-3 ${showCode ? 'code-shown' : 'code-hidden'}`}>
                                 <InputGroup.Text id="code">#</InputGroup.Text>
