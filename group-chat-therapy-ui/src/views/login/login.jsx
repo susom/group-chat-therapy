@@ -1,5 +1,5 @@
-import React, {useState} from "react";
-import {Link} from 'react-router-dom';
+import React, {useState, useContext} from "react";
+import {Link, useNavigate} from 'react-router-dom';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
@@ -12,7 +12,11 @@ import PhoneInput from 'react-phone-input-2'
 import 'react-phone-input-2/lib/bootstrap.css'
 import Spinner from 'react-bootstrap/Spinner';
 
+import {SessionContext} from "../../contexts/Session.jsx";
+
 export default function Login() {
+    const session_context = useContext(SessionContext);
+    const navigate = useNavigate();
     const [phone, setPhone] = useState('')
     const [lastName, setLastName] = useState('')
     const [loading, setLoading] = useState(false)
@@ -24,17 +28,59 @@ export default function Login() {
     const [lastNameError, setLastNameError] = useState(false)
 
     const callAjax = () => {
-        const module = ExternalModules.Stanford.GroupChatTherapy
-        module.validateUserPhone(lastName, phone, setUserValid)
+        // in standalone mode this wont work, need to run it from redcap(static) to use this so fake it for now
+        // const module = ExternalModules.Stanford.GroupChatTherapy
+        // module.validateUserPhone(lastName, phone, setUserValid)
+
+        //ON FIRST LOAD (ONCE AUTHED IN)
+        //PULL chat session details
+        //PULL private_chat, just to set empty AI
+        //PULL participants
+        //PULL participant Asessments
+
+        const pretend_initial_chat_start_payload = {
+            chat_session_details : {
+                chat_id : "123456abcxyz",
+                title : "Alcohol Intervention",
+                description : "Group Session Chat for Dudes",
+                date : "2023-07-21",
+                time_start : 1100,
+                time_end : 1300,
+                therapist : "123xyz",
+                whiteboard : "",
+
+                participants :  [
+                    {participant_id: "123xyz" , display_name : "Mr. Therapist", status : "online/offline"},
+                    {participant_id: "abc456" , display_name : "Gilligan", status : "online/offline"},
+                    {participant_id: "def789" , display_name : "Wally", status : "online/offline"}
+                ]
+            },
+            assessments : [
+                { participant_id : "abc456",
+                  required : [
+                    { assessment : "opt-in" , link : "https://redcap.stanford.edu/1", status : true },
+                    { assessment : "e-consent" , link : "https://redcap.stanford.edu/2", status : true },
+                    { assessment : "baseline survey" , link : "https://redcap.stanford.edu/3", status : false }
+                  ]
+                }
+            ],
+            participant_id : "abc456"
+        }
+
+        return pretend_initial_chat_start_payload;
     }
 
     const submit = () => {
+
         if(!lastName){
             setLastNameError(true)
         }
 
         if(showCode) {
-            callAjax()
+            const payload = callAjax();
+            session_context.setData(payload);
+
+            navigate("/chatroom")
         } else if(lastName && phone){ // User needs to be verified as part of study, sent OTP
             setLoading(true)
             setTimeout(() => {
