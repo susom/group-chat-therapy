@@ -500,7 +500,7 @@ export const SessionContextProvider = ({children}) => {
             updatedAllChats     = result.allChats;
         });
 
-        console.log("new all Chats", updatedAllChats);
+        // console.log("new all Chats", updatedAllChats);
         // SET THE STATE WITH UPDATED VALUES
         setActions(updatedActions);
         setAllChats(updatedAllChats);
@@ -529,13 +529,16 @@ export const SessionContextProvider = ({children}) => {
 
         // Iterate over all chats
         for (let chatKey in updatedAllChats) {
-            // Check if this chat contains the message
-            if (updatedAllChats[chatKey].hasOwnProperty(messageId)) {
+            // Find the index of the message in the chat
+            let messageIndex = updatedAllChats[chatKey].findIndex(message => message.id === messageId);
+
+            // Check if the message exists in this chat
+            if (messageIndex !== -1) {
                 // Remove the message from the chat
-                delete updatedAllChats[chatKey][messageId];
+                updatedAllChats[chatKey].splice(messageIndex, 1);
 
                 // If this is a private chat and there are no more messages, remove the chat
-                if (chatKey !== 'groupChat' && Object.keys(updatedAllChats[chatKey]).length === 0) {
+                if (chatKey !== 'groupChat' && updatedAllChats[chatKey].length === 0) {
                     delete updatedAllChats[chatKey];
                 }
 
