@@ -3,13 +3,16 @@
 namespace Stanford\GroupChatTherapy;
 
 include_once "emLoggerTrait.php";
+require_once "classes/UserSession.php";
+require_once "classes/Action.php";
 
-use \REDCap;
-use \Exception;
+
+use App\User;
+use Exception;
+use REDCap;
 
 // use \Logging;
 
-require_once "classes/Action.php";
 
 class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
 {
@@ -17,21 +20,16 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
 
     const BUILD_FILE_DIR = 'group-chat-therapy-ui/dist/assets';
 
-//     public function injectJavascript($page)
-//     {
-//         try {
-//
-//             $jsFilePath = $this->getUrl("scripts/$page.js");
-// //            $csrfToken = json_encode($this->getCSRFToken());
-//             print "<script type='module' src=$jsFilePath></script>";
-// //            print "<script type='text/javascript'>var ajaxUrl = $ajaxFilePath; var csrfToken = $csrfToken</script>";
-//
-//
-//         } catch (\Exception $e) {
-//             \REDCap::logEvent("Error injecting js: $e");
-//             $this->emError($e);
-//         }
-//     }
+    public $UserSession;    // make private
+
+    public function __construct() {
+        parent::__construct();
+        // Other code to run when object is instantiated
+
+        // Load the user session
+        $this->UserSession = UserSession::getInstance();
+    }
+
 
     /**
      * @return array
@@ -63,12 +61,68 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
         return $dir_files;
     }
 
-    public function validateUserPhone($payload): string
+    /**
+     * Verifies phone number and last name fields are part of cohort
+     * @param $payload
+     * @return bool
+     */
+    public function validateUserPhone($payload)
     {
-        return true;
+        try {
+
+            //Sanitize inputs
+            $last_name = filter_var($payload[0], FILTER_SANITIZE_STRING);
+            $phone_number = filter_var($payload[1], FILTER_SANITIZE_STRING);
+            $phone_number = ltrim($phone_number, '1');
+
+            $params = array(
+                "return_format" => "json",
+                "fields" => array("phone", "last_name")
+            );
+
+            $json       = REDCap::getData($params);
+            $decoded = current(json_decode($json, true));
+
+            return strtolower($decoded['last_name']) === strtolower($last_name) && $decoded['phone'] === $phone_number;
+        } catch (\Exception $e) {
+            $msg = $e->getMessage();
+            \REDCap::logEvent("Error: $msg");
+            $this->emError("Error: $msg");
+
+            echo json_encode(array(
+                'error' => array(
+                    'msg' => $e->getMessage(),
+                ),
+            ));
+            die;
+        }
+    }
+
+    /**
+     * @param $code
+     * @return bool
+     */
+    public function validateCode($code): bool
+    {
+        //Sanitize input
+        $code = filter_var($code, FILTER_SANITIZE_STRING);
+
+        $params = array(
+            "return_format" => "json",
+            "fields" => array("code")
+        );
+        $json       = REDCap::getData($params);
+        $decoded = current(json_decode($json, true));
+        return ($decoded['code'] === $code);
     }
 
 
+    /**
+     * Helper method for inserting the JSMO JS into a page along with any preload data
+     * @param $data
+     * @param $init_method
+     * @return void
+     */
     public function injectJSMO($data = null, $init_method = null)
     {
         echo $this->initializeJavascriptModuleObject();
@@ -85,6 +139,25 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
         <?php
     }
 
+    /**
+     * This is the primary ajax handler for JSMO calls
+     * @param $action
+     * @param $payload
+     * @param $project_id
+     * @param $record
+     * @param $instrument
+     * @param $event_id
+     * @param $repeat_instance
+     * @param $survey_hash
+     * @param $response_id
+     * @param $survey_queue_hash
+     * @param $page
+     * @param $page_full
+     * @param $user_id
+     * @param $group_id
+     * @return array|array[]|bool
+     * @throws Exception
+     */
     public function redcap_module_ajax($action, $payload, $project_id, $record, $instrument, $event_id, $repeat_instance,
                                        $survey_hash, $response_id, $survey_queue_hash, $page, $page_full, $user_id, $group_id)
     {
@@ -137,8 +210,8 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
                 break;
             case "validateUserPhone":
                 return $this->validateUserPhone($payload);
-
-                break;
+            case "validateCode":
+                return $this->validateCode($payload);
             default:
                 // Action not defined
                 throw new Exception ("Action $action is not defined");
@@ -147,5 +220,12 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
         // Return is left as php object, is converted to json automatically
         return $result;
     }
+
+
+    public function isAuthenticated() {
+        return ($this->UserSession->isAuthenticated());
+    }
+
+
 
 }

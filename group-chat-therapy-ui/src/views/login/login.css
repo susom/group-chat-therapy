@@ -7,8 +7,8 @@ html h2 {
     font-family: 'Source Sans Pro', sans-serif;
 }
 
-.card-body{
-    background-color: rgb(247,247,245);
+.login-body{
+    /*background-color: rgb(247,247,245);*/
     margin-top: 5px;
     margin-bottom: 5px;
     border-radius: 15px;
@@ -35,10 +35,13 @@ html h2 {
     width: 100% !important;
     padding: 6px 7px 6px 60px !important;
 }
-
-.code-shown {
+.code-showed {
     opacity: 1;
     transition: all 250ms linear ;
+}
+
+.code-greyed .form-control{
+    background-color: rgb(233, 236, 239) !important;
 }
 .code-hidden{
     opacity: 0;

@@ -1,21 +1,16 @@
 <?php
 
 namespace Stanford\GroupChatTherapy;
-require_once "SimpleEmLogObject.php";
+require_once "ASEMLO.php";
 
 
 /**
  * The Conversation State extends the Simple EM Log Object to provide a data store for all conversations
  *
  */
-class Action extends SimpleEmLogObject
+class Action extends ASEMLO
 {
     /** @var GroupChatTherapy $this->module */
-
-    CONST OBJECT_NAME = 'Action';   // This is the 'name' of the object and stored in the message column
-
-    // private $payload;   // A json object with a bunch of stuff
-
 
 
     /**
@@ -25,9 +20,9 @@ class Action extends SimpleEmLogObject
      * @param $limit_params //used if you want to obtain a specific log_id and then only pull certain parameters
      * @throws \Exception
      */
-    public function __construct($module, $type = self::OBJECT_NAME, $log_id = null, $limit_params = [])
+    public function __construct($module, $log_id = null, $limit_params = [])
     {
-        parent::__construct($module, $type, $log_id, $limit_params);
+        parent::__construct($module, $log_id, $limit_params);
     }
 
     // public function payloadCheck() {
