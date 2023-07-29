@@ -27,7 +27,8 @@ export default function Login() {
     const [error, setError] = useState('')
     const [lastNameError, setLastNameError] = useState(false)
 
-    const jsmoModule = ExternalModules.Stanford.GroupChatTherapy
+    //TODO DISABLING FOR NOW FOR TESTING UI
+    // const jsmoModule = ExternalModules.Stanford.GroupChatTherapy
     const navigate = useNavigate()
     /**
      * Callback passed to execute react functions in JSMO
@@ -38,7 +39,8 @@ export default function Login() {
         if (type === 'validateCode') { //User is inputting code from OTP
             res ? setError('') : setError('Invalid code entered')
 
-            const pretend_initial_chat_start_payload = {
+            //TODO FAKING FOR NOW TO TEST UI
+            const res = {
                 chat_session_details : {
                     chat_id : "123456abcxyz",
                     title : "Alcohol Intervention",
@@ -67,7 +69,7 @@ export default function Login() {
                 participant_id : "abc456"
             }
 
-            session_context.setData(pretend_initial_chat_start_payload);
+            session_context.setData(res);
             navigate(`/chat`)
         } else { //User is checking existence within study
             res ? setError('') : setError('Invalid credentials supplied')
@@ -96,10 +98,17 @@ export default function Login() {
 
         if (showCode) { //User has entered a code
             setLoading(true);
-            jsmoModule.validateCode(code, callback, errorCallback);
+
+            //TODO DISABLING FOR NOW FOR TESTING UI
+            // jsmoModule.validateCode(code, callback, errorCallback);
         } else if (lastName && phone) { // User needs to be verified as part of study, sent OTP
-            setLoading(true)
-            jsmoModule.validateUserPhone(lastName, phone, callback, errorCallback)
+            setLoading(true);
+
+            //TODO TEMPORARY PLACEMENT FOR TESTING UI
+            callback("validateCode", true);
+
+            //TODO DISABLING FOR NOW FOR TESTING UI
+            // jsmoModule.validateUserPhone(lastName, phone, callback, errorCallback)
         } else {
             setError('Something went wrong')
         }
