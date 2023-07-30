@@ -40,7 +40,7 @@ export default function Login() {
             res ? setError('') : setError('Invalid code entered')
 
             //TODO FAKING FOR NOW TO TEST UI
-            const res = {
+            const res_fake = {
                 chat_session_details : {
                     chat_id : "123456abcxyz",
                     title : "Alcohol Intervention",
@@ -69,7 +69,7 @@ export default function Login() {
                 participant_id : "abc456"
             }
 
-            session_context.setData(res);
+            session_context.setData(res_fake);
             navigate(`/chat`)
         } else { //User is checking existence within study
             res ? setError('') : setError('Invalid credentials supplied')
