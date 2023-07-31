@@ -98,14 +98,7 @@ export const SessionContextProvider = ({children}) => {
             if (Math.random() < 0.05) actionType.push("update_chat_details");
 
             const selectedActionType    = actionType[getRandomInt(actionType.length)];
-            const recipients            = Math.random() < 0.5 ? [users[getRandomInt(users.length)]] : [];
-            if (recipients.length === 1 && Math.random() < 0.5) {
-                let secondUser;
-                do {
-                    secondUser = users[getRandomInt(users.length)];
-                } while (secondUser === recipients[0]);
-                recipients.push(secondUser);
-            }
+            const recipients            = Math.random() < 0.5 ? ["123xyz"] : [];
 
             let action;
             switch(selectedActionType) {
