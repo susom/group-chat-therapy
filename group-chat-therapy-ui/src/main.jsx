@@ -4,6 +4,9 @@ import {
     RouterProvider,
     createHashRouter,
 } from 'react-router-dom';
+
+import { SessionContextProvider } from './contexts/Session.jsx';
+
 import ChatRoom from './views/chatroom/chatroom.jsx'
 import Landing from './views/landing/landing.jsx'
 import Error from './views/error/error.jsx'
@@ -30,6 +33,8 @@ const router = createHashRouter([
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-      <RouterProvider router={router}/>
+      <SessionContextProvider>
+        <RouterProvider router={router}/>
+      </SessionContextProvider>
   </React.StrictMode>,
 )

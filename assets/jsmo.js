@@ -61,6 +61,22 @@
             })
         },
 
+        getAssessments: function(payload) {
+            module.ajax('getAssessments', payload).then(function (response) {
+                console.log("RESPONSE", response);
+            }).catch(function (err) {
+                console.log("Error", err);
+            })
+        },
+
+        getChatSessionDetails: function(payload) {
+            module.ajax('getChatSessionDetails', payload).then(function (response) {
+                console.log("RESPONSE", response);
+            }).catch(function (err) {
+                console.log("Error", err);
+            })
+        },
+
         /**
          * Validates Last name, phone to determine user participation in study & send OTP
          * @param lastName

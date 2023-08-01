@@ -5,11 +5,13 @@ namespace Stanford\GroupChatTherapy;
 include_once "emLoggerTrait.php";
 require_once "classes/UserSession.php";
 require_once "classes/Action.php";
-
+require_once "vendor/autoload.php";
 
 use App\User;
 use Exception;
 use REDCap;
+use Twilio\Exceptions\TwilioException;
+use Twilio\Rest\Client;
 
 // use \Logging;
 
@@ -22,14 +24,14 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
 
     public $UserSession;    // make private
 
-    public function __construct() {
+    public function __construct()
+    {
         parent::__construct();
         // Other code to run when object is instantiated
 
         // Load the user session
         $this->UserSession = UserSession::getInstance();
     }
-
 
     /**
      * @return array
@@ -62,28 +64,87 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
     }
 
     /**
+     * Send SMS with body payload
+     * @param $body
+     * @param $phone_number
+     * @return void
+     * @throws TwilioException
+     */
+    public function sendSMS($body, $phone_number): void
+    {
+        $sid = $this->getSystemSetting('twilio-sid');
+        $auth = $this->getSystemSetting('twilio-auth-token');
+        $fromNumber = $this->getSystemSetting('twilio-from-number');
+
+        $twilio = new Client($sid, $auth);
+
+        $twilio->messages
+            ->create(
+                "$phone_number",
+                array(
+                    'body' => $body,
+                    'from' => $fromNumber
+                )
+            );
+    }
+
+    /**
+     * Generates OTP and saves to record
+     * @param $record
+     * @param $phone_number
+     * @return void
+     * @throws Exception
+     */
+    public function generateOneTimePassword($record, $phone_number): void
+    {
+        $code = bin2hex(random_bytes(4));
+        $saveData = array(
+            array(
+                "record_id" => $record,
+                "code" => $code
+            )
+        );
+
+        $response = REDCap::saveData('json', json_encode($saveData), 'overwrite');
+
+        if (empty($response['errors'])) {
+            $body = "Your Group Therapy verification code is: $code";
+            $this->sendSMS($body, $phone_number);
+        } else {
+            throw new Exception('Save data failure');
+        }
+    }
+
+    /**
      * Verifies phone number and last name fields are part of cohort
      * @param $payload
      * @return bool
      */
-    public function validateUserPhone($payload)
+    public function validateUserPhone($payload): bool
     {
         try {
 
             //Sanitize inputs
             $last_name = filter_var($payload[0], FILTER_SANITIZE_STRING);
             $phone_number = filter_var($payload[1], FILTER_SANITIZE_STRING);
-            $phone_number = ltrim($phone_number, '1');
+            $phone_number_truncated = ltrim($phone_number, '1');
 
             $params = array(
                 "return_format" => "json",
-                "fields" => array("phone", "last_name")
+                "fields" => array("phone", "last_name", "record_id")
             );
 
-            $json       = REDCap::getData($params);
+            $json = REDCap::getData($params);
             $decoded = current(json_decode($json, true));
 
-            return strtolower($decoded['last_name']) === strtolower($last_name) && $decoded['phone'] === $phone_number;
+            if (strtolower($decoded['last_name']) === strtolower($last_name) && $decoded['phone'] === $phone_number_truncated) {
+                $this->generateOneTimePassword($decoded['record_id'], $decoded['phone']);
+                return true;
+            } else {
+                throw new Exception ("Invalid credentials");
+            }
+
+
         } catch (\Exception $e) {
             $msg = $e->getMessage();
             \REDCap::logEvent("Error: $msg");
@@ -99,6 +160,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
     }
 
     /**
+     * Validates code sent via SMS
      * @param $code
      * @return bool
      */
@@ -106,12 +168,13 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
     {
         //Sanitize input
         $code = filter_var($code, FILTER_SANITIZE_STRING);
+        $code = strtolower($code);
 
         $params = array(
             "return_format" => "json",
             "fields" => array("code")
         );
-        $json       = REDCap::getData($params);
+        $json = REDCap::getData($params);
         $decoded = current(json_decode($json, true));
         return ($decoded['code'] === $code);
     }
@@ -222,10 +285,10 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
     }
 
 
-    public function isAuthenticated() {
+    public function isAuthenticated()
+    {
         return ($this->UserSession->isAuthenticated());
     }
-
 
 
 }
