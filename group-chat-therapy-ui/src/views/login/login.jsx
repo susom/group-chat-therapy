@@ -28,7 +28,7 @@ export default function Login() {
     const [lastNameError, setLastNameError] = useState(false)
 
     //TODO DISABLING FOR NOW FOR TESTING UI
-    // const jsmoModule = ExternalModules.Stanford.GroupChatTherapy
+    const jsmoModule = ExternalModules.Stanford.GroupChatTherapy
     const navigate = useNavigate()
     /**
      * Callback passed to execute react functions in JSMO
@@ -100,15 +100,15 @@ export default function Login() {
             setLoading(true);
 
             //TODO DISABLING FOR NOW FOR TESTING UI
-            // jsmoModule.validateCode(code, callback, errorCallback);
+            jsmoModule.validateCode(code, callback, errorCallback);
         } else if (lastName && phone) { // User needs to be verified as part of study, sent OTP
             setLoading(true);
 
             //TODO TEMPORARY PLACEMENT FOR TESTING UI
-            callback("validateCode", true);
+            // callback("validateCode", true);
 
             //TODO DISABLING FOR NOW FOR TESTING UI
-            // jsmoModule.validateUserPhone(lastName, phone, callback, errorCallback)
+            jsmoModule.validateUserPhone(lastName, phone, callback, errorCallback)
         } else {
             setError('Something went wrong')
         }
