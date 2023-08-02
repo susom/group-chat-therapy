@@ -97,7 +97,8 @@ Client posts to server that they wish to enter therapy session (this could also 
       {
         "id": 12346,
         "type": "delete",
-        "target": 12340
+        "target": 12340,
+        "timestamp": "server_timestamp",
       },
       {
         "id": 12347,
