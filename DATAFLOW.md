@@ -90,6 +90,8 @@ Client posts to server that they wish to enter therapy session (this could also 
         "user": "P123",
         "body": "Foo",
         "recipients": [], // Empty to all, otherwise
+        "replyquote" : 12333,
+        "callout" : ["123xyz", "P456"],
         "timestamp": "server_timestamp",
       },
       {
@@ -101,37 +103,72 @@ Client posts to server that they wish to enter therapy session (this could also 
         "id": 12347,
         "type": "notice",
         "body": "Foo has left the session",
-        "sender": "system | Therapist"
+        "sender": "system | Therapist",
+        "recipients" : [],
+        "timestamp": "server_timestamp"
       },
       {
         "id": 12348,
+        "target" : 12345
         "type": "message_read",
-        "user": "P456"
+        "user": "P456",
+        "timestamp" : "2023-08-02T21:47:56.697Z"
       },
       {
          "id": 12349,
          "type": "reaction",
          "target": "12345",
-          "icon": "heart"
+          "icon": "heart",
+         "user" : "P456",
+         "timestamp" : "2023-08-02T21:47:56.697Z"
       },
       {
          "id": 123400,
          "type": "whiteboard",
-         "body": "New whiteboard content"
+         "timestamp": "server_timestamp"
+      },
+      {
+         "id": 123400,
+         "type": "update_assessments",
+         "timestamp": "server_timestamp"
+      },
+      {
+         "id": 123400,
+         "type": "update_chat_details",
+         "timestamp": "server_timestamp"
       }
     ]
 }
 ```
-- saveActions(payload)
+- saveActions(payloads)
 ```json lines
 [
     {
-        "client_ts": "?",
-        "type": "post",
-        "body": "Message 1",
-        "recipients": [],
-        "time_to_complete": 55,
-        "character_history: "FU<BS><BS>Message 1"
+        "client_ts": "2023-08-02T22:02:53.375Z",
+        "type": "reaction",
+        "target" 123333
+        "user": "P456",
+        "icon" : "heart" //heart, smile, sad, angry
+    },
+    {
+        "client_ts": "2023-08-02T22:02:53.375Z",
+        "type": "message",
+        "user" : "P456",
+        "recipients" : [],
+        "body" : "abcd",
+        "character_history" : ['a', 'b', 'c', 'd']
+        "time_to_complete" : "671ms",
+        "replyquote" : 12333
+    },
+    {
+        "client_ts": "2023-08-02T22:02:53.375Z",
+        "type": "message",
+        "user" : "123XYZ",
+        "recipients" : ["P456"], //private message
+        "body" : "abcd",
+        "character_history" : ['a', 'b', 'c', 'd']
+        "time_to_complete" : "671ms",
+        "replyquote" : null
     }
 ]
 ```
