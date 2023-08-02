@@ -152,6 +152,11 @@ Client posts to server that they wish to enter therapy session (this could also 
     },
     {
         "client_ts": "2023-08-02T22:02:53.375Z",
+        "type": "delete",
+        "target" 123333
+    },
+    {
+        "client_ts": "2023-08-02T22:02:53.375Z",
         "type": "message",
         "user" : "P456",
         "recipients" : [],
@@ -176,3 +181,10 @@ Client posts to server that they wish to enter therapy session (this could also 
 
 ### LOGIC ON AJAX:
 1. If login, do not have to be authenticated to handle the request
+
+### CHAT AJAX/INTERVAL LOOP:
+Currently the Default timing of the Interval is 5000ms (5 Seconds),  we can adjust it but , 5 seconds feels reasonable and not too laggy
+
+1. User may Enter Messages, Delete Messages, React to Messages, and Reply to Messages
+2. Any of these actions will be saved to an "Action Queue" locally until ...
+3. the 5 seconds pass and its time for the ajax call in fetchActions()
