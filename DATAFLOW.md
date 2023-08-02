@@ -90,7 +90,7 @@ Client posts to server that they wish to enter therapy session (this could also 
         "user": "P123",
         "body": "Foo",
         "recipients": [], // Empty to all, otherwise
-        "replyquote" : 12333,
+        "target" : 12333,
         "callout" : ["123xyz", "P456"],
         "timestamp": "server_timestamp",
       },
