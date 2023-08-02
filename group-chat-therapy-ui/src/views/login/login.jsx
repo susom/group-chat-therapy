@@ -108,7 +108,10 @@ export default function Login() {
             // callback("validateCode", true);
 
             //TODO DISABLING FOR NOW FOR TESTING UI
-            jsmoModule.validateUserPhone(lastName, phone, callback, errorCallback)
+            // jsmoModule.validateUserPhone(lastName, phone, callback, errorCallback)
+            // jsmoModule.addAction("Test123");
+            jsmoModule.getActions();
+
         } else {
             setError('Something went wrong')
         }

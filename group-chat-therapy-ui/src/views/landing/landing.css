@@ -5,3 +5,12 @@ body {
 .card {
     background-color: white !important;
 }
+
+.ant-transfer-operation button {
+    line-height: 0.571429 !important;
+}
+
+.ant-transfer-list .ant-transfer-list-body {
+    overflow-x:scroll;
+    max-width: 41vw;
+}
