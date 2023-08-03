@@ -164,7 +164,7 @@ Client posts to server that they wish to enter therapy session (this could also 
         "body" : "abcd",
         "character_history" : ['a', 'b', 'c', 'd']
         "time_to_complete" : "671ms",
-        "replyquote" : 12333
+        "target" : 12333
     },
     {
         "client_ts": "2023-08-02T22:02:53.375Z",
@@ -174,7 +174,7 @@ Client posts to server that they wish to enter therapy session (this could also 
         "body" : "abcd",
         "character_history" : ['a', 'b', 'c', 'd']
         "time_to_complete" : "671ms",
-        "replyquote" : null
+        "target" : null
     }
 ]
 ```
