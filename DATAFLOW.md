@@ -209,8 +209,7 @@ let testActions = [{
     "user": "P123",
     "body": "<div>food</div>",
     "recipients": [],
-    "replyquote": '123',
-    "callout": ["123xyc", "<b>P24</b>"],
+    "target": '123'
 }]
 jsmoModule.handleActions({maxID: 1275, actionQueue: testActions}) //
 
@@ -226,11 +225,7 @@ Example response
             "user": "P123",
             "body": "&lt;div&gt;food&lt;/div&gt;",
             "recipients": [],
-            "replyquote": "123",
-            "callout": [
-                "123xyc",
-                "&lt;b&gt;P24&lt;/b&gt;"
-            ]
+            "target": "123"
         }
     ],
         "serverTime": 2201.801126
