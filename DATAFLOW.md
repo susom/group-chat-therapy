@@ -91,7 +91,6 @@ Client posts to server that they wish to enter therapy session (this could also 
         "body": "Foo",
         "recipients": [], // Empty to all, otherwise
         "target" : 12333,
-        "callout" : ["123xyz", "P456"],
         "timestamp": "server_timestamp",
       },
       {
