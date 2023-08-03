@@ -125,11 +125,6 @@ Client posts to server that they wish to enter therapy session (this could also 
       },
       {
          "id": 123400,
-         "type": "whiteboard",
-         "timestamp": "server_timestamp"
-      },
-      {
-         "id": 123400,
          "type": "update_assessments",
          "timestamp": "server_timestamp"
       },
