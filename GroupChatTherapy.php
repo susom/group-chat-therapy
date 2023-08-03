@@ -210,7 +210,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
      * @param $payload
      * @return array|null
      */
-    public function sanitizeInput($payload): array|null
+    public function sanitizeInput($payload): array|string
     {
         $sanitizer = new Sanitizer();
         return $sanitizer->sanitize($payload);
@@ -223,9 +223,8 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
      */
     public function handleActions(array $payload): array
     {
-        try{
-//            $max = intval(filter_var($payload['maxID'], FILTER_SANITIZE_NUMBER_INT)) ?? 0;
-            $max = intval($this->sanitizeInput($payload['actionQueue'])) ?? [];
+        try {
+            $max = intval($this->sanitizeInput($payload['maxID'])) ?? 0;
             $actionQueue = $this->sanitizeInput($payload['actionQueue']) ?? [];
             $start = hrtime(true);
 
@@ -253,7 +252,6 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
             ));
             die;
         }
-
     }
 
     /**
@@ -279,15 +277,29 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
      * Creates an action in the log table
      * @param array $actions
      * @return void
+     * @throws Exception
      */
     public function addAction(array $actions): void
     {
-        $this->emDebug("Adding actions", $actions);
-        foreach ($actions as $k => $v) {
-            $action = new Action($this);
-            $action->setValue('message', json_encode($v));
-            $action->save();
-            $this->emDebug("Added action " . $action->getId());
+        try {
+            $this->emDebug("Adding actions", $actions);
+            foreach ($actions as $k => $v) {
+                $action = new Action($this);
+                $action->setValue('message', json_encode($v));
+                $action->save();
+                $this->emDebug("Added action " . $action->getId());
+            }
+        } catch (\Exception $e) {
+            $msg = $e->getMessage();
+            \REDCap::logEvent("Error: $msg");
+            $this->emError("Error: $msg");
+
+            echo json_encode(array(
+                'error' => array(
+                    'msg' => $e->getMessage(),
+                ),
+            ));
+            die;
         }
 
     }
@@ -297,7 +309,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
      * @param int $max
      * @return array[]
      */
-    public function getActions(int $max): array
+    public function getActions(int $max = 0): array
     {
         $sql = "select reml.log_id,
                    reml.timestamp,
@@ -320,10 +332,9 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
         $results = [];
         while ($row = db_fetch_row($q)) $results[] = $row;
 
-        $result = [
+        return [
             "data" => $results
         ];
-        return $result;
     }
 
     /**
