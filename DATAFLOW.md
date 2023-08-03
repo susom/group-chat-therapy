@@ -184,3 +184,57 @@ Currently the Default timing of the Interval is 5000ms (5 Seconds),  we can adju
 1. User may Enter Messages, Delete Messages, React to Messages, and Reply to Messages
 2. Any of these actions will be saved to an "Action Queue" locally until ...
 3. the 5 seconds pass and its time for the ajax call in fetchActions()
+
+
+AJAX endpoint functions
+-
+```php
+public function handleActions(array $payload): array
+```
+This function is intended to be called in the polling function on the chat screen.
+It will first check to see if there are any actions that need to be added to the server. After adding each action,
+it will return a list of updated actions with the server compute time.
+
+Example call
+```php
+   # $payload takes assoc array with two keys:
+   $payload = [
+        maxID => ...
+        actionQueue => [...]
+   ]
+```
+
+```js
+let testActions = [{
+    "type": "message",
+    "user": "P123",
+    "body": "<div>food</div>",
+    "recipients": [],
+    "replyquote": '123',
+    "callout": ["123xyc", "<b>P24</b>"],
+}]
+jsmoModule.handleActions({maxID: 1275, actionQueue: testActions}) //
+
+```
+Example response
+```js
+{
+    "data": [
+        {
+            "id": "1357",
+            "timestamp": "2023-08-03 11:49:55",
+            "type": "message",
+            "user": "P123",
+            "body": "&lt;div&gt;food&lt;/div&gt;",
+            "recipients": [],
+            "replyquote": "123",
+            "callout": [
+                "123xyc",
+                "&lt;b&gt;P24&lt;/b&gt;"
+            ]
+        }
+    ],
+        "serverTime": 2201.801126
+}
+
+```
