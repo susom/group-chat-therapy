@@ -125,11 +125,6 @@ Client posts to server that they wish to enter therapy session (this could also 
       },
       {
          "id": 123400,
-         "type": "whiteboard",
-         "timestamp": "server_timestamp"
-      },
-      {
-         "id": 123400,
          "type": "update_assessments",
          "timestamp": "server_timestamp"
       },
@@ -164,7 +159,7 @@ Client posts to server that they wish to enter therapy session (this could also 
         "body" : "abcd",
         "character_history" : ['a', 'b', 'c', 'd']
         "time_to_complete" : "671ms",
-        "replyquote" : 12333
+        "target" : 12333
     },
     {
         "client_ts": "2023-08-02T22:02:53.375Z",
@@ -174,7 +169,7 @@ Client posts to server that they wish to enter therapy session (this could also 
         "body" : "abcd",
         "character_history" : ['a', 'b', 'c', 'd']
         "time_to_complete" : "671ms",
-        "replyquote" : null
+        "target" : null
     }
 ]
 ```
