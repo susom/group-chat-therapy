@@ -11,11 +11,13 @@ export default function Reaction({ reaction, onClick, displayOnly }) {
         'angry': EmojiAngryFill,
     };
 
+    const title = displayOnly ? `from ${session_context.participantsLookUp[reaction.user]}` : reaction.icon ;
+
     const IconComponent = iconMap[reaction.icon];
     return IconComponent ? (
         <IconComponent
             className={reaction.icon}
-            title={`from ${session_context.participantsLookUp[reaction.user]}`}
+            title={title}
             onClick={displayOnly ? null : () => onClick(reaction.icon)}
         />
     ) : null;

@@ -2,6 +2,7 @@ import React, {useState, useContext, useEffect} from "react";
 import {Link} from "react-router-dom";
 
 import { Container, Row, Col, Tab, Nav, Form, Button, Card } from 'react-bootstrap';
+import { PeopleFill, Person } from 'react-bootstrap-icons';
 import {SessionContext} from "../../contexts/Session.jsx";
 import {getAllSessions, deleteSession, deleteAllData} from "../../components/database/dexie.js";
 
@@ -9,6 +10,7 @@ import MessagesDisplay from "../../components/MessagesDisplay.jsx";
 import YourAssessments from "../../components/YourAssessments.jsx";
 
 import './chatroom.css';
+import { debounce } from 'lodash';
 
 export default function ChatRoom() {
     const session_context = useContext(SessionContext);
@@ -18,7 +20,7 @@ export default function ChatRoom() {
     const isAdmin                           = session_context.isAdmin;
     const participant_lookup                = session_context.participantsLookUp;
     const chat_details                      = session_context.chatSessionDetails;
-    const whiteboard                        = chat_details?.whiteboard;
+    const whiteboard                        = chat_details?.whiteboard !== "" ? chat_details?.whiteboard : "Nothing here yet.";
 
     //CHAT VARS CACHE
     const sessionContextAllChats            = session_context.allChats;
@@ -30,6 +32,8 @@ export default function ChatRoom() {
     const [startMessageTime, setStartMessageTime]   = useState(null);
     const [keystrokes, setKeystrokes]               = useState([]);
     const [currentWord, setCurrentWord]             = useState('');
+    const [replyTo, setReplyTo] = useState(null);
+
 
     useEffect(() => {
         setAllChats({ ...sessionContextAllChats });
@@ -42,15 +46,6 @@ export default function ChatRoom() {
 
         const value = e.target.value;
         setMessage(value);
-
-        // this saves word history, not that cool
-        // const lastChar  = value[value.length - 1];
-        // if (lastChar === ' ' || lastChar === '.' || lastChar === '!' || lastChar === '?') {
-        //     setKeystrokes([...keystrokes, currentWord]);
-        //     setCurrentWord('');
-        // } else {
-        //     setCurrentWord(value);
-        // }
     };
 
     const handleKeyDown = (e) => {
@@ -78,7 +73,9 @@ export default function ChatRoom() {
                 recipients : selectedChat === 'groupChat' ? [] : [selectedChat],
                 time_to_complete : duration,
                 character_history : keystrokes,
+                target: replyTo || null
             };
+
 
             // Add the message to the local chat history
             setAllChats(prevChats => {
@@ -97,6 +94,7 @@ export default function ChatRoom() {
             setStartMessageTime(null);
             setCurrentWord('');
             setKeystrokes([]);
+            setReplyTo(null);
         }
     };
 
@@ -119,28 +117,6 @@ export default function ChatRoom() {
                 </Col>
             </Row>
 
-            <Row className={"whiteboard"}>
-                <Col>
-                    <Card>
-                        <Card.Body>
-                            <Card.Title>Announcements</Card.Title>
-                            <Card.Text>{whiteboard}</Card.Text>
-                        </Card.Body>
-                    </Card>
-                </Col>
-            </Row>
-
-            <Row className={"participant_info"}>
-                <Col>
-                    <Card>
-                        <Card.Body>
-                            <Card.Title>{isAdmin ? "Participants" : "Your Assessments" }</Card.Title>
-                            <YourAssessments />
-                        </Card.Body>
-                    </Card>
-                </Col>
-            </Row>
-
             <Row className={"chat_ui"}>
                 <Col>
                     <Container fluid>
@@ -151,10 +127,10 @@ export default function ChatRoom() {
                                     setSelectedChat(k);  // Update the selected chat when a tab is selected
                                 }}
                                 defaultActiveKey="groupChat">
-                                <Col md={3} xs={12}>
+                                <Col md={1} xs={12}>
                                     <Nav variant="pills" className="flex-column mt-2">
                                         <Nav.Item>
-                                            <Nav.Link eventKey="groupChat">Group Chat</Nav.Link>
+                                            <Nav.Link eventKey="groupChat"><PeopleFill color="white" size={20} /></Nav.Link>
                                         </Nav.Item>
                                         {Object.keys(allChats).map((chatKey, index) => {
                                             // Skip the group chat, as it's already been handled
@@ -164,16 +140,26 @@ export default function ChatRoom() {
                                             const participantNames  = participantIDs.map(id => participant_lookup[id]).join(', ');
                                             return (
                                                 <Nav.Item key={index}>
-                                                    <Nav.Link eventKey={chatKey}>Chat with {participantNames}</Nav.Link>
+                                                    <Nav.Link eventKey={chatKey}><Person color="gray" size={20} /></Nav.Link>
                                                 </Nav.Item>
                                             );
                                         })}
                                     </Nav>
                                 </Col>
-                                <Col md={9} xs={12}>
+                                <Col md={11} xs={12}>
+                                    <Row className={"whiteboard"}>
+                                        <Col>
+                                            <Card>
+                                                <Card.Body>
+                                                    <Card.Title>Whiteboard</Card.Title>
+                                                    <Card.Text>{whiteboard}</Card.Text>
+                                                </Card.Body>
+                                            </Card>
+                                        </Col>
+                                    </Row>
                                     <Tab.Content>
                                         <Tab.Pane eventKey="groupChat">
-                                            <MessagesDisplay messages={allChats['groupChat']} />
+                                            <MessagesDisplay messages={allChats['groupChat']} replyTo={replyTo} setReplyTo={setReplyTo} />
                                         </Tab.Pane>
                                         {Object.keys(allChats).map(chatKey => {
                                             // Skip the group chat, as it's already been handled
@@ -181,7 +167,7 @@ export default function ChatRoom() {
 
                                             return (
                                                 <Tab.Pane eventKey={chatKey} key={chatKey}>
-                                                    <MessagesDisplay messages={allChats[chatKey]} />
+                                                    <MessagesDisplay messages={allChats[chatKey]} replyTo={replyTo} setReplyTo={setReplyTo} />
                                                 </Tab.Pane>
                                             );
                                         })}

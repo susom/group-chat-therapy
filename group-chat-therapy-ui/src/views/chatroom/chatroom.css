@@ -25,7 +25,7 @@ main {
     border-radius:3px;
     margin:0  0 20px 0;
     padding:20px;
-    min-height:300px;
+    min-height:500px;
     max-height:500px;
     overflow-y:scroll;
 }
@@ -49,6 +49,80 @@ main {
     max-width:80%;
     position:relative;
     clear:both;
+}
+
+.tab-pane {
+    position:relative;
+}
+.tab-pane > .reply_message{
+    position: absolute;
+    z-index: 100;
+    border: 1px solid black;
+    border-radius: 5px;
+    bottom: -15px;
+    left: 10px;
+    width: 80%;
+    background: #efefef;
+    border-left: 10px solid;
+    box-shadow: 1px 1px 3px 1px #333;
+}
+
+.tab-pane > .reply_message .message.quoted_message{
+    border:none;
+    margin: 5px 10px;
+    background:none;
+    float:none;
+    max-width:initial;
+    color:#666;
+}
+
+.tab-pane > .reply_message .message.quoted_message dt {
+    position:initial;
+}
+.tab-pane > .reply_message .message.quoted_message .message_body {
+    max-width:90%;
+}
+.tab-pane > .reply_message .message.quoted_message .close {
+    position:absolute;
+    right:10px;
+    top:50%;
+    transform: translateY(-13px);
+    cursor:pointer;
+}
+
+.chat_window .message_body .quoted_message .close,
+.quoted_message .delete,
+.quoted_message .reactions,
+.quoted_message .timestamp {
+    display:none;
+}
+
+.chat_window .message_body .reply_message{
+    overflow:hidden;
+    border:1px solid black;
+    border-left: 10px solid black;
+    border-radius:5px;
+    margin-bottom:5px;
+    background:#ddd;
+}
+
+.chat_window .message_body .reply_message .quoted_message{
+    float:initial;
+    border:initial;
+    border-radius:initial;
+    margin:0;
+    background:#ddd;
+    color:#666
+}
+
+.chat_window .message_body .reply_message .quoted_message dt {
+    position:initial;
+    color:#666;
+}
+.chat_window .message_body .reply_message  .quoted_message .message_body {
+    color:#999;
+    font-size:92%;
+    line-height:120%;
 }
 
 .chat_window .message.self.fake{
@@ -178,6 +252,7 @@ main {
     font-weight: bold;
 }
 
+.chat_window .message .reply_quote,
 .chat_window .message .add_reactions {
     line-height: 90%;
     text-align: center;
@@ -192,6 +267,10 @@ main {
     font-weight: bold;
 }
 
+.chat_window .message .reply_quote{
+    right:-50px;
+}
+
 .chat_window .message .add_reactions .reaction-popup {
     width: 120px;
     position: absolute;
@@ -199,6 +278,7 @@ main {
     background: #efefef;
     top: -7px;
     left: 20px;
+    z-index:999;
 }
 
 .chat_window .message .add_reactions .reaction-popup > * {
@@ -211,6 +291,7 @@ main {
 .participant_info .card,
 .whiteboard .card {
     border:none;
+    background:none !important;
 }
 
 .clearfix::after {
@@ -218,3 +299,5 @@ main {
     display: table;
     clear: both;
 }
+
+

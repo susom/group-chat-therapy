@@ -110,7 +110,8 @@ export const SessionContextProvider = ({children}) => {
                         user: users[getRandomInt(users.length)],
                         body: messageBodies[getRandomInt(messageBodies.length)],
                         recipients: recipients,
-                        timestamp: server_timestamp
+                        timestamp: server_timestamp,
+                        target: lastMessageId
                     };
                     lastMessageId = messageId;
                     break;
@@ -170,7 +171,6 @@ export const SessionContextProvider = ({children}) => {
                         timestamp: server_timestamp
                     };
                     break;
-
                 case "update_chat_details":
                     action = {
                         id: actionIdCounter++,
@@ -384,6 +384,7 @@ export const SessionContextProvider = ({children}) => {
                     timestamp: action.timestamp,
                     read_by: [],
                     reactions: [],
+                    target: action.target,
                     type: 'message'
                 });
 
@@ -493,7 +494,7 @@ export const SessionContextProvider = ({children}) => {
             updatedAllChats     = result.allChats;
         });
 
-        // console.log("new all Chats", updatedAllChats);
+        console.log("new all Chats", updatedAllChats);
         // SET THE STATE WITH UPDATED VALUES
         setActions(updatedActions);
         setAllChats(updatedAllChats);
