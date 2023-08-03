@@ -90,48 +90,85 @@ Client posts to server that they wish to enter therapy session (this could also 
         "user": "P123",
         "body": "Foo",
         "recipients": [], // Empty to all, otherwise
+        "target" : 12333,
         "timestamp": "server_timestamp",
       },
       {
         "id": 12346,
         "type": "delete",
-        "target": 12340
+        "target": 12340,
+        "timestamp": "server_timestamp",
       },
       {
         "id": 12347,
         "type": "notice",
         "body": "Foo has left the session",
-        "sender": "system | Therapist"
+        "sender": "system | Therapist",
+        "recipients" : [],
+        "timestamp": "server_timestamp"
       },
       {
         "id": 12348,
+        "target" : 12345
         "type": "message_read",
-        "user": "P456"
+        "user": "P456",
+        "timestamp" : "2023-08-02T21:47:56.697Z"
       },
       {
          "id": 12349,
          "type": "reaction",
          "target": "12345",
-          "icon": "heart"
+          "icon": "heart",
+         "user" : "P456",
+         "timestamp" : "2023-08-02T21:47:56.697Z"
       },
       {
          "id": 123400,
-         "type": "whiteboard",
-         "body": "New whiteboard content"
+         "type": "update_assessments",
+         "timestamp": "server_timestamp"
+      },
+      {
+         "id": 123400,
+         "type": "update_chat_details",
+         "timestamp": "server_timestamp"
       }
     ]
 }
 ```
-- saveActions(payload)
+- saveActions(payloads)
 ```json lines
 [
     {
-        "client_ts": "?",
-        "type": "post",
-        "body": "Message 1",
-        "recipients": [],
-        "time_to_complete": 55,
-        "character_history: "FU<BS><BS>Message 1"
+        "client_ts": "2023-08-02T22:02:53.375Z",
+        "type": "reaction",
+        "target" 123333
+        "user": "P456",
+        "icon" : "heart" //heart, smile, sad, angry
+    },
+    {
+        "client_ts": "2023-08-02T22:02:53.375Z",
+        "type": "delete",
+        "target" 123333
+    },
+    {
+        "client_ts": "2023-08-02T22:02:53.375Z",
+        "type": "message",
+        "user" : "P456",
+        "recipients" : [],
+        "body" : "abcd",
+        "character_history" : ['a', 'b', 'c', 'd']
+        "time_to_complete" : "671ms",
+        "target" : 12333
+    },
+    {
+        "client_ts": "2023-08-02T22:02:53.375Z",
+        "type": "message",
+        "user" : "123XYZ",
+        "recipients" : ["P456"], //private message
+        "body" : "abcd",
+        "character_history" : ['a', 'b', 'c', 'd']
+        "time_to_complete" : "671ms",
+        "target" : null
     }
 ]
 ```
@@ -139,3 +176,64 @@ Client posts to server that they wish to enter therapy session (this could also 
 
 ### LOGIC ON AJAX:
 1. If login, do not have to be authenticated to handle the request
+
+### CHAT AJAX/INTERVAL LOOP:
+Currently the Default timing of the Interval is 5000ms (5 Seconds),  we can adjust it but , 5 seconds feels reasonable and not too laggy
+
+1. User may Enter Messages, Delete Messages, React to Messages, and Reply to Messages
+2. Any of these actions will be saved to an "Action Queue" locally until ...
+3. the 5 seconds pass and its time for the ajax call in fetchActions()
+
+
+AJAX endpoint functions
+-
+```php
+public function handleActions(array $payload): array
+```
+This function is intended to be called in the polling function on the chat screen.
+It will first check to see if there are any actions that need to be added to the server. After adding each action,
+it will return a list of updated actions with the server compute time.
+
+Example call
+```php
+   # $payload takes assoc array with two keys:
+   $payload = [
+        maxID => ...
+        actionQueue => [...]
+   ]
+```
+
+```js
+let testActions = [{
+    "type": "message",
+    "user": "P123",
+    "body": "<div>food</div>",
+    "recipients": [],
+    "replyquote": '123',
+    "callout": ["123xyc", "<b>P24</b>"],
+}]
+jsmoModule.handleActions({maxID: 1275, actionQueue: testActions}) //
+
+```
+Example response
+```js
+{
+    "data": [
+        {
+            "id": "1357",
+            "timestamp": "2023-08-03 11:49:55",
+            "type": "message",
+            "user": "P123",
+            "body": "&lt;div&gt;food&lt;/div&gt;",
+            "recipients": [],
+            "replyquote": "123",
+            "callout": [
+                "123xyc",
+                "&lt;b&gt;P24&lt;/b&gt;"
+            ]
+        }
+    ],
+        "serverTime": 2201.801126
+}
+
+```

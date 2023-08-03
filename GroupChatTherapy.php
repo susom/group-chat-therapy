@@ -5,6 +5,7 @@ namespace Stanford\GroupChatTherapy;
 include_once "emLoggerTrait.php";
 require_once "classes/UserSession.php";
 require_once "classes/Action.php";
+require_once "classes/Sanitizer.php";
 require_once "vendor/autoload.php";
 
 use App\User;
@@ -31,6 +32,29 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
 
         // Load the user session
         $this->UserSession = UserSession::getInstance();
+    }
+
+    /**
+     * Helper method for inserting the JSMO JS into a page along with any preload data
+     * @param $data
+     * @param $init_method
+     * @return void
+     */
+    public function injectJSMO($data = null, $init_method = null)
+    {
+
+        echo $this->initializeJavascriptModuleObject();
+        $cmds = [
+            "const module = " . $this->getJavascriptModuleObjectName()
+        ];
+        if (!empty($data)) $cmds[] = "module.data = " . json_encode($data);
+        if (!empty($init_method)) $cmds[] = "module.afterRender(module." . $init_method . ")";
+        ?>
+        <script src="<?= $this->getUrl("assets/jsmo.js", true) ?>"></script>
+        <script>
+            $(function () { <?php echo implode(";\n", $cmds) ?> })
+        </script>
+        <?php
     }
 
     /**
@@ -159,6 +183,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
         }
     }
 
+
     /**
      * Validates code sent via SMS
      * @param $code
@@ -176,30 +201,140 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
         );
         $json = REDCap::getData($params);
         $decoded = current(json_decode($json, true));
+        //TODO Send session data here for initial caching
         return ($decoded['code'] === $code);
     }
 
+    /**
+     * Sanitizes user input in the action queue nested array
+     * @param $payload
+     * @return array|null
+     */
+    public function sanitizeInput($payload): array|string
+    {
+        $sanitizer = new Sanitizer();
+        return $sanitizer->sanitize($payload);
+    }
 
     /**
-     * Helper method for inserting the JSMO JS into a page along with any preload data
-     * @param $data
-     * @param $init_method
-     * @return void
+     * Polling function will call this endpoint.
+     * @param array $payload
+     * @return array
      */
-    public function injectJSMO($data = null, $init_method = null)
+    public function handleActions(array $payload): array
     {
-        echo $this->initializeJavascriptModuleObject();
-        $cmds = [
-            "const module = " . $this->getJavascriptModuleObjectName()
+        try {
+            $max = intval($this->sanitizeInput($payload['maxID'])) ?? 0;
+            $actionQueue = $this->sanitizeInput($payload['actionQueue']) ?? [];
+            $start = hrtime(true);
+
+            if (count($actionQueue)) { //User has actions to process
+                $this->addAction($actionQueue);
+            }
+
+            //If no event queue has been passed, simply return actions
+            $ret = $this->getActions($max);
+            $parsed = $this->parseActions($ret);
+            $stop = hrtime(true);
+            $parsed['serverTime'] = ($stop - $start) / 1000000;
+
+            return $parsed;
+
+        } catch (\Exception $e) {
+            $msg = $e->getMessage();
+            \REDCap::logEvent("Error: $msg");
+            $this->emError("Error: $msg");
+
+            echo json_encode(array(
+                'error' => array(
+                    'msg' => $e->getMessage(),
+                ),
+            ));
+            die;
+        }
+    }
+
+    /**
+     * Parse actions into consumable format
+     * @param array $data
+     * @return array
+     */
+    public function parseActions(array $data): array
+    {
+        $ret = [];
+        $model = [];
+        foreach ($data['data'] as $k => $v) {
+            $model["id"] = $v[0];
+            $model["timestamp"] = $v[1];
+            $test = json_decode($v[3], true) ?? [];
+            $model = array_merge($model, $test);
+            $ret['data'][] = $model;
+        }
+        return $ret;
+    }
+
+    /**
+     * Creates an action in the log table
+     * @param array $actions
+     * @return void
+     * @throws Exception
+     */
+    public function addAction(array $actions): void
+    {
+        try {
+            $this->emDebug("Adding actions", $actions);
+            foreach ($actions as $k => $v) {
+                $action = new Action($this);
+                $action->setValue('message', json_encode($v));
+                $action->save();
+                $this->emDebug("Added action " . $action->getId());
+            }
+        } catch (\Exception $e) {
+            $msg = $e->getMessage();
+            \REDCap::logEvent("Error: $msg");
+            $this->emError("Error: $msg");
+
+            echo json_encode(array(
+                'error' => array(
+                    'msg' => $e->getMessage(),
+                ),
+            ));
+            die;
+        }
+
+    }
+
+    /**
+     * Grab actions from log table
+     * @param int $max
+     * @return array[]
+     */
+    public function getActions(int $max = 0): array
+    {
+        $sql = "select reml.log_id,
+                   reml.timestamp,
+                   reml.record,
+                   reml.message,
+                   remlp1.value as 'payload'
+            from
+                redcap_external_modules_log reml
+            left join redcap_external_modules_log_parameters remlp1 on reml.log_id = remlp1.log_id and remlp1.name='payload'
+            where
+                 reml.record = 'Action'
+            and  reml.project_id is null";
+
+        if ($max)
+            $sql .= " and reml.log_id > $max";
+
+        $proj = $this->getProjectId(); //Will always be null in no auth pages ? TODO: find workaround
+
+        $q = $this->query($sql, []);
+        $results = [];
+        while ($row = db_fetch_row($q)) $results[] = $row;
+
+        return [
+            "data" => $results
         ];
-        if (!empty($data)) $cmds[] = "module.data = " . json_encode($data);
-        if (!empty($init_method)) $cmds[] = "module.afterRender(module." . $init_method . ")";
-        ?>
-        <script src="<?= $this->getUrl("assets/jsmo.js", true) ?>"></script>
-        <script>
-            $(function () { <?php echo implode(";\n", $cmds) ?> })
-        </script>
-        <?php
     }
 
     /**
@@ -240,41 +375,17 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
                 $_SESSION['count']++;
                 break;
             case "getActions":
-                // session_start();
-                // $count = $_SESSION['count'] ?? 0;
-
-                $sql = "select reml.log_id,
-                           reml.timestamp,
-                           reml.record,
-                           remlp1.value as 'payload'
-                    from
-                        redcap_external_modules_log reml
-                    left join redcap_external_modules_log_parameters remlp1 on reml.log_id = remlp1.log_id and remlp1.name='payload'
-                    where
-                         reml.message = 'Action'
-                    and  reml.project_id = ?";
-                $q = $this->query($sql, [$this->getProjectId()]);
-                $results = [];
-                while ($row = db_fetch_row($q)) $results[] = $row;
-                $result = [
-                    "data" => $results
-                ];
+                $this->handleActions($payload);
                 break;
             case "addAction":
-                $this->emDebug("Adding action", $payload);
-                $action = new Action($this);
-                $action->setValue('payload', $payload);
-                $action->save();
-                $result = [
-                    "new_action_id" => $action->getId(),
-                    "data" => $payload
-                ];
-                $this->emDebug("Added action " . $action->getId());
+                $this->addAction($payload);
                 break;
-            case "validateUserPhone":
+            case "validateUserPhone": //TODO: Add server timeout
                 return $this->validateUserPhone($payload);
             case "validateCode":
                 return $this->validateCode($payload);
+            case "handleActions":
+                return $this->handleActions($payload);
             default:
                 // Action not defined
                 throw new Exception ("Action $action is not defined");
