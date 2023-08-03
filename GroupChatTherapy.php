@@ -229,16 +229,16 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
             $start = hrtime(true);
 
             if (count($actionQueue)) { //User has actions to process
-                $this->addAction($actionQueue);
+//                $this->addAction($actionQueue);
             }
 
             //If no event queue has been passed, simply return actions
             $ret = $this->getActions($max);
-            $parsed = $this->parseActions($ret);
-            $stop = hrtime(true);
-            $parsed['serverTime'] = ($stop - $start) / 1000000;
 
-            return $parsed;
+            $stop = hrtime(true);
+            $ret['serverTime'] = ($stop - $start) / 1000000;
+
+            return $ret;
 
         } catch (\Exception $e) {
             $msg = $e->getMessage();
@@ -255,25 +255,6 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
     }
 
     /**
-     * Parse actions into consumable format
-     * @param array $data
-     * @return array
-     */
-    public function parseActions(array $data): array
-    {
-        $ret = [];
-        $model = [];
-        foreach ($data['data'] as $k => $v) {
-            $model["id"] = $v[0];
-            $model["timestamp"] = $v[1];
-            $test = json_decode($v[3], true) ?? [];
-            $model = array_merge($model, $test);
-            $ret['data'][] = $model;
-        }
-        return $ret;
-    }
-
-    /**
      * Creates an action in the log table
      * @param array $actions
      * @return void
@@ -285,6 +266,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
             $this->emDebug("Adding actions", $actions);
             foreach ($actions as $k => $v) {
                 $action = new Action($this);
+                $action->setValue('Foo', 'Bar');
                 $action->setValue('message', json_encode($v));
                 $action->save();
                 $this->emDebug("Added action " . $action->getId());
@@ -308,29 +290,25 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
      * Grab actions from log table
      * @param int $max
      * @return array[]
+     * @throws Exception
      */
     public function getActions(int $max = 0): array
     {
-        $sql = "select reml.log_id,
-                   reml.timestamp,
-                   reml.record,
-                   reml.message,
-                   remlp1.value as 'payload'
-            from
-                redcap_external_modules_log reml
-            left join redcap_external_modules_log_parameters remlp1 on reml.log_id = remlp1.log_id and remlp1.name='payload'
-            where
-                 reml.record = 'Action'
-            and  reml.project_id is null";
-
-        if ($max)
-            $sql .= " and reml.log_id > $max";
-
-        $proj = $this->getProjectId(); //Will always be null in no auth pages ? TODO: find workaround
-
-        $q = $this->query($sql, []);
         $results = [];
-        while ($row = db_fetch_row($q)) $results[] = $row;
+        $project_id = $this->getProjectId();
+        $actions = Action::getActionsAfter($this, $project_id, $max);
+
+        foreach($actions as $v){
+            $action = $v->getAction();
+            if($action['type'] === 'delete') {
+                $target = $action['target'];
+                if(isset($results[$target])){
+                    unset($results[$target]);
+                    continue;
+                }
+            }
+            $results[$v->getId()] = $v->getAction();
+        }
 
         return [
             "data" => $results
@@ -359,6 +337,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
     public function redcap_module_ajax($action, $payload, $project_id, $record, $instrument, $event_id, $repeat_instance,
                                        $survey_hash, $response_id, $survey_queue_hash, $page, $page_full, $user_id, $group_id)
     {
+        $foo = func_get_args();
         switch ($action) {
             case "TestAction":
                 session_start();

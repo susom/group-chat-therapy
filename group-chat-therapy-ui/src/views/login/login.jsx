@@ -118,7 +118,15 @@ export default function Login() {
                 "replyquote": '123',
                 "callout": ["123xyc", "<b>P24</b>"],
             }]
-            jsmoModule.handleActions({maxID: 1275, actionQueue: testActions})
+
+            let testDeleteAction = [{
+                "type": "delete",
+                "target": "1370"
+
+            }];
+
+            jsmoModule.handleActions({maxID: 1370, actionQueue: testDeleteAction})
+            // navigate("/chat");
         } else {
             setError('Something went wrong')
         }
