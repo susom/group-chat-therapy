@@ -113,10 +113,10 @@ export default function Login() {
             let testActions = [{
                 "type": "message",
                 "user": "P123",
-                "body": "food",
+                "body": "<div>food</div>",
                 "recipients": [],
                 "replyquote": '123',
-                "callout": ["123xyc", "P24"],
+                "callout": ["123xyc", "<b>P24</b>"],
             }]
             jsmoModule.handleActions({maxID: 1275, actionQueue: testActions})
         } else {

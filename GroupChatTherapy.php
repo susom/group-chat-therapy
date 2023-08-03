@@ -5,6 +5,7 @@ namespace Stanford\GroupChatTherapy;
 include_once "emLoggerTrait.php";
 require_once "classes/UserSession.php";
 require_once "classes/Action.php";
+require_once "classes/Sanitizer.php";
 require_once "vendor/autoload.php";
 
 use App\User;
@@ -207,53 +208,52 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
     /**
      * Sanitizes user input in the action queue nested array
      * @param $payload
-     * @return array|false
+     * @return array|null
      */
-    public function sanitizeActionQueue($payload)
+    public function sanitizeInput($payload): array|null
     {
-        $ret = [];
-        $args = array(
-            'type' => FILTER_SANITIZE_STRING,
-            'user' => FILTER_SANITIZE_STRING,
-            'body' => FILTER_SANITIZE_STRING,
-            'recipients' => array(
-                'filter' => FILTER_SANITIZE_STRING
-            ),
-            'replyquote' => FILTER_SANITIZE_STRING,
-            'callout' => array(
-                'filter' => FILTER_SANITIZE_STRING
-            )
-        );
-
-        foreach ($payload as $action) {
-            $ret[] = filter_var_array($action, $args);
-        }
-        return $ret;
+        $sanitizer = new Sanitizer();
+        return $sanitizer->sanitize($payload);
     }
 
     /**
-     *
-     * @param int $maxId
+     * Polling function will call this endpoint.
      * @param array $payload
      * @return array
      */
-    public function handleActions(array $payload)
+    public function handleActions(array $payload): array
     {
-        $max = intval(filter_var($payload['maxID'], FILTER_SANITIZE_NUMBER_INT)) ?? 0;
-        $actionQueue = $this->sanitizeActionQueue($payload['actionQueue']) ?? [];
-        $start = hrtime(true);
+        try{
+//            $max = intval(filter_var($payload['maxID'], FILTER_SANITIZE_NUMBER_INT)) ?? 0;
+            $max = intval($this->sanitizeInput($payload['actionQueue'])) ?? [];
+            $actionQueue = $this->sanitizeInput($payload['actionQueue']) ?? [];
+            $start = hrtime(true);
 
-        if (count($actionQueue)) { //User has actions to process
-            $this->addAction($actionQueue);
+            if (count($actionQueue)) { //User has actions to process
+                $this->addAction($actionQueue);
+            }
+
+            //If no event queue has been passed, simply return actions
+            $ret = $this->getActions($max);
+            $parsed = $this->parseActions($ret);
+            $stop = hrtime(true);
+            $parsed['serverTime'] = ($stop - $start) / 1000000;
+
+            return $parsed;
+
+        } catch (\Exception $e) {
+            $msg = $e->getMessage();
+            \REDCap::logEvent("Error: $msg");
+            $this->emError("Error: $msg");
+
+            echo json_encode(array(
+                'error' => array(
+                    'msg' => $e->getMessage(),
+                ),
+            ));
+            die;
         }
 
-        //If no event queue has been passed, simply return actions
-        $ret = $this->getActions($max);
-        $parsed = $this->parseActions($ret);
-        $stop = hrtime(true);
-        $parsed['serverTime'] = ($stop - $start) / 1000000;
-
-        return $parsed;
     }
 
     /**
@@ -261,7 +261,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
      * @param array $data
      * @return array
      */
-    public function parseActions(array $data)
+    public function parseActions(array $data): array
     {
         $ret = [];
         $model = [];
@@ -280,27 +280,14 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
      * @param array $actions
      * @return void
      */
-    public function addAction(array $actions)
+    public function addAction(array $actions): void
     {
-        try {
-            $this->emDebug("Adding actions", $actions);
-            foreach ($actions as $k => $v) {
-                $action = new Action($this);
-                $action->setValue('message', json_encode($v));
-                $action->save();
-                $this->emDebug("Added action " . $action->getId());
-            }
-        } catch (\Exception $e) {
-            $msg = $e->getMessage();
-            \REDCap::logEvent("Error: $msg");
-            $this->emError("Error: $msg");
-
-            echo json_encode(array(
-                'error' => array(
-                    'msg' => $e->getMessage(),
-                ),
-            ));
-            die;
+        $this->emDebug("Adding actions", $actions);
+        foreach ($actions as $k => $v) {
+            $action = new Action($this);
+            $action->setValue('message', json_encode($v));
+            $action->save();
+            $this->emDebug("Added action " . $action->getId());
         }
 
     }
