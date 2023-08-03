@@ -274,7 +274,7 @@ class ASEMLO
                     return !in_array($key,self::PRIMARY_FIXED_COLUMNS)
                         && !is_null($item)
                         && $item !== ''
-                        && $key === 'message';
+                        && $key !== 'message';
                 },
                 ARRAY_FILTER_USE_BOTH
             );

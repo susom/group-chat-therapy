@@ -37,7 +37,8 @@
         "deleteActions",
         "addAction",
         "validateUserPhone",
-        "validateCode"
+        "validateCode",
+        "handleActions"
     ],
 
     "no-auth-ajax-actions": [

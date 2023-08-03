@@ -108,7 +108,17 @@ export default function Login() {
             // callback("validateCode", true);
 
             //TODO DISABLING FOR NOW FOR TESTING UI
-            jsmoModule.validateUserPhone(lastName, phone, callback, errorCallback)
+            // jsmoModule.validateUserPhone(lastName, phone, callback, errorCallback)
+            // jsmoModule.addAction("Testing!")
+            let testActions = [{
+                "type": "message",
+                "user": "P123",
+                "body": "food",
+                "recipients": [],
+                "replyquote": '123',
+                "callout": ["123xyc", "P24"],
+            }]
+            jsmoModule.handleActions({maxID: 1275, actionQueue: testActions})
         } else {
             setError('Something went wrong')
         }
