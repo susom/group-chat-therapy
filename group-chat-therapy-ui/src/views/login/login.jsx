@@ -30,6 +30,7 @@ export default function Login() {
     //TODO DISABLING FOR NOW FOR TESTING UI
     const jsmoModule = ExternalModules.Stanford.GroupChatTherapy
     const navigate = useNavigate()
+
     /**
      * Callback passed to execute react functions in JSMO
      * @param type String : Possible values = 'validateCode' and 'validateUserPhone'
@@ -108,9 +109,9 @@ export default function Login() {
             // callback("validateCode", true);
 
             //TODO DISABLING FOR NOW FOR TESTING UI
-            // jsmoModule.validateUserPhone(lastName, phone, callback, errorCallback)
+            jsmoModule.validateUserPhone(lastName, phone, callback, errorCallback)
             // jsmoModule.addAction("Test123");
-            jsmoModule.getActions();
+            // jsmoModule.getActions();
 
         } else {
             setError('Something went wrong')

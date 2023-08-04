@@ -10,7 +10,22 @@ body {
     line-height: 0.571429 !important;
 }
 
-.ant-transfer-list .ant-transfer-list-body {
-    overflow-x:scroll;
-    max-width: 41vw;
+/*.ant-transfer-list .ant-transfer-list-body {*/
+/*    overflow-x:scroll;*/
+/*    max-width: 41vw;*/
+/*}*/
+
+
+.admin-table {
+    max-width: 1000px;
+    margin:auto;
+
+}
+
+@media only screen and (max-width: 600px) {
+    .admin-table {
+        max-width: 95%;
+
+        /*color:blue;*/
+    }
 }

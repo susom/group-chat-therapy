@@ -8,7 +8,7 @@ import Badge from "react-bootstrap/Badge";
 import Card from "react-bootstrap/Card";
 import Button from "react-bootstrap/Button";
 import { Table, Tag, Transfer } from "antd";
-
+import {TableTransfer} from "../../components/TableTransfer/TableTransfer.jsx";
 import './landing.css';
 
 const leftTableColumns = [
@@ -20,11 +20,7 @@ const leftTableColumns = [
         dataIndex: 'tag',
         title: 'Tag',
         render: (tag) => <Tag>{tag}</Tag>,
-    },
-    {
-        dataIndex: 'description',
-        title: 'Description',
-    },
+    }
 ];
 
 const rightTableColumns = [
@@ -66,9 +62,6 @@ export default function Landing() {
         setTargetKeys(tempTargetKeys);
     }, [])
 
-    const handleChange = (newTargetKeys) => {
-        setTargetKeys(newTargetKeys)
-    }
 
     const renderList = () => {
         return (
@@ -145,56 +138,6 @@ export default function Landing() {
         )
     }
 
-    const TableTransfer = ({ leftColumns, rightColumns, ...restProps }) => (
-        <Transfer {...restProps}>
-            {({
-                  direction,
-                  filteredItems,
-                  onItemSelectAll,
-                  onItemSelect,
-                  selectedKeys: listSelectedKeys,
-                  disabled: listDisabled,
-              }) => {
-                const columns = direction === 'left' ? leftColumns : rightColumns;
-                const rowSelection = {
-                    getCheckboxProps: (item) => ({
-                        disabled: listDisabled || item.disabled,
-                    }),
-                    onSelectAll(selected, selectedRows) {
-                        const treeSelectedKeys = selectedRows
-                            .filter((item) => !item.disabled)
-                            .map(({ key }) => key);
-                        const diffKeys = selected
-                            ? difference(treeSelectedKeys, listSelectedKeys)
-                            : difference(listSelectedKeys, treeSelectedKeys);
-                        onItemSelectAll(diffKeys, selected);
-                    },
-                    onSelect({ key }, selected) {
-                        onItemSelect(key, selected);
-                    },
-                    selectedRowKeys: listSelectedKeys,
-                };
-                return (
-                    <Table
-                        rowSelection={rowSelection}
-                        columns={columns}
-                        dataSource={filteredItems}
-                        size="small"
-                        style={{
-                            pointerEvents: listDisabled ? 'none' : undefined,
-                        }}
-                        onRow={({ key, disabled: itemDisabled }) => ({
-                            onClick: () => {
-                                if (itemDisabled || listDisabled) return;
-                                onItemSelect(key, !listSelectedKeys.includes(key));
-                            },
-                        })}
-                    />
-                );
-            }}
-        </Transfer>
-    )
-
     return (
         <>
             <Container fluid>
@@ -209,7 +152,7 @@ export default function Landing() {
 
 
             </Container>
-            <div >
+            <div className="admin-table">
                 <TableTransfer
                     dataSource={mockData}
                     targetKeys={targetKeys}
