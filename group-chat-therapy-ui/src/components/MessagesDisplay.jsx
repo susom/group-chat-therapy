@@ -22,7 +22,7 @@ export default function MessagesDisplay({messages, replyTo, setReplyTo}) {
     }
 
     const scrollToBottom = () => {
-        // messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
     }
 
     useEffect(scrollToBottom, [messages]);

@@ -104,21 +104,11 @@ export default function Login() {
         } else if (lastName && phone) { // User needs to be verified as part of study, sent OTP
             setLoading(true);
 
-            //TODO TEMPORARY PLACEMENT FOR TESTING UI
-            // callback("validateCode", true);
-
             //TODO DISABLING FOR NOW FOR TESTING UI
             // jsmoModule.validateUserPhone(lastName, phone, callback, errorCallback)
-            // jsmoModule.addAction("Testing!")
-            let testActions = [{
-                "type": "message",
-                "user": "P123",
-                "body": "<div>food</div>",
-                "recipients": [],
-                "replyquote": '123',
-                "callout": ["123xyc", "<b>P24</b>"],
-            }]
-            jsmoModule.handleActions({maxID: 1275, actionQueue: testActions})
+
+            //TODO TEMPORARY PLACEMENT FOR TESTING UI
+            callback("validateCode", true);
         } else {
             setError('Something went wrong')
         }
