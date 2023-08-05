@@ -7,7 +7,7 @@ import { XSquare, Plus, Trash, ReplyFill } from 'react-bootstrap-icons';
 import {SessionContext} from "./../contexts/Session.jsx";
 import ReplyMessage from "./ReplyMessage.jsx";
 
-export default function Message({ message, onReply, showReactions = true, showReply = true, isReply = false, onCloseReply, replyMessage, className}) {
+export default function Message({ message, onReply, showReactions = true, showReply = true, isReply = false, onCloseReply, replyMessage, className = ""}) {
     const session_context           = useContext(SessionContext);
     const participantsLookUp        = session_context.participantsLookUp;
     const participant_id            = session_context.participantID;
@@ -82,7 +82,6 @@ export default function Message({ message, onReply, showReactions = true, showRe
         // Set up the Fake UI
     }
 
-
     const handleReactionClick = () => {
         setShowReactionPopup(true);
         timeoutRef.current = setTimeout(() => {
@@ -101,19 +100,23 @@ export default function Message({ message, onReply, showReactions = true, showRe
     };
 
     return (
-        <dl className={`${message.type} ${participant_id === message.user ? 'self' : ''} ${message.isFake ? 'fake' : ''} ${className}`}>
+        <dl className={`${message.type} ${participant_id === message.user ? 'self' : ''} ${message.isFake ? 'fake' : ''} ${className} ${message.containsMention ? "callout" : ""}`}>
             <dt className={'participant'}>
                 {isReply ? `Replying to ${participantsLookUp[message.user]}` : participantsLookUp[message.user]}
             </dt>
 
-            <dd className={'message_body'}>
+            <dd className={`message_body`}>
                 {replyMessage && (
                     <ReplyMessage
                         message={replyMessage}
                         onCloseReply={onCloseReply}
                     />
                 )}
-                {message.body}
+                {message.containsMention ? (
+                    <div dangerouslySetInnerHTML={{ __html: message.body }}/>
+                ) : (
+                    <div>{message.body}</div>
+                )}
             </dd>
             <dd className={'timestamp'}>{ message.isFake ? 'Sending...' : formatTime(message.timestamp) }</dd>
             <dd className={'reactions'}>{reactions && reactions.filter(reaction => reaction.target === message.id).map(reaction => (

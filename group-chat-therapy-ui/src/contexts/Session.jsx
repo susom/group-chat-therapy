@@ -35,7 +35,7 @@ export const SessionContextProvider = ({children}) => {
     const [participants, setParticipants]                   = useState([]);
     const [participantsLookUp, setParticipantsLookUp]       = useState({}); //map participant_id to display name
     const [allChats, setAllChats]                           = useState({"groupChat" : []}); //same as group chat but direct
-
+    const [mentionCounts, setMentionCounts]                 = useState({});
 
     // INIT SESSION START WITH LOGIN PAYLOAD
     useEffect(() => {
@@ -95,6 +95,19 @@ export const SessionContextProvider = ({children}) => {
         }
     }, [isPollingActions, isPollingPaused]);
 
+    // KEEP TRACK OF MENTIONS COUNTS FOR CURRENT PARTICIPANT
+    useEffect(() => {
+        const newMentionCounts = Object.keys(allChats).reduce((accumulator, chatId) => {
+            const chatMessages = allChats[chatId];
+            const mentionCount = chatMessages.reduce((count, message) => {
+                return message.containsMention ? count + 1 : count;
+            }, 0);
+            accumulator[chatId] = mentionCount;
+            return accumulator;
+        }, {});
+
+        setMentionCounts(newMentionCounts);
+    }, [allChats]);
 
     // USE this to call JSMO for AJAX
     const callAjax = (payload, actionType) => {
@@ -116,6 +129,30 @@ export const SessionContextProvider = ({children}) => {
 
 
     // ACTIONS PROCESSING
+    function isMentioned(message, participantsLookUp, sanitize = false) {
+        const pattern       = /@(\w+)/g;
+        let containsMention = false;
+        let newBody         = message.body;
+
+        if (message && typeof message.body === 'string') {
+            newBody = message.body.replace(pattern, (match) => {
+                const cleanMention = match.substring(1).trim();
+                console.log("Message body: ", message.body);  // Log the original message body
+                console.log("Found mention: ", cleanMention); // Log the mention found in the message
+                const participantValues = Object.values(participantsLookUp);
+                if (participantValues.includes(cleanMention)) {
+                    console.log("Matched mention with participant: ", cleanMention); // Log when a mention matches a participant
+                    containsMention = true;
+                    return sanitize ? match : `<b>${match}</b>`; // If sanitizing, return the match with '@', else return it with '<b>'
+                } else {
+                    return sanitize ? cleanMention : match; // if sanitizing and it's not a valid participant, remove '@'
+                }
+            });
+        }
+
+        return { body: newBody, containsMention: containsMention };
+    }
+
     const sendAction = async (new_action) => {
         // Create a copy of the new action
         // then delete these added fake properties for temporary display
@@ -174,18 +211,22 @@ export const SessionContextProvider = ({children}) => {
                 break;
 
             case 'message':
+                const { body, containsMention } = isMentioned(action, participantsLookUp);
+
                 if (!newAllChats[allChatsKey]) {
                     newAllChats[allChatsKey] = [];
                 }
+
                 newAllChats[allChatsKey].push({
                     id: action.id,
                     user: action.user,
-                    body: action.body,
+                    body: body,
                     timestamp: action.timestamp,
                     read_by: [],
                     reactions: [],
                     target: action.target,
-                    type: 'message'
+                    type: 'message',
+                    containsMention: containsMention
                 });
 
                 updatedActionsArray = [...actionsArray, action];
@@ -272,7 +313,7 @@ export const SessionContextProvider = ({children}) => {
         const new_max_id        = new_actions && new_actions[new_actions.length-1]?.id;
         const server_time       = newActions.serverTime;
 
-        console.log("newActions", newActions);
+        // console.log("newActions", newActions);
 
         //actionQueue sent, now Empty it
         clearActionQueue();
@@ -380,7 +421,9 @@ export const SessionContextProvider = ({children}) => {
                                         participants,
                                         allChats,
                                         sendAction,
-                                        removeMessage
+                                        removeMessage,
+                                        isMentioned,
+                                        mentionCounts
         }}>
             {children}
         </SessionContext.Provider>

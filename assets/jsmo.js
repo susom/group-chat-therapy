@@ -9,28 +9,28 @@
         const users = ["123xyz", "abc456", "def789"];
         const notice_arr = ["Foo has left the session", "Bar has joined the session"];
         const messageBodies = [
-            "Hi there!",
+            "@Gilligan Hi there!",
             "Sounds great!",
             "Absolutely!",
             "Good point!",
             "Interesting.",
-            "I agree.",
+            "@Gilligan I agree.",
             "Definitely!",
             "Let's do that.",
             "Sure thing.",
-            "Hmm, let's see.",
+            "@Gilligan Hmm, let's see.",
             "How's your day been so far?",
             "That's a really insightful observation.",
             "I've been looking at different strategies recently.",
             "Can we explore your last point in more detail?",
             "How about we try a different approach?",
-            "Could you elaborate on that point?",
+            "@Gilligan Could you elaborate on that point?",
             "What are your thoughts on this matter?",
             "How have you been feeling about your progress?",
-            "I just read an interesting article about cognitive behavior therapy. I think it has some points that could apply to our discussion.",
+            "@Gilligan I just read an interesting article about cognitive behavior therapy. I think it has some points that could apply to our discussion.",
             "I'm really pleased with the progress we've made so far. You're showing a lot of resilience and perseverance.",
             "Let's discuss some coping mechanisms for when you're feeling stressed or overwhelmed. It might be helpful to have some strategies in place.",
-            "Your thoughts and feelings are important. Don't hesitate to share anything that comes to mind, even if it seems unrelated.",
+            "@Gilligan Your thoughts and feelings are important. Don't hesitate to share anything that comes to mind, even if it seems unrelated.",
             "Remember, there's no rush in this process. It's about making sustainable changes, not instant fixes.",
             "It seems like you're dealing with a lot right now. I want to remind you that it's okay to take a step back when you need to."
         ];
@@ -181,7 +181,7 @@
          * @param setStateVarCallBack
          */
         handleActions: function (payload, setStateVarCallBack) {
-            console.log("posting actionsQueue", payload);
+            // console.log("posting actionsQueue", payload);
 
             module.ajax('handleActions', payload).then(function (response) {
                 const fake_data     = generateFakeData(payload.maxID); // Use fake data instead of the AJAX call

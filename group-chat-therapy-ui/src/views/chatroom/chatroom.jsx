@@ -26,6 +26,8 @@ export default function ChatRoom() {
     const sessionContextAllChats            = session_context.allChats;
     const [allChats, setAllChats]           = useState({ ...sessionContextAllChats });
     const [selectedChat, setSelectedChat]   = useState('groupChat');
+    const sessionContextMentionCounts       = session_context.mentionCounts;
+    const [mentionCounts, setMentionCounts] = useState({ ...sessionContextMentionCounts });
 
     //MESSAGE HANDLING
     const [message, setMessage]                     = useState('');
@@ -34,6 +36,9 @@ export default function ChatRoom() {
     const [currentWord, setCurrentWord]             = useState('');
     const [replyTo, setReplyTo] = useState(null);
 
+    useEffect(() => {
+        setMentionCounts({ ...sessionContextMentionCounts });
+    }, [sessionContextMentionCounts]);
 
     useEffect(() => {
         setAllChats({ ...sessionContextAllChats });
@@ -61,6 +66,9 @@ export default function ChatRoom() {
             const duration  = (endTime - startMessageTime) + "ms";
             const timestamp = new Date().toISOString();
 
+            // Sanitize the user input
+            const { body: sanitizedBody } = session_context.isMentioned({ body: message }, session_context.participantsLookUp, true);
+            console.log("Sanitized message: ", sanitizedBody); // Log the sanitized message
             // Prepare your payload here
             const newAction = {
                 id : 12345,
@@ -68,14 +76,13 @@ export default function ChatRoom() {
 
                 client_ts : timestamp,
                 type : "message",
-                body : message,
+                body : sanitizedBody,  // Use the sanitized message
                 user : participant_id,
                 recipients : selectedChat === 'groupChat' ? [] : [selectedChat],
                 time_to_complete : duration,
                 character_history : keystrokes,
                 target: replyTo || null
             };
-
 
             // Add the message to the local chat history
             setAllChats(prevChats => {
@@ -97,6 +104,7 @@ export default function ChatRoom() {
             setReplyTo(null);
         }
     };
+
 
     return (
         <Container className={"chat_room"}>
@@ -130,7 +138,10 @@ export default function ChatRoom() {
                                 <Col md={1} xs={12}>
                                     <Nav variant="pills" className="flex-column mt-2">
                                         <Nav.Item>
-                                            <Nav.Link eventKey="groupChat"><PeopleFill color="white" size={20} /></Nav.Link>
+                                            <Nav.Link eventKey="groupChat">
+                                                <PeopleFill color="white" size={20} />
+                                                {mentionCounts["groupChat"] > 0 && <span className="badge">{mentionCounts["groupChat"]}</span>}
+                                            </Nav.Link>
                                         </Nav.Item>
                                         {Object.keys(allChats).map((chatKey, index) => {
                                             // Skip the group chat, as it's already been handled
@@ -140,7 +151,10 @@ export default function ChatRoom() {
                                             const participantNames  = participantIDs.map(id => participant_lookup[id]).join(', ');
                                             return (
                                                 <Nav.Item key={index}>
-                                                    <Nav.Link eventKey={chatKey}><Person color="gray" size={20} /></Nav.Link>
+                                                    <Nav.Link eventKey={chatKey}>
+                                                        <Person color="gray" size={20} />
+                                                        {mentionCounts[chatKey] > 0 && <span className="badge">{mentionCounts[chatKey]}</span>}
+                                                    </Nav.Link>
                                                 </Nav.Item>
                                             );
                                         })}

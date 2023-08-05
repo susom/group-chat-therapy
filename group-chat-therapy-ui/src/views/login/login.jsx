@@ -52,7 +52,7 @@ export default function Login() {
                     whiteboard : "",
 
                     participants :  [
-                        {participant_id: "123xyz" , display_name : "Mr. Therapist", status : "online/offline"},
+                        {participant_id: "123xyz" , display_name : "Mr_Therapist", status : "online/offline"},
                         {participant_id: "abc456" , display_name : "Gilligan", status : "online/offline"},
                         {participant_id: "def789" , display_name : "Wally", status : "online/offline"}
                     ]

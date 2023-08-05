@@ -289,6 +289,23 @@ main {
 }
 
 
+.chat_window .message.callout .message_body{
+
+}
+.chat_window .message.callout .message_body b {
+    color:darkviolet;
+}
+
+.badge {
+    background-color: red;
+    color: white;
+    border-radius: 50%;
+    padding: 2px 5px;
+    font-size: 0.7em;
+    position: relative;
+    top: -10px;
+    left: -5px;
+}
 
 .participant_info .card,
 .whiteboard .card {
