@@ -1,8 +1,9 @@
 main {
-
+    border:1px solid blue;
 }
 
 .chat_room{
+    border:1px solid red;
 }
 
 .chat_room > * {
@@ -10,14 +11,15 @@ main {
 }
 
 .chat_details {
-    /*border:1px solid blue;*/
+    border:1px solid blue;
 }
 
 .participant_info {
-    /*border:1px solid green;*/
+    
 }
 
 .chat_ui {
+    border:1px solid purple;
 }
 
 .chat_window {

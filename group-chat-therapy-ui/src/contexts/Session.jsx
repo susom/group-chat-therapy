@@ -137,11 +137,8 @@ export const SessionContextProvider = ({children}) => {
         if (message && typeof message.body === 'string') {
             newBody = message.body.replace(pattern, (match) => {
                 const cleanMention = match.substring(1).trim();
-                console.log("Message body: ", message.body);  // Log the original message body
-                console.log("Found mention: ", cleanMention); // Log the mention found in the message
                 const participantValues = Object.values(participantsLookUp);
                 if (participantValues.includes(cleanMention)) {
-                    console.log("Matched mention with participant: ", cleanMention); // Log when a mention matches a participant
                     containsMention = true;
                     return sanitize ? match : `<b>${match}</b>`; // If sanitizing, return the match with '@', else return it with '<b>'
                 } else {

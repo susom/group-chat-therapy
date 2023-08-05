@@ -109,6 +109,8 @@ export default function Login() {
 
             //TODO TEMPORARY PLACEMENT FOR TESTING UI
             callback("validateCode", true);
+
+            // jsmoModule.handleActions({maxID: 1370, actionQueue: testDeleteAction})
         } else {
             setError('Something went wrong')
         }

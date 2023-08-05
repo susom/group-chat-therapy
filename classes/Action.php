@@ -39,8 +39,12 @@ class Action extends ASEMLO
 
     }
 
-    public function getActionType() {
-        // What kind of action was it?
+    public function getAction() {
+        $message = $this->getValue('message');
+        $decoded = json_decode($message, true);
+        $decoded['timestamp'] = $this->getValue('timestamp');
+        $decoded['id'] = $this->getId();
+        return $decoded;
     }
 
 
@@ -77,7 +81,7 @@ class Action extends ASEMLO
         $type = self::OBJECT_NAME;
         $filter_clause = "project_id = ? and log_id > ? order by log_id asc";
         $objs = self::queryObjects(
-            $module, $type, $filter_clause, [$project_id, $action_id]
+            $module, $filter_clause, [$project_id, $action_id]
         );
         $count = count($objs);
         if ($count > 0) {
