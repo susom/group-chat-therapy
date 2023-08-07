@@ -2,7 +2,7 @@ import React, {useState, useContext, useEffect} from "react";
 import {Link} from "react-router-dom";
 
 import { Container, Row, Col, Tab, Nav, Form, Button, Card } from 'react-bootstrap';
-import { PeopleFill, People, Person } from 'react-bootstrap-icons';
+import { PeopleFill, Send, People, Person } from 'react-bootstrap-icons';
 import {SessionContext} from "../../contexts/Session.jsx";
 import {getAllSessions, deleteSession, deleteAllData} from "../../components/database/dexie.js";
 
@@ -175,7 +175,7 @@ export default function ChatRoom() {
                                     className={`order-last order-md-first`}
                                 >
                                     <Col md={1} xs={12}>
-                                        <Nav variant="pills" className="flex-column mt-2 mb-5 chat_tab">
+                                        <Nav variant="pills" className="flex-md-column flex-xs-row mt-2 chat_tab">
                                             <Nav.Item>
                                                 <Nav.Link eventKey="groupChat">
                                                     <People  size={20} title={`Group Chat`}/>
@@ -199,6 +199,7 @@ export default function ChatRoom() {
                                             })}
                                         </Nav>
                                     </Col>
+
                                     <Col md={11} xs={12}>
                                         <Tab.Content>
                                             <Tab.Pane eventKey="groupChat">
@@ -227,7 +228,7 @@ export default function ChatRoom() {
                                                     />
                                                 </Col>
                                                 <Col xs="2">
-                                                    <Button variant="primary" type="submit" className="w-100">Send</Button>
+                                                    <Button variant="primary" type="submit" className="w-100 send_message"><Send size={20}  title={`Send Message`}/></Button>
                                                 </Col>
                                             </Row>
                                         </Form>

@@ -153,7 +153,7 @@ export default function Login() {
 
                             {! showCode &&
                                 <>
-                                <InputGroup hasValidation className={`mb-3 ${showCode ? 'code-greyed' : 'code-showed'}`}>
+                                <InputGroup hasValidation className={`login_input mb-3 ${showCode ? 'code-greyed' : 'code-showed'}`}>
                                     <InputGroup.Text id="lastname">@</InputGroup.Text>
                                     <Form.Control
                                         onChange={e => setLastName(e?.target?.value)}
@@ -177,6 +177,7 @@ export default function Login() {
                                         disabled={showCode}
                                         placeholder="+1"
                                         onChange={phone => setPhone(phone)}
+                                        className={`login_input`}
                                     />
                                 </InputGroup>
                             </>

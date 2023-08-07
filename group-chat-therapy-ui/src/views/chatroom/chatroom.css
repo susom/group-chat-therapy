@@ -37,7 +37,7 @@
 
 .chat_window .chat_window_inner {
     margin:0;
-    padding:20px 0 20px;
+    padding:20px 0 10px;
     overflow:hidden;
 }
 
@@ -374,6 +374,10 @@
 
 .chat_tab nav-pills .nav-link.active svg {
     color:#fff;
+}
+
+.send_message {
+    padding:1rem;
 }
 
 .badge {
