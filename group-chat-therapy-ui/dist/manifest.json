@@ -1,14 +1,196 @@
 {
   "index.css": {
-    "file": "assets/index-bc3fcf35.css",
+    "file": "assets/index-affcff0a.css",
     "src": "index.css"
   },
   "index.html": {
-    "css": [
-      "assets/index-bc3fcf35.css"
+    "assets": [
+      "assets/plus-white-8f42f5b8.svg",
+      "assets/minus-white-6452929b.svg",
+      "assets/fa-regular-400-79d08806.eot",
+      "assets/fa-regular-400-e42a8844.woff2",
+      "assets/fa-regular-400-cb9e9e69.woff",
+      "assets/fa-regular-400-e8711bbb.ttf",
+      "assets/fa-regular-400-be0a0849.svg",
+      "assets/fa-solid-900-373c04fd.eot",
+      "assets/fa-solid-900-9834b82a.woff2",
+      "assets/fa-solid-900-3f6d3488.woff",
+      "assets/fa-solid-900-af639750.ttf",
+      "assets/fa-solid-900-9674eb1b.svg",
+      "assets/fa-brands-400-e4299464.eot",
+      "assets/fa-brands-400-8ea87917.woff2",
+      "assets/fa-brands-400-f9217f66.woff",
+      "assets/fa-brands-400-cda59d6e.ttf",
+      "assets/fa-brands-400-a3b98177.svg",
+      "assets/check-0c7ed28f.svg",
+      "assets/arrow-down-cdc9235b.svg",
+      "assets/caret-right-eceba0a9.svg",
+      "assets/download-3f54b191.svg",
+      "assets/arrow-up-right-13df5cee.svg",
+      "assets/lock-418ac073.svg",
+      "assets/lock-solid-9f432732.svg",
+      "assets/caret-down-c9c1f2d7.svg",
+      "assets/video-e48eb810.svg",
+      "assets/arrow-right-85074a49.svg",
+      "assets/caret-down-black-bea9372e.svg",
+      "assets/hamburger-black-ffd19929.svg",
+      "assets/close-black-d9f54ddc.svg",
+      "assets/hamburger-white-1c8c8e86.svg",
+      "assets/close-white-4b230d92.svg",
+      "assets/caret-down-white-8847fd48.svg",
+      "assets/plus-black-d51163d9.svg",
+      "assets/minus-black-5fdd4a70.svg",
+      "assets/icon-search-99974394.svg"
     ],
-    "file": "assets/index-b0ad8154.js",
+    "css": [
+      "assets/index-affcff0a.css"
+    ],
+    "file": "assets/index-add2f8f9.js",
     "isEntry": true,
     "src": "index.html"
+  },
+  "src/assets/assets/arrow-down.svg": {
+    "file": "assets/arrow-down-cdc9235b.svg",
+    "src": "src/assets/assets/arrow-down.svg"
+  },
+  "src/assets/assets/arrow-right.svg": {
+    "file": "assets/arrow-right-85074a49.svg",
+    "src": "src/assets/assets/arrow-right.svg"
+  },
+  "src/assets/assets/arrow-up-right.svg": {
+    "file": "assets/arrow-up-right-13df5cee.svg",
+    "src": "src/assets/assets/arrow-up-right.svg"
+  },
+  "src/assets/assets/caret-down-black.svg": {
+    "file": "assets/caret-down-black-bea9372e.svg",
+    "src": "src/assets/assets/caret-down-black.svg"
+  },
+  "src/assets/assets/caret-down-white.svg": {
+    "file": "assets/caret-down-white-8847fd48.svg",
+    "src": "src/assets/assets/caret-down-white.svg"
+  },
+  "src/assets/assets/caret-down.svg": {
+    "file": "assets/caret-down-c9c1f2d7.svg",
+    "src": "src/assets/assets/caret-down.svg"
+  },
+  "src/assets/assets/caret-right.svg": {
+    "file": "assets/caret-right-eceba0a9.svg",
+    "src": "src/assets/assets/caret-right.svg"
+  },
+  "src/assets/assets/check.svg": {
+    "file": "assets/check-0c7ed28f.svg",
+    "src": "src/assets/assets/check.svg"
+  },
+  "src/assets/assets/close-black.svg": {
+    "file": "assets/close-black-d9f54ddc.svg",
+    "src": "src/assets/assets/close-black.svg"
+  },
+  "src/assets/assets/close-white.svg": {
+    "file": "assets/close-white-4b230d92.svg",
+    "src": "src/assets/assets/close-white.svg"
+  },
+  "src/assets/assets/download.svg": {
+    "file": "assets/download-3f54b191.svg",
+    "src": "src/assets/assets/download.svg"
+  },
+  "src/assets/assets/fa-brands-400.eot": {
+    "file": "assets/fa-brands-400-e4299464.eot",
+    "src": "src/assets/assets/fa-brands-400.eot"
+  },
+  "src/assets/assets/fa-brands-400.svg": {
+    "file": "assets/fa-brands-400-a3b98177.svg",
+    "src": "src/assets/assets/fa-brands-400.svg"
+  },
+  "src/assets/assets/fa-brands-400.ttf": {
+    "file": "assets/fa-brands-400-cda59d6e.ttf",
+    "src": "src/assets/assets/fa-brands-400.ttf"
+  },
+  "src/assets/assets/fa-brands-400.woff": {
+    "file": "assets/fa-brands-400-f9217f66.woff",
+    "src": "src/assets/assets/fa-brands-400.woff"
+  },
+  "src/assets/assets/fa-brands-400.woff2": {
+    "file": "assets/fa-brands-400-8ea87917.woff2",
+    "src": "src/assets/assets/fa-brands-400.woff2"
+  },
+  "src/assets/assets/fa-regular-400.eot": {
+    "file": "assets/fa-regular-400-79d08806.eot",
+    "src": "src/assets/assets/fa-regular-400.eot"
+  },
+  "src/assets/assets/fa-regular-400.svg": {
+    "file": "assets/fa-regular-400-be0a0849.svg",
+    "src": "src/assets/assets/fa-regular-400.svg"
+  },
+  "src/assets/assets/fa-regular-400.ttf": {
+    "file": "assets/fa-regular-400-e8711bbb.ttf",
+    "src": "src/assets/assets/fa-regular-400.ttf"
+  },
+  "src/assets/assets/fa-regular-400.woff": {
+    "file": "assets/fa-regular-400-cb9e9e69.woff",
+    "src": "src/assets/assets/fa-regular-400.woff"
+  },
+  "src/assets/assets/fa-regular-400.woff2": {
+    "file": "assets/fa-regular-400-e42a8844.woff2",
+    "src": "src/assets/assets/fa-regular-400.woff2"
+  },
+  "src/assets/assets/fa-solid-900.eot": {
+    "file": "assets/fa-solid-900-373c04fd.eot",
+    "src": "src/assets/assets/fa-solid-900.eot"
+  },
+  "src/assets/assets/fa-solid-900.svg": {
+    "file": "assets/fa-solid-900-9674eb1b.svg",
+    "src": "src/assets/assets/fa-solid-900.svg"
+  },
+  "src/assets/assets/fa-solid-900.ttf": {
+    "file": "assets/fa-solid-900-af639750.ttf",
+    "src": "src/assets/assets/fa-solid-900.ttf"
+  },
+  "src/assets/assets/fa-solid-900.woff": {
+    "file": "assets/fa-solid-900-3f6d3488.woff",
+    "src": "src/assets/assets/fa-solid-900.woff"
+  },
+  "src/assets/assets/fa-solid-900.woff2": {
+    "file": "assets/fa-solid-900-9834b82a.woff2",
+    "src": "src/assets/assets/fa-solid-900.woff2"
+  },
+  "src/assets/assets/hamburger-black.svg": {
+    "file": "assets/hamburger-black-ffd19929.svg",
+    "src": "src/assets/assets/hamburger-black.svg"
+  },
+  "src/assets/assets/hamburger-white.svg": {
+    "file": "assets/hamburger-white-1c8c8e86.svg",
+    "src": "src/assets/assets/hamburger-white.svg"
+  },
+  "src/assets/assets/icon-search.svg": {
+    "file": "assets/icon-search-99974394.svg",
+    "src": "src/assets/assets/icon-search.svg"
+  },
+  "src/assets/assets/lock-solid.svg": {
+    "file": "assets/lock-solid-9f432732.svg",
+    "src": "src/assets/assets/lock-solid.svg"
+  },
+  "src/assets/assets/lock.svg": {
+    "file": "assets/lock-418ac073.svg",
+    "src": "src/assets/assets/lock.svg"
+  },
+  "src/assets/assets/minus-black.svg": {
+    "file": "assets/minus-black-5fdd4a70.svg",
+    "src": "src/assets/assets/minus-black.svg"
+  },
+  "src/assets/assets/minus-white.svg": {
+    "file": "assets/minus-white-6452929b.svg",
+    "src": "src/assets/assets/minus-white.svg"
+  },
+  "src/assets/assets/plus-black.svg": {
+    "file": "assets/plus-black-d51163d9.svg",
+    "src": "src/assets/assets/plus-black.svg"
+  },
+  "src/assets/assets/plus-white.svg": {
+    "file": "assets/plus-white-8f42f5b8.svg",
+    "src": "src/assets/assets/plus-white.svg"
+  },
+  "src/assets/assets/video.svg": {
+    "file": "assets/video-e48eb810.svg",
+    "src": "src/assets/assets/video.svg"
   }
 }

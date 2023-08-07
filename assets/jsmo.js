@@ -244,8 +244,8 @@
                 title : "Alcohol Intervention",
                 description : "Group Session Chat for Dudes",
                 date : "2023-07-21",
-                time_start : 1100,
-                time_end : 1300,
+                time_start : "11:30 AM",
+                time_end : "01:30 PM",
                 therapist : "123xyz",
                 whiteboard : motivationalMessages[Math.floor(Math.random() * motivationalMessages.length)],
 

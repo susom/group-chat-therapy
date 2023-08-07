@@ -46,8 +46,8 @@ export default function Login() {
                     title : "Alcohol Intervention",
                     description : "Group Session Chat for Dudes",
                     date : "2023-07-21",
-                    time_start : 1100,
-                    time_end : 1300,
+                    time_start : "11:00 AM",
+                    time_end : "01:00 PM",
                     therapist : "123xyz",
                     whiteboard : "",
 

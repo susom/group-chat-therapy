@@ -1,9 +1,9 @@
-main {
-    border:1px solid blue;
+#root {
+    height:100vh;
 }
 
 .chat_room{
-    border:1px solid red;
+    margin:20px auto;
 }
 
 .chat_room > * {
@@ -11,25 +11,28 @@ main {
 }
 
 .chat_details {
-    border:1px solid blue;
+
 }
 
 .participant_info {
-    
+
 }
 
 .chat_ui {
-    border:1px solid purple;
+
 }
 
 .chat_window {
-    border:1px solid #999;
-    border-radius:3px;
+    border:2px solid #ccc;
+    border-radius:5px;
     margin:0  0 20px 0;
     padding:20px;
     min-height:500px;
     max-height:500px;
     overflow-y:scroll;
+    background:#D1C1E9;
+    /*background:#D4D1D1;*/
+    /*background:#DAD7CB;*/
 }
 
 .chat_window .chat_window_inner {
@@ -144,7 +147,7 @@ main {
 }
 
 .chat_window .notice {
-    font-size:85%;
+    font-size:92%;
     width:100%;
     max-width:initial;
     border:none;
@@ -169,9 +172,9 @@ main {
 
 
 .chat_window .message dt {
-    font-size:85%;
+    font-size:77%;
     position:absolute;
-    top:-20px; left:0;
+    top:-22px; left:0;
 }
 
 .chat_window .message .timestamp {
@@ -184,6 +187,7 @@ main {
 
 .chat_window .message .message_body {
     margin-bottom:0;
+    font-size: 92%;
 }
 
 .chat_window .message.self {
@@ -298,15 +302,89 @@ main {
     color:darkviolet;
 }
 
+
+
+.chat_details .chat_date {
+    float:left;
+    width:135px;
+    margin-right:30px;
+    margin-left:initial;
+}
+
+.chat_details .chat_date .su-date-stacked{
+    width:135px;
+    max-width:initial;
+    padding:10px 20px;
+}
+
+.chat_details h2 {
+    margin:0;
+}
+
+.chat_details p {
+    margin:0 0 5px;
+}
+
+.chat_details ul {
+    margin:0; padding:0;
+    list-style:none;
+}
+
+.chat_details li {
+    margin:0;
+}
+
+.whiteboard {
+    background:#fff;
+    border-radius:5px;
+    margin-bottom:20px;
+}
+
+.whiteboard .card-title {
+    font-size:120%;
+}
+
+.whiteboard .card-text:last-child{
+    margin-bottom:10px;
+}
+
+.chat_input {
+    max-width:initial;
+}
+
+.chat_tab .nav-item {
+    margin-bottom:10px;
+    text-align:right;
+}
+
+.chat_tab .nav-link{
+    border-radius: 50px;
+    height: 40px;
+    width: 40px;
+    padding: 10px;
+    text-align: center;
+    color:gray;
+    display: inline-block;
+    position:relative;
+}
+
+.chat_tab.nav-pills .nav-link.active {
+    background:#32312D;
+}
+
+.chat_tab nav-pills .nav-link.active svg {
+    color:#fff;
+}
+
 .badge {
     background-color: red;
     color: white;
     border-radius: 50%;
     padding: 2px 5px;
     font-size: 0.7em;
-    position: relative;
-    top: -10px;
-    left: -5px;
+    position: absolute;
+    top: 0px;
+    left: 25px;
 }
 
 .participant_info .card,
