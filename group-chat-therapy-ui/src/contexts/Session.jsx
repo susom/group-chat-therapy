@@ -209,7 +209,7 @@ export const SessionContextProvider = ({children}) => {
             setChatSessionDetails(data.chat_session_details);
 
             //SET CURRENT USER BY "participant_id" (aka PHP Session ID?)
-            setParticipantID(data.participant_id);
+            setParticipantID(data.participantID);
 
             //SET LOOKUP FOR MAPPING participant_ids to DISPLAY NAMES
             const participantsLookup = data.chat_session_details.participants.reduce((obj, participant) => {
@@ -546,10 +546,11 @@ export const SessionContextProvider = ({children}) => {
     return (
         <SessionContext.Provider value={{
                                         setData,
+                                        full:data,
                                         getActionsIntervalID,
                                         setIsPollingPaused,
                                         chatSessionID,
-                                        participantID,
+                                        participantID: participantID ?? data?.participantID,
                                         isAdmin,
                                         chatSessionDetails,
                                         assessments,

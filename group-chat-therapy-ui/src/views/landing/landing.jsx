@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useContext, useEffect} from "react";
 import {Link} from "react-router-dom";
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row'
@@ -7,11 +7,20 @@ import ListGroup from "react-bootstrap/ListGroup";
 import Badge from "react-bootstrap/Badge";
 import Card from "react-bootstrap/Card";
 import Button from "react-bootstrap/Button";
-import Stack from 'react-bootstrap/Stack';
-
+// import Stack from 'react-bootstrap/Stack';
+import {SessionContext} from "../../contexts/Session.jsx";
 import './landing.css';
+import {redirect , useNavigate} from 'react-router-dom';
 
 export default function Landing() {
+    const session_context = useContext(SessionContext);
+    const navigate = useNavigate()
+    useEffect(() => {
+        if(!session_context?.participantID) {
+            console.log('Redirected, not logged in')
+            navigate("/", {replace: true})
+        }
+    }, [])
 
     const renderList = () => {
         return (
@@ -87,20 +96,25 @@ export default function Landing() {
         )
     }
 
-    return (
-        <>
-            <Container fluid>
-                <Row>
-                    <Col className="align-items-center">
-                        <h1>Landing</h1>
-                        {renderList()}
-                        {renderChatRooms()}
-                        <Link to={"/"}>Back to login page</Link>
-                    </Col>
-                </Row>
-            </Container>
+    if(!session_context?.participantID){
+        navigate("/", {replace: true})
+    } else {
+        return (
+            <>
+                <Container fluid>
+                    <Row>
+                        <Col className="align-items-center">
+                            <h1>Landing</h1>
+                            {renderList()}
+                            {renderChatRooms()}
+                            <Link to={"/"}>Back to login page</Link>
+                        </Col>
+                    </Row>
+                </Container>
 
 
-        </>
-    );
+            </>
+        );
+    }
+
 }
