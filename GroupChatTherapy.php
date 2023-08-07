@@ -5,6 +5,7 @@ namespace Stanford\GroupChatTherapy;
 include_once "emLoggerTrait.php";
 require_once "classes/UserSession.php";
 require_once "classes/Action.php";
+require_once "classes/Sanitizer.php";
 require_once "vendor/autoload.php";
 
 use App\User;
@@ -31,6 +32,29 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
 
         // Load the user session
         $this->UserSession = UserSession::getInstance();
+    }
+
+    /**
+     * Helper method for inserting the JSMO JS into a page along with any preload data
+     * @param $data
+     * @param $init_method
+     * @return void
+     */
+    public function injectJSMO($data = null, $init_method = null)
+    {
+
+        echo $this->initializeJavascriptModuleObject();
+        $cmds = [
+            "const module = " . $this->getJavascriptModuleObjectName()
+        ];
+        if (!empty($data)) $cmds[] = "module.data = " . json_encode($data);
+        if (!empty($init_method)) $cmds[] = "module.afterRender(module." . $init_method . ")";
+        ?>
+        <script src="<?= $this->getUrl("assets/jsmo.js", true) ?>"></script>
+        <script>
+            $(function () { <?php echo implode(";\n", $cmds) ?> })
+        </script>
+        <?php
     }
 
     /**
@@ -159,6 +183,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
         }
     }
 
+
     /**
      * Validates code sent via SMS
      * @param $code
@@ -176,30 +201,118 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
         );
         $json = REDCap::getData($params);
         $decoded = current(json_decode($json, true));
+        //TODO Send session data here for initial caching
         return ($decoded['code'] === $code);
     }
 
+    /**
+     * Sanitizes user input in the action queue nested array
+     * @param $payload
+     * @return array|null
+     */
+    public function sanitizeInput($payload): array|string
+    {
+        $sanitizer = new Sanitizer();
+        return $sanitizer->sanitize($payload);
+    }
 
     /**
-     * Helper method for inserting the JSMO JS into a page along with any preload data
-     * @param $data
-     * @param $init_method
-     * @return void
+     * Polling function will call this endpoint.
+     * @param array $payload
+     * @return array
      */
-    public function injectJSMO($data = null, $init_method = null)
+    public function handleActions(array $payload): array
     {
-        echo $this->initializeJavascriptModuleObject();
-        $cmds = [
-            "const module = " . $this->getJavascriptModuleObjectName()
+        try {
+            $max = intval($this->sanitizeInput($payload['maxID'])) ?? 0;
+            $actionQueue = $this->sanitizeInput($payload['actionQueue']) ?? [];
+            $start = hrtime(true);
+
+            if (count($actionQueue)) { //User has actions to process
+//                $this->addAction($actionQueue);
+            }
+
+            //If no event queue has been passed, simply return actions
+            $ret = $this->getActions($max);
+
+            $stop = hrtime(true);
+            $ret['serverTime'] = ($stop - $start) / 1000000;
+
+            return $ret;
+
+        } catch (\Exception $e) {
+            $msg = $e->getMessage();
+            \REDCap::logEvent("Error: $msg");
+            $this->emError("Error: $msg");
+
+            echo json_encode(array(
+                'error' => array(
+                    'msg' => $e->getMessage(),
+                ),
+            ));
+            die;
+        }
+    }
+
+    /**
+     * Creates an action in the log table
+     * @param array $actions
+     * @return void
+     * @throws Exception
+     */
+    public function addAction(array $actions): void
+    {
+        try {
+            $this->emDebug("Adding actions", $actions);
+            foreach ($actions as $k => $v) {
+                $action = new Action($this);
+                $action->setValue('Foo', 'Bar');
+                $action->setValue('message', json_encode($v));
+                $action->save();
+                $this->emDebug("Added action " . $action->getId());
+            }
+        } catch (\Exception $e) {
+            $msg = $e->getMessage();
+            \REDCap::logEvent("Error: $msg");
+            $this->emError("Error: $msg");
+
+            echo json_encode(array(
+                'error' => array(
+                    'msg' => $e->getMessage(),
+                ),
+            ));
+            die;
+        }
+
+    }
+
+    /**
+     * Grab actions from log table
+     * @param int $max
+     * @return array[]
+     * @throws Exception
+     */
+    public function getActions(int $max = 0): array
+    {
+        $results = [];
+        $project_id = $this->getProjectId();
+        $actions = Action::getActionsAfter($this, $project_id, $max);
+
+        foreach($actions as $v){
+            $action = $v->getAction();
+            if($action['type'] === 'delete') {
+                $target = $action['target'];
+                if(isset($results[$target])){
+                    unset($results[$target]);
+                    continue;
+                }
+            }
+            $results[$v->getId()] = $v->getAction();
+        }
+
+        return [
+            "data" => $results
         ];
-        if (!empty($data)) $cmds[] = "module.data = " . json_encode($data);
-        if (!empty($init_method)) $cmds[] = "module.afterRender(module." . $init_method . ")";
-        ?>
-        <script src="<?= $this->getUrl("assets/jsmo.js", true) ?>"></script>
-        <script>
-            $(function () { <?php echo implode(";\n", $cmds) ?> })
-        </script>
-        <?php
     }
 
     /**
@@ -224,6 +337,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
     public function redcap_module_ajax($action, $payload, $project_id, $record, $instrument, $event_id, $repeat_instance,
                                        $survey_hash, $response_id, $survey_queue_hash, $page, $page_full, $user_id, $group_id)
     {
+        $foo = func_get_args();
         switch ($action) {
             case "TestAction":
                 session_start();
@@ -240,41 +354,17 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
                 $_SESSION['count']++;
                 break;
             case "getActions":
-                // session_start();
-                // $count = $_SESSION['count'] ?? 0;
-
-                $sql = "select reml.log_id,
-                           reml.timestamp,
-                           reml.record,
-                           remlp1.value as 'payload'
-                    from
-                        redcap_external_modules_log reml
-                    left join redcap_external_modules_log_parameters remlp1 on reml.log_id = remlp1.log_id and remlp1.name='payload'
-                    where
-                         reml.message = 'Action'
-                    and  reml.project_id = ?";
-                $q = $this->query($sql, [$this->getProjectId()]);
-                $results = [];
-                while ($row = db_fetch_row($q)) $results[] = $row;
-                $result = [
-                    "data" => $results
-                ];
+                $this->handleActions($payload);
                 break;
             case "addAction":
-                $this->emDebug("Adding action", $payload);
-                $action = new Action($this);
-                $action->setValue('payload', $payload);
-                $action->save();
-                $result = [
-                    "new_action_id" => $action->getId(),
-                    "data" => $payload
-                ];
-                $this->emDebug("Added action " . $action->getId());
+                $this->addAction($payload);
                 break;
-            case "validateUserPhone":
+            case "validateUserPhone": //TODO: Add server timeout
                 return $this->validateUserPhone($payload);
             case "validateCode":
                 return $this->validateCode($payload);
+            case "handleActions":
+                return $this->handleActions($payload);
             default:
                 // Action not defined
                 throw new Exception ("Action $action is not defined");

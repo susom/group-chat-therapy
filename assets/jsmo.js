@@ -31,18 +31,28 @@
             module.ajax('getActions').then(function (response) {
                 console.log("RESPONSE", response);
 
-                $('#example').DataTable({
-                    data: response.data
-                    // "ajax": function(data, callback, settings) {
-                    //     callback(
-                    //         ExternalModules.Stanford.EnhancedSMSConversation.getConversations()
-                    //     )
-                    // }
-                });
+                // $('#example').DataTable({
+                //     data: response.data
+                //     // "ajax": function(data, callback, settings) {
+                //     //     callback(
+                //     //         ExternalModules.Stanford.EnhancedSMSConversation.getConversations()
+                //     //     )
+                //     // }
+                // });
                 return response;
             }).catch(function (err) {
                 console.log("Error", err);
             })
+        },
+
+        handleActions: (payload) => {
+            module
+                .ajax('handleActions', payload)
+                .then(res=> {
+                    // callback('handleActions', res)
+                    console.log(res)
+                })
+                .catch(err => console.log(err))
         },
 
         deleteActions: function() {

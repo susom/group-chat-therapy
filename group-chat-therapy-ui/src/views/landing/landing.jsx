@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useContext, useEffect} from "react";
 import {Link} from "react-router-dom";
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row'
@@ -7,61 +7,20 @@ import ListGroup from "react-bootstrap/ListGroup";
 import Badge from "react-bootstrap/Badge";
 import Card from "react-bootstrap/Card";
 import Button from "react-bootstrap/Button";
-import { Table, Tag, Transfer } from "antd";
-import {TableTransfer} from "../../components/TableTransfer/TableTransfer.jsx";
+// import Stack from 'react-bootstrap/Stack';
+import {SessionContext} from "../../contexts/Session.jsx";
 import './landing.css';
-
-const leftTableColumns = [
-    {
-        dataIndex: 'title',
-        title: 'Name',
-    },
-    {
-        dataIndex: 'tag',
-        title: 'Tag',
-        render: (tag) => <Tag>{tag}</Tag>,
-    }
-];
-
-const rightTableColumns = [
-    {
-        dataIndex: 'title',
-        title: 'Name',
-    },
-];
+import {redirect , useNavigate} from 'react-router-dom';
 
 export default function Landing() {
-    const [mockData, setMockData] = useState([])
-    const [targetKeys, setTargetKeys] = useState([])
-    const [disabled, setDisabled] = useState(false);
-
-    const onChange = (nextTargetKeys) => {
-        setTargetKeys(nextTargetKeys);
-    };
-    const triggerDisable = (checked) => {
-        setDisabled(checked);
-    };
-
+    const session_context = useContext(SessionContext);
+    const navigate = useNavigate()
     useEffect(() => {
-        const tempTargetKeys = [];
-        const tempMockData = [];
-        const names = ["Alvin Schultasdfasdfz", "Eric asdfasdfasdf", "Jordan", "Andre", "Sally", "Daphne", "Alyssa", "Barbie", "Kevin", "Troy"]
-        for (let i = 0; i < 10; i++) {
-            const data = {
-                key: i.toString(),
-                title: names[i],
-                description: `description of content${i + 1}`,
-                chosen: i % 2 === 0,
-            };
-            if (data.chosen) {
-                tempTargetKeys.push(data.key);
-            }
-            tempMockData.push(data);
+        if(!session_context?.participantID) {
+            console.log('Redirected, not logged in')
+            navigate("/", {replace: true})
         }
-        setMockData(tempMockData);
-        setTargetKeys(tempTargetKeys);
     }, [])
-
 
     const renderList = () => {
         return (
@@ -96,7 +55,6 @@ export default function Landing() {
                                 Complete
                             </Badge>
                         </ListGroup.Item>
-
                     </ListGroup>
                 </Card.Body>
             </Card>
@@ -138,37 +96,25 @@ export default function Landing() {
         )
     }
 
-    return (
-        <>
-            <Container fluid>
-                <Row>
-                    <Col className="align-items-center">
-                        <h1>Landing</h1>
-                        {renderList()}
-                        {renderChatRooms()}
-                        <Link to={"/"}>Back to login page</Link>
-                    </Col>
-                </Row>
+    if(!session_context?.participantID){
+        navigate("/", {replace: true})
+    } else {
+        return (
+            <>
+                <Container fluid>
+                    <Row>
+                        <Col className="align-items-center">
+                            <h1>Landing</h1>
+                            {renderList()}
+                            {renderChatRooms()}
+                            <Link to={"/"}>Back to login page</Link>
+                        </Col>
+                    </Row>
+                </Container>
 
 
-            </Container>
-            <div className="admin-table">
-                <TableTransfer
-                    dataSource={mockData}
-                    targetKeys={targetKeys}
-                    // listStyle={{width: 500}}
-                    // style={{width: '1000px'}}
-                    disabled={disabled}
-                    onChange={onChange}
-                    filterOption={(inputValue, item) =>
-                        item.title.indexOf(inputValue) !== -1 || item.tag.indexOf(inputValue) !== -1
-                    }
-                    leftColumns={leftTableColumns}
-                    rightColumns={rightTableColumns}
-                />
-            </div>
+            </>
+        );
+    }
 
-
-        </>
-    );
 }

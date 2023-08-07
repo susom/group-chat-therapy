@@ -30,7 +30,6 @@ export default function Login() {
     //TODO DISABLING FOR NOW FOR TESTING UI
     const jsmoModule = ExternalModules.Stanford.GroupChatTherapy
     const navigate = useNavigate()
-
     /**
      * Callback passed to execute react functions in JSMO
      * @param type String : Possible values = 'validateCode' and 'validateUserPhone'
@@ -67,11 +66,10 @@ export default function Login() {
                         ]
                     }
                 ],
-                participant_id : "abc456"
+                participantID : "abc456"
             }
-
             session_context.setData(res_fake);
-            navigate(`/chat`)
+            navigate(`/landing`)
         } else { //User is checking existence within study
             res ? setError('') : setError('Invalid credentials supplied')
             setShowCode(res)
@@ -96,12 +94,14 @@ export default function Login() {
         if (!lastName) {
             setLastNameError(true)
         }
-
+        callback('validateCode')
+        return;
         if (showCode) { //User has entered a code
             setLoading(true);
 
             //TODO DISABLING FOR NOW FOR TESTING UI
-            jsmoModule.validateCode(code, callback, errorCallback);
+            // jsmoModule.validateCode(code, callback, errorCallback);
+            // callback('validateCode')
         } else if (lastName && phone) { // User needs to be verified as part of study, sent OTP
             setLoading(true);
 
@@ -110,9 +110,24 @@ export default function Login() {
 
             //TODO DISABLING FOR NOW FOR TESTING UI
             jsmoModule.validateUserPhone(lastName, phone, callback, errorCallback)
-            // jsmoModule.addAction("Test123");
-            // jsmoModule.getActions();
-
+            // jsmoModule.addAction("Testing!")
+            // let testActions = [{
+            //     "type": "message",
+            //     "user": "P123",
+            //     "body": "<div>food</div>",
+            //     "recipients": [],
+            //     "replyquote": '123',
+            //     "callout": ["123xyc", "<b>P24</b>"],
+            // }]
+            //
+            // let testDeleteAction = [{
+            //     "type": "delete",
+            //     "target": "1370"
+            //
+            // }];
+            //
+            // jsmoModule.handleActions({maxID: 1370, actionQueue: testDeleteAction})
+            // navigate("/chat");
         } else {
             setError('Something went wrong')
         }
