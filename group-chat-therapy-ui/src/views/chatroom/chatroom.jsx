@@ -60,6 +60,8 @@ export default function ChatRoom() {
 
         const value = e.target.value;
         setMessage(value);
+
+        session_context.resetMentions(selectedChat);
     };
 
     const handleWhiteboardChange = (e) => {
@@ -204,7 +206,7 @@ export default function ChatRoom() {
                                     <Col md={1} xs={12}>
                                         <Nav variant="pills" className="flex-md-column flex-xs-row mt-2 chat_tab">
                                             <Nav.Item>
-                                                <Nav.Link eventKey="groupChat">
+                                                <Nav.Link eventKey="groupChat" onClick={() => session_context.resetMentions(selectedChat)}>
                                                     <People  size={20} title={`Group Chat`}/>
                                                     {mentionCounts["groupChat"] > 0 && <span className="badge">{mentionCounts["groupChat"]}</span>}
                                                 </Nav.Link>
@@ -217,7 +219,7 @@ export default function ChatRoom() {
                                                 const participantNames  = participantIDs.map(id => participant_lookup[id]).join(', ');
                                                 return (
                                                     <Nav.Item key={index}>
-                                                        <Nav.Link eventKey={chatKey}>
+                                                        <Nav.Link eventKey={chatKey} onClick={() => session_context.resetMentions(chatKey)}>
                                                             <Person  size={20}  title={`Private Chat with ${participantNames}`}/>
                                                             {mentionCounts[chatKey] > 0 && <span className="badge">{mentionCounts[chatKey]}</span>}
                                                         </Nav.Link>
@@ -254,11 +256,12 @@ export default function ChatRoom() {
                                                         value={message}
                                                         onKeyDown={handleKeyDown}
                                                         onChange={handleInputChange}
+                                                        onFocus={() => session_context.resetMentions(selectedChat)}
                                                         className={`chat_input`}
                                                     />
                                                 </Col>
                                                 <Col xs="2">
-                                                    <Button variant="primary" type="submit" className="w-100 send_message"><Send size={20}  title={`Send Message`}/></Button>
+                                                    <Button variant="primary" type="submit" className="w-100 send_message" onClick={() => session_context.resetMentions(selectedChat)}><Send size={20}  title={`Send Message`}/></Button>
                                                 </Col>
                                             </Row>
                                         </Form>

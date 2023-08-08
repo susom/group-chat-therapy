@@ -171,6 +171,16 @@ export const SessionContextProvider = ({children}) => {
         return { body: newBody, containsMention: containsMention };
     }
 
+    const resetMentions = (chatKey) => {
+        // isMentioned set to false
+
+        // Implement the logic to reset mentions for the given chatKey
+        setMentionCounts(prevMentionCounts => ({
+            ...prevMentionCounts,
+            [chatKey]: 0
+        }));
+    };
+
     const sendAction = async (new_action) => {
         // Create a copy of the new action
         // then delete these added fake properties for temporary display
@@ -443,7 +453,8 @@ export const SessionContextProvider = ({children}) => {
                                         removeMessage,
                                         isMentioned,
                                         mentionCounts,
-                                        callAjax
+                                        callAjax,
+                                        resetMentions
         }}>
             {children}
         </SessionContext.Provider>
