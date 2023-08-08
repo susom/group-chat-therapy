@@ -51,7 +51,7 @@ export const SessionContextProvider = ({children}) => {
             setChatSessionDetails(data.chat_session_details);
 
             //SET CURRENT USER BY "participant_id" (aka PHP Session ID?)
-            setParticipantID(data.participantID);
+            setParticipantID(data.participant_id);
 
             //SET LOOKUP FOR MAPPING participant_ids to DISPLAY NAMES
             const participantsLookup = data.chat_session_details.participants.reduce((obj, participant) => {
@@ -145,7 +145,7 @@ export const SessionContextProvider = ({children}) => {
 
 
     // ACTIONS PROCESSING
-    function isMentioned(message, participantsLookUp, sanitize = false) {
+    function isMentioned(message, participantsLookUp, participant_id, sanitize = false) {
         const pattern       = /@(\w+)/g;
         let containsMention = false;
         let newBody         = message.body;
@@ -156,7 +156,7 @@ export const SessionContextProvider = ({children}) => {
                 const participantValues = Object.values(participantsLookUp);
                 if (participantValues.includes(cleanMention)) {
                     containsMention = true;
-                    return sanitize ? match : `<b>${match}</b>`; // If sanitizing, return the match with '@', else return it with '<b>'
+                    return (cleanMention === participantsLookUp[participant_id] && !sanitize) ?  `<b>${match}</b>` : match; // If sanitizing, return the match with '@', else return it with '<b>'
                 } else {
                     return sanitize ? cleanMention : match; // if sanitizing and it's not a valid participant, remove '@'
                 }
@@ -224,7 +224,7 @@ export const SessionContextProvider = ({children}) => {
                 break;
 
             case 'message':
-                const { body, containsMention } = isMentioned(action, participantsLookUp);
+                const { body, containsMention } = isMentioned(action, participantsLookUp, participantID);
 
                 if (!newAllChats[allChatsKey]) {
                     newAllChats[allChatsKey] = [];
@@ -426,7 +426,7 @@ export const SessionContextProvider = ({children}) => {
                                         getActionsIntervalID,
                                         setIsPollingPaused,
                                         chatSessionID,
-                                        participantID: participantID ?? data?.participantID,
+                                        participantID,
                                         isAdmin,
                                         chatSessionDetails,
                                         assessments,

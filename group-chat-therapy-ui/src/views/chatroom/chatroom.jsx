@@ -86,8 +86,7 @@ export default function ChatRoom() {
             const timestamp = new Date().toISOString();
 
             // Sanitize the user input
-            const { body: sanitizedBody } = session_context.isMentioned({ body: message }, session_context.participantsLookUp, true);
-            console.log("Sanitized message: ", sanitizedBody); // Log the sanitized message
+            const { body: sanitizedBody } = session_context.isMentioned({ body: message }, session_context.participantsLookUp, participant_id, true);
             // Prepare your payload here
             const newAction = {
                 id : 12345,
@@ -230,6 +229,9 @@ export default function ChatRoom() {
 
                                     <Col md={11} xs={12}>
                                         <Tab.Content>
+                                            <h3 className={'chat_title'}>Chatting with : {
+                                                selectedChat === "groupChat" ? "Group" : session_context.participantsLookUp[selectedChat] || selectedChat
+                                            }</h3>
                                             <Tab.Pane eventKey="groupChat">
                                                 <MessagesDisplay messages={allChats['groupChat']} replyTo={replyTo} setReplyTo={setReplyTo} />
                                             </Tab.Pane>

@@ -9,29 +9,29 @@
         const users = ["123xyz", "abc456", "def789"];
         const notice_arr = ["Foo has left the session", "Bar has joined the session"];
         const messageBodies = [
-            "@Gilligan Hi there!",
-            "Sounds great!",
+            "@Gilligan @Mr_Therapist Hi there!",
+            "@Mr_Therapist Sounds great!",
             "Absolutely!",
-            "Good point!",
+            "@Gilligan @Mr_Therapist Good point!",
             "Interesting.",
-            "@Gilligan I agree.",
+            "@Wally I agree.",
             "Definitely!",
-            "Let's do that.",
+            "@Mr_Therapist Let's do that.",
             "Sure thing.",
             "@Gilligan Hmm, let's see.",
             "How's your day been so far?",
             "That's a really insightful observation.",
-            "I've been looking at different strategies recently.",
+            "@Wally @Mr_Therapist I've been looking at different strategies recently.",
             "Can we explore your last point in more detail?",
-            "How about we try a different approach?",
+            "@Mr_Therapist How about we try a different approach?",
             "@Gilligan Could you elaborate on that point?",
             "What are your thoughts on this matter?",
             "How have you been feeling about your progress?",
-            "@Gilligan I just read an interesting article about cognitive behavior therapy. I think it has some points that could apply to our discussion.",
-            "I'm really pleased with the progress we've made so far. You're showing a lot of resilience and perseverance.",
+            "@Wally @Mr_Therapist I just read an interesting article about cognitive behavior therapy. I think it has some points that could apply to our discussion.",
+            "@Mr_Therapist I'm really pleased with the progress we've made so far. You're showing a lot of resilience and perseverance.",
             "Let's discuss some coping mechanisms for when you're feeling stressed or overwhelmed. It might be helpful to have some strategies in place.",
             "@Gilligan Your thoughts and feelings are important. Don't hesitate to share anything that comes to mind, even if it seems unrelated.",
-            "Remember, there's no rush in this process. It's about making sustainable changes, not instant fixes.",
+            "@Mr_Therapist Remember, there's no rush in this process. It's about making sustainable changes, not instant fixes.",
             "It seems like you're dealing with a lot right now. I want to remind you that it's okay to take a step back when you need to."
         ];
         const server_timestamp = new Date().toISOString();
@@ -251,9 +251,9 @@
                 whiteboard : motivationalMessages[Math.floor(Math.random() * motivationalMessages.length)],
 
                 participants :  [
-                    {participant_id: "123xyz" , display_name : "Mr. Therapist", status : "online/offline"},
-                    {participant_id: "abc456" , display_name : "Gilligan", status : "online/offline"},
-                    {participant_id: "def789" , display_name : "Wally", status : "online/offline"}
+                    {participant_id: "123xyz" , display_name : "Mr. Therapist", status : "online"},
+                    {participant_id: "abc456" , display_name : "Gilligan", status : "online"},
+                    {participant_id: "def789" , display_name : "Wally", status : "online"}
                 ]
             };
 

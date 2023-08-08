@@ -418,6 +418,10 @@ button.whiteboard_btn {
     font-size:92%;
 }
 
+.chat_title {
+    color:#279989
+}
+
 .clearfix::after {
     content: "";
     display: table;

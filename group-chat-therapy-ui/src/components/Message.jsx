@@ -13,7 +13,6 @@ export default function Message({ message, onReply, showReactions = true, showRe
     const participant_id            = session_context.participantID;
     const therapistID               = session_context.chatSessionDetails.therapist;
 
-
     const [reactions, setReactions]                 = useState(message.reactions || []);
     const [showReactionPopup, setShowReactionPopup] = useState(false);
     const timeoutRef = useRef(null);

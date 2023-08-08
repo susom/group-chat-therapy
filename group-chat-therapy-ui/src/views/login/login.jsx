@@ -74,7 +74,7 @@ export default function Login() {
 
             }
             session_context.setData(res_fake);
-            navigate(`/landing`)
+            navigate(`/chat`)
         } else { //User is checking existence within study
             res ? setError('') : setError('Invalid credentials supplied')
             setShowCode(res)
