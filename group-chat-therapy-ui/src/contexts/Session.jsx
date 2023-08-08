@@ -242,17 +242,17 @@ export const SessionContextProvider = ({children}) => {
 
 
     // POLL FOR ACTIONS
-    useEffect(() => {
-        //SHOULD ONLY BE CALLED ONCE AFTER THE INITIAL USE EFFECT
-        if (isPollingActions && !isPollingPaused) {
-            const interval = setInterval(fetchActions, intervalLength);
-
-            //Use with isPollingPaused(true) to pause
-            setGetActionsIntervalID(interval);
-
-            return () => clearInterval(interval);
-        }
-    }, [isPollingActions, isPollingPaused]);
+    // useEffect(() => {
+    //     //SHOULD ONLY BE CALLED ONCE AFTER THE INITIAL USE EFFECT
+    //     if (isPollingActions && !isPollingPaused) {
+    //         const interval = setInterval(fetchActions, intervalLength);
+    //
+    //         //Use with isPollingPaused(true) to pause
+    //         setGetActionsIntervalID(interval);
+    //
+    //         return () => clearInterval(interval);
+    //     }
+    // }, [isPollingActions, isPollingPaused]);
 
 
     // USE this to call JSMO for AJAX
