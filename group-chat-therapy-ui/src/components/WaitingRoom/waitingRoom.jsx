@@ -24,13 +24,12 @@ export const WaitingRoom = () => {
             let online = []
 
             for(let participant of session_context?.chatSessionDetails?.participants) {
-                console.log(participant)
                 if (participant.status === 'online')
                     online.push(participant)
                 else
                     chat.push(participant)
             }
-            console.log(online)
+            // console.log(online)
             setOnline(online)
             setChatroom(chat)
         }
@@ -39,8 +38,22 @@ export const WaitingRoom = () => {
         // setChatroom([{name: "Ihab Zeedia"}, {name: "Becky Chiu"}])
     }, [session_context])
 
-    const admit = (e, arg) => {
-        console.log(e.target)
+    const admit = (e) => {
+        // console.log(e.target.value)
+        // console.log(e)
+        let value = e.target.value
+        console.log(value)
+        console.log(session_context)
+        let copy = session_context;
+        let index = copy?.full?.chat_session_details?.participants.findIndex(e=> e.participant_id === value)
+        if(index){
+            copy.full.chat_session_details.participants[index]['status'] = 'chat'
+        }
+
+        session_context.setData(copy)
+        console.log(index)
+        console.log(session_context)
+        // session_context.setData()
     }
 
     const generateStacks = (arr, type) => {
@@ -48,7 +61,7 @@ export const WaitingRoom = () => {
             <Stack key={i} direction="horizontal" gap={3}>
                 <div className="me-auto">{e.display_name}</div>
                 {type === 'waitingRoom' ?
-                    <Button onClick={admit} variant="outline-success">Admit</Button> :
+                    <Button onClick={admit} value={e?.participant_id} variant="outline-success">Admit</Button> :
                     <Button variant="outline-danger">Revoke</Button>
                 }
             </Stack>
