@@ -42,10 +42,8 @@
       "assets/minus-black-5fdd4a70.svg",
       "assets/icon-search-99974394.svg"
     ],
-    "css": [
-      "assets/index-6d83c1b7.css"
-    ],
-    "file": "assets/index-7e279076.js",
+
+    "file": "assets/index-05e8f0c7.js",
     "isEntry": true,
     "src": "index.html"
   },

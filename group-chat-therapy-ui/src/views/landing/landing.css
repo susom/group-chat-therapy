@@ -5,3 +5,24 @@ body {
 .card {
     background-color: white !important;
 }
+
+.session-detail {
+    max-width: 800px;
+}
+
+.session-detail .card {
+    height: 60vh;
+}
+
+
+@media (max-width: 768px) {
+    .session-detail .card {
+        height: 88vh;
+    }
+}
+
+.main-nav {
+    border-bottom: 1px solid;
+    background-color: white !important;
+    border-color: lightgrey;
+}

@@ -13,6 +13,7 @@ import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/bootstrap.css';
 import Spinner from 'react-bootstrap/Spinner';
 import Alert from 'react-bootstrap/Alert';
+import.meta.env.MODE
 
 import {SessionContext} from "../../contexts/Session.jsx";
 
@@ -26,10 +27,12 @@ export default function Login() {
 
     const [error, setError] = useState('')
     const [lastNameError, setLastNameError] = useState(false)
-
-    //TODO DISABLING FOR NOW FOR TESTING UI
-    const jsmoModule = ExternalModules.Stanford.GroupChatTherapy
     const navigate = useNavigate()
+
+    let jsmoModule;
+    if(import.meta?.env?.MODE !== 'development')
+        jsmoModule = ExternalModules.Stanford.GroupChatTherapy
+
     /**
      * Callback passed to execute react functions in JSMO
      * @param type String : Possible values = 'validateCode' and 'validateUserPhone'
@@ -52,9 +55,9 @@ export default function Login() {
                     whiteboard : "",
 
                     participants :  [
-                        {participant_id: "123xyz" , display_name : "Mr_Therapist", status : "online/offline"},
-                        {participant_id: "abc456" , display_name : "Gilligan", status : "online/offline"},
-                        {participant_id: "def789" , display_name : "Wally", status : "online/offline"}
+                        {participant_id: "123xyz" , display_name : "Mr_Therapist", status : "online"},
+                        {participant_id: "abc456" , display_name : "Gilligan", status : "online"},
+                        {participant_id: "def789" , display_name : "Wally", status : "online"}
                     ]
                 },
                 assessments : [
@@ -66,11 +69,12 @@ export default function Login() {
                         ]
                     }
                 ],
-                participant_id : "123xyz"
-            }
 
+                participant_id : "123xyz"
+
+            }
             session_context.setData(res_fake);
-            navigate(`/chat`)
+            navigate(`/landing`)
         } else { //User is checking existence within study
             res ? setError('') : setError('Invalid credentials supplied')
             setShowCode(res)
@@ -95,12 +99,14 @@ export default function Login() {
         if (!lastName) {
             setLastNameError(true)
         }
-
+        callback('validateCode')
+        return;
         if (showCode) { //User has entered a code
             setLoading(true);
 
             //TODO DISABLING FOR NOW FOR TESTING UI
-            jsmoModule.validateCode(code, callback, errorCallback);
+            // jsmoModule.validateCode(code, callback, errorCallback);
+            // callback('validateCode')
         } else if (lastName && phone) { // User needs to be verified as part of study, sent OTP
             setLoading(true);
 
@@ -109,8 +115,6 @@ export default function Login() {
 
             //TODO TEMPORARY PLACEMENT FOR TESTING UI
             callback("validateCode", true);
-
-            // jsmoModule.handleActions({maxID: 1370, actionQueue: testDeleteAction})
         } else {
             setError('Something went wrong')
         }
