@@ -61,8 +61,9 @@
                 if (Math.random() < 0.05) actionType.push("update_assessments");
                 if (Math.random() < 0.05) actionType.push("update_chat_details");
 
-                const selectedActionType = actionType[getRandomInt(actionType.length)];
-                const recipients = Math.random() < 0.5 ? ["123xyz"] : [];
+                const selectedActionType    = actionType[getRandomInt(actionType.length)];
+                const isForNonTherapist     = Math.random() < 0.5;
+                const recipients            = isForNonTherapist ? [users[getRandomInt(users.length - 1) + 1]] : [];
 
                 let action;
                 switch(selectedActionType) {
@@ -267,6 +268,15 @@
             return response;
         },
 
+        setWhiteBoardContent : function(payload){
+            console.log("ajax action", payload);
+            // module.ajax('setWhiteBoardContent', payload).then(function (response) {
+            //     console.log("RESPONSE", response);
+            //     setStateVarCallBack(response);
+            // }).catch(function (err) {
+            //     console.log("Error", err);
+            // })
+        },
 
         // Get a list of all the actions from the log tables
         getActions: function () {

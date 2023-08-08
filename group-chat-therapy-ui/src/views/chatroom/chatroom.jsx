@@ -31,6 +31,8 @@ export default function ChatRoom() {
     const [mentionCounts, setMentionCounts] = useState({ ...sessionContextMentionCounts });
     const date_string                       = chat_details?.date ? chat_details?.date : "";
     const [dateComps, setDateComps]         = useState(dateComponents(date_string));
+    const [whiteboardContent, setWhiteboardContent]     = useState(whiteboard);
+    const [whiteboardIsChanged, setWhiteboardIsChanged] = useState(false);
 
     //MESSAGE HANDLING
     const [message, setMessage]                     = useState('');
@@ -58,6 +60,16 @@ export default function ChatRoom() {
 
         const value = e.target.value;
         setMessage(value);
+    };
+
+    const handleWhiteboardChange = (e) => {
+        setWhiteboardIsChanged(true);
+        setWhiteboardContent(e.target.value);
+    };
+
+    const updateWhiteboard = () => {
+        session_context.callAjax({whiteBoardContent : whiteboardContent},"setWhiteBoardContent");
+        setWhiteboardContent(whiteboardContent);
     };
 
     const handleKeyDown = (e) => {
@@ -160,7 +172,23 @@ export default function ChatRoom() {
                                     <Card>
                                         <Card.Body>
                                             <Card.Title>Whiteboard</Card.Title>
-                                            <Card.Text>{whiteboard}</Card.Text>
+                                            {
+                                                chat_details && (
+                                                    participant_id === chat_details.therapist ? (
+                                                        <Form className={`whiteboard_form`} onSubmit={(e) => { e.preventDefault(); updateWhiteboard(); }}>
+                                                            <Form.Control
+                                                                as="textarea"
+                                                                value={whiteboardContent}
+                                                                onChange={handleWhiteboardChange}
+                                                                placeholder="Edit the whiteboard content..."
+                                                            />
+                                                            <Button type="submit" className="mt-2 whiteboard_btn" disabled={!whiteboardIsChanged}>Update Whiteboard</Button>
+                                                        </Form>
+                                                    ) : (
+                                                        <Card.Text>{whiteboard}</Card.Text>
+                                                    )
+                                                )
+                                            }
                                         </Card.Body>
                                     </Card>
                                 </Col>
@@ -191,7 +219,7 @@ export default function ChatRoom() {
                                                 return (
                                                     <Nav.Item key={index}>
                                                         <Nav.Link eventKey={chatKey}>
-                                                            <Person  size={20}  title={`Private Chat with ${participant_lookup[chat_details.therapist]}`}/>
+                                                            <Person  size={20}  title={`Private Chat with ${participantNames}`}/>
                                                             {mentionCounts[chatKey] > 0 && <span className="badge">{mentionCounts[chatKey]}</span>}
                                                         </Nav.Link>
                                                     </Nav.Item>

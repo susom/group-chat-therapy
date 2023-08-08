@@ -60,6 +60,18 @@ export const SessionContextProvider = ({children}) => {
             }, {});
             setParticipantsLookUp(participantsLookup);
 
+            // INITIALIZE PRIVATE CHATS FOR EACH PARTICIPANT
+            if (data.participant_id === data.chat_session_details.therapist) {
+                const initialChats = { "groupChat": [] };
+                for (const participant of data.chat_session_details.participants) {
+                    if (participant.participant_id !== data.chat_session_details.therapist) {
+                        initialChats[participant.participant_id] = [];
+                    }
+                }
+                setAllChats(initialChats);
+            }
+
+
             //IF THIS IS A PARTICIPANT , THEN NEED TO CHECK THEIR ASSESSMENTS STATUS
             if(isAdmin) {
                 //DO A ROLL UP OF ALL THE ASSESSMENTS , BUT DOES NOT NEED TO BLOCK ENTRY INTO CHAT SESSION
@@ -119,6 +131,10 @@ export const SessionContextProvider = ({children}) => {
 
             case "getChatSessionDetails" :
                 module.getChatSessionDetails(payload, setNewSessionDetails);
+            break;
+
+            case "setWhiteBoardContent" :
+                module.setWhiteBoardContent(payload);
             break;
 
             default:
@@ -420,7 +436,8 @@ export const SessionContextProvider = ({children}) => {
                                         sendAction,
                                         removeMessage,
                                         isMentioned,
-                                        mentionCounts
+                                        mentionCounts,
+                                        callAjax
         }}>
             {children}
         </SessionContext.Provider>
