@@ -111,9 +111,14 @@ export const SessionContextProvider = ({children}) => {
     useEffect(() => {
         const newMentionCounts = Object.keys(allChats).reduce((accumulator, chatId) => {
             const chatMessages = allChats[chatId];
+
+            // Only count mentions that relate to the current participant ID
             const mentionCount = chatMessages.reduce((count, message) => {
-                return message.containsMention ? count + 1 : count;
+                // Check if the message mentions the current participant ID
+                const mentionsCurrentParticipant = message.containsMention && message.body.includes(`@${participantsLookUp[participantID]}`);
+                return mentionsCurrentParticipant ? count + 1 : count;
             }, 0);
+
             accumulator[chatId] = mentionCount;
             return accumulator;
         }, {});

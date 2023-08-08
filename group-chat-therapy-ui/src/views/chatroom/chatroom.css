@@ -375,6 +375,10 @@
     position:relative;
 }
 
+.chat_tab {
+    padding-top:40px;
+}
+
 .chat_tab.nav-pills .nav-link.active {
     background:#32312D;
 }
