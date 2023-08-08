@@ -66,7 +66,7 @@ export default function Login() {
                         ]
                     }
                 ],
-                participant_id : "abc456"
+                participant_id : "123xyz"
             }
 
             session_context.setData(res_fake);

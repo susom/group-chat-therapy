@@ -11,6 +11,8 @@ export default function Message({ message, onReply, showReactions = true, showRe
     const session_context           = useContext(SessionContext);
     const participantsLookUp        = session_context.participantsLookUp;
     const participant_id            = session_context.participantID;
+    const therapistID               = session_context.chatSessionDetails.therapist;
+
 
     const [reactions, setReactions]                 = useState(message.reactions || []);
     const [showReactionPopup, setShowReactionPopup] = useState(false);
@@ -136,7 +138,7 @@ export default function Message({ message, onReply, showReactions = true, showRe
                 </dd>
             )}
 
-            {participant_id === message.user && ( // If the message is from the current participant, show the delete icon
+            {( participant_id === message.user || participant_id === therapistID )&& ( // If the message is from the current participant, show the delete icon
                 <dd className={'delete'} onClick={handleDelete}>
                     <Trash title={`Delete Message`}/>
                 </dd>

@@ -350,6 +350,7 @@
 
 .chat_input {
     max-width:initial;
+    font-size:100%;
 }
 
 .chat_tab .nav-item {
