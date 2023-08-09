@@ -112,10 +112,14 @@ export const SessionContextProvider = ({children}) => {
         const newMentionCounts = Object.keys(allChats).reduce((accumulator, chatId) => {
             const chatMessages = allChats[chatId];
 
-            // Only count mentions that relate to the current participant ID
+            // Only count mentions that relate to the current participant ID and haven't been seen
             const mentionCount = chatMessages.reduce((count, message) => {
                 // Check if the message mentions the current participant ID
-                const mentionsCurrentParticipant = message.containsMention && message.body.includes(`@${participantsLookUp[participantID]}`);
+                const mentionsCurrentParticipant =
+                    message.containsMention &&
+                    message.body.includes(`@${participantsLookUp[participantID]}`) &&
+                    (!message.wasSeen || message.wasSeen === false);
+
                 return mentionsCurrentParticipant ? count + 1 : count;
             }, 0);
 
@@ -125,6 +129,7 @@ export const SessionContextProvider = ({children}) => {
 
         setMentionCounts(newMentionCounts);
     }, [allChats]);
+
 
     // USE this to call JSMO for AJAX
     const callAjax = (payload, actionType) => {
@@ -172,13 +177,28 @@ export const SessionContextProvider = ({children}) => {
     }
 
     const resetMentions = (chatKey) => {
-        // isMentioned set to false
+        let modifiedMessages = [];  // To store the messages you've just modified
 
-        // Implement the logic to reset mentions for the given chatKey
-        setMentionCounts(prevMentionCounts => ({
-            ...prevMentionCounts,
-            [chatKey]: 0
-        }));
+        // Modify the messages in the specified chat room to reset the isMentioned property
+        const updatedChats = {
+            ...allChats,
+            [chatKey]: allChats[chatKey].map(message => {
+                if (message.containsMention) {
+                    modifiedMessages.push(message);  // Add the message to modifiedMessages array
+                    return {
+                        ...message,
+                        wasSeen: true
+                    };
+                }
+                return message;  // Return the original message if isMentioned is false
+            })
+        };
+
+        // Log the messages you've modified
+        console.log("Modified Messages", modifiedMessages);
+
+        // Update the allChats state
+        setAllChats(updatedChats);
     };
 
     const sendAction = async (new_action) => {
@@ -374,7 +394,7 @@ export const SessionContextProvider = ({children}) => {
         const cur_actionQueue   = sendActionQueueRef.current;
 
         //EVERY fetchActions SHOULD POST participant_id, maxID and current sendActionQueue
-        callAjax({maxID : previous_max_id, actionQueue : cur_actionQueue},"getActions");
+        callAjax({maxID : previous_max_id, actionQueue : cur_actionQueue},"handleActions");
     }
 
 

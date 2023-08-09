@@ -10,8 +10,13 @@ body {
     max-width: 800px;
 }
 
+.session-detail .card-body {
+    overflow-y: scroll;
+}
+
 .session-detail .card {
-    height: 60vh;
+    height: 70vh;
+    /*overflow-y: scroll;*/
 }
 
 
@@ -19,10 +24,22 @@ body {
     .session-detail .card {
         height: 88vh;
     }
+    .survey-list li {
+        font-size: 14px;
+    }
 }
 
 .main-nav {
     border-bottom: 1px solid;
     background-color: white !important;
     border-color: lightgrey;
+}
+
+.survey-list li {
+    cursor: pointer;
+}
+
+.info-spinner {
+    height: 1.5rem;
+    width: 1.5rem;
 }

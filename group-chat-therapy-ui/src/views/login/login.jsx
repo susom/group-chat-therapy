@@ -56,8 +56,11 @@ export default function Login() {
 
                     participants :  [
                         {participant_id: "123xyz" , display_name : "Mr_Therapist", status : "online"},
-                        {participant_id: "abc456" , display_name : "Gilligan", status : "online"},
-                        {participant_id: "def789" , display_name : "Wally", status : "online"}
+                        {participant_id: "abc456" , display_name : "Gilligan", status : "chat"},
+                        {participant_id: "def789" , display_name : "Wally", status : "online"},
+                        {participant_id: "abcdfd" , display_name : "Jeff_Green", status : "online"},
+                        {participant_id: "234d3e" , display_name : "Jonathan_Gee", status : "online"},
+                        {participant_id: "4gdfa3" , display_name : "Kent_Miles", status : "online"},
                     ]
                 },
                 assessments : [

@@ -60,7 +60,7 @@ export default function ChatRoom() {
 
         const value = e.target.value;
         setMessage(value);
-
+        console.log("resetMentions for selectedChat", selectedChat)
         session_context.resetMentions(selectedChat);
     };
 
@@ -206,7 +206,7 @@ export default function ChatRoom() {
                                     <Col md={1} xs={12}>
                                         <Nav variant="pills" className="flex-md-column flex-xs-row mt-2 chat_tab">
                                             <Nav.Item>
-                                                <Nav.Link eventKey="groupChat" onClick={() => session_context.resetMentions(selectedChat)}>
+                                                <Nav.Link eventKey="groupChat" onClick={() => session_context.resetMentions("groupChat")}>
                                                     <People  size={20} title={`Group Chat`}/>
                                                     {mentionCounts["groupChat"] > 0 && <span className="badge">{mentionCounts["groupChat"]}</span>}
                                                 </Nav.Link>
