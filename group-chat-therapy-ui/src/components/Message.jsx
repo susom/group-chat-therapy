@@ -101,7 +101,7 @@ export default function Message({ message, onReply, showReactions = true, showRe
     };
 
     return (
-        <dl className={`${message.type} ${participant_id === message.user ? 'self' : ''} ${message.isFake ? 'fake' : ''} ${className} ${message.containsMention ? "callout" : ""}`}>
+        <dl className={`${message.type} ${participant_id === message.user ? 'self' : ''} ${message.isFake ? 'fake' : ''} ${className} ${message.containsMention ? "callout" : ""} ${message.wasSeen ? "seen" : ""}`}>
             <dt className={'participant'}>
                 {isReply ? `Replying to ${participantsLookUp[message.user]}` : participantsLookUp[message.user]}
             </dt>

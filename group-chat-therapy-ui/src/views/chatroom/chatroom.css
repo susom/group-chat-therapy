@@ -301,8 +301,8 @@
 }
 
 
-.chat_window .message.callout .message_body{
-
+.chat_window .message.callout.seen .message_body b{
+    color:#007C92;
 }
 .chat_window .message.callout .message_body b {
     color:darkviolet;
