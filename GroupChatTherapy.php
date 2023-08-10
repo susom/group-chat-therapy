@@ -13,6 +13,7 @@ use Exception;
 use REDCap;
 use Twilio\Exceptions\TwilioException;
 use Twilio\Rest\Client;
+use function PHPUnit\Framework\isEmpty;
 
 // use \Logging;
 
@@ -125,7 +126,9 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
         $saveData = array(
             array(
                 "record_id" => $record,
-                "code" => $code
+                "participant_otp_code" => $code,
+                "participant_otp_code_ts" => date("Y-m-d H:i:s"),
+                "redcap_event_name" => "participant_arm_2"
             )
         );
 
@@ -149,25 +152,32 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
         try {
 
             //Sanitize inputs
-            $last_name = filter_var($payload[0], FILTER_SANITIZE_STRING);
-            $phone_number = filter_var($payload[1], FILTER_SANITIZE_STRING);
+            $last_name = $this->sanitizeInput($payload[0]);
+            $phone_number = $this->sanitizeInput($payload[1]);
+
+//            $last_name = filter_var($payload[0], FILTER_SANITIZE_STRING);
+//            $phone_number = filter_var($payload[1], FILTER_SANITIZE_STRING);
             $phone_number_truncated = ltrim($phone_number, '1');
 
             $params = array(
                 "return_format" => "json",
-                "fields" => array("phone", "last_name", "record_id")
+                "fields" => array("participant_phone_number", "participant_first_name", "record_id"),
+                "events" => array("participant_arm_2"),
+//                "filterLogic" => "[participant_phone_number] = $phone_number_truncated"
             );
 
             $json = REDCap::getData($params);
-            $decoded = current(json_decode($json, true));
-
-            if (strtolower($decoded['last_name']) === strtolower($last_name) && $decoded['phone'] === $phone_number_truncated) {
-                $this->generateOneTimePassword($decoded['record_id'], $decoded['phone']);
-                return true;
-            } else {
-                throw new Exception ("Invalid credentials");
+            $json = json_decode($json);
+            foreach ($json as $entry) {
+                $phoneParsed = $this->parsePhoneField($entry->participant_phone_number);
+                if (strtolower($entry->participant_first_name) === strtolower($last_name) && $phoneParsed === $phone_number_truncated) {
+                    $this->generateOneTimePassword($entry->record_id, $phoneParsed);
+                    return true;
+                }
             }
 
+//            TODO: RATE LIMITING
+            throw new Exception ("Invalid credentials");
 
         } catch (\Exception $e) {
             $msg = $e->getMessage();
@@ -183,6 +193,17 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
         }
     }
 
+    /**
+     * @param $phone
+     * @return string
+     */
+    public function parsePhoneField($phone)
+    {
+        if ($phone) {
+            $replace = array("(", ")", " ", "-");
+            return str_replace($replace, "", $phone);
+        }
+    }
 
     /**
      * Validates code sent via SMS
@@ -192,17 +213,45 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
     public function validateCode($code): bool
     {
         //Sanitize input
-        $code = filter_var($code, FILTER_SANITIZE_STRING);
-        $code = strtolower($code);
+        try {
+            $code = strtolower($this->sanitizeInput($code));
 
-        $params = array(
-            "return_format" => "json",
-            "fields" => array("code")
-        );
-        $json = REDCap::getData($params);
-        $decoded = current(json_decode($json, true));
-        //TODO Send session data here for initial caching
-        return ($decoded['code'] === $code);
+            $params = array(
+                "return_format" => "json",
+                "fields" => array("participant_otp_code", "participant_otp_code_ts", "record_id"),
+                "events" => array("participant_arm_2"),
+            );
+
+            $json = json_decode(REDCap::getData($params));
+
+            foreach ($json as $record) {
+                if ($record->participant_otp_code === $code) {
+                    if (!empty($record->participant_otp_code_ts)) { //Check if OTP code has been generated recently
+                        $timeDifference = strtotime("now") - strtotime($record->participant_otp_code_ts);
+                        if ($timeDifference < 1800) //30 minute interval to login before having to retry
+                            return true;
+                        else
+                            throw new Exception ("Code has expired, please refresh and try logging in again");
+                    }
+                }
+
+            }
+
+            return false;
+
+        } catch (\Exception $e) {
+            $msg = $e->getMessage();
+            \REDCap::logEvent("Error: $msg");
+            $this->emError("Error: $msg");
+
+            echo json_encode(array(
+                'error' => array(
+                    'msg' => $e->getMessage(),
+                ),
+            ));
+            die;
+        }
+
     }
 
     /**
@@ -298,11 +347,11 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
         $project_id = $this->getProjectId();
         $actions = Action::getActionsAfter($this, $project_id, $max);
 
-        foreach($actions as $v){
+        foreach ($actions as $v) {
             $action = $v->getAction();
-            if($action['type'] === 'delete') {
+            if ($action['type'] === 'delete') {
                 $target = $action['target'];
-                if(isset($results[$target])){
+                if (isset($results[$target])) {
                     unset($results[$target]);
                     continue;
                 }
