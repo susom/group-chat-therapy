@@ -89,6 +89,29 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
     }
 
     /**
+     * @param $phone
+     * @return string
+     */
+    public function parsePhoneField($phone)
+    {
+        if ($phone) {
+            $replace = array("(", ")", " ", "-");
+            return str_replace($replace, "", $phone);
+        }
+    }
+
+    /**
+     * Sanitizes user input in the action queue nested array
+     * @param $payload
+     * @return array|null
+     */
+    public function sanitizeInput($payload): array|string
+    {
+        $sanitizer = new Sanitizer();
+        return $sanitizer->sanitize($payload);
+    }
+
+    /**
      * Send SMS with body payload
      * @param $body
      * @param $phone_number
@@ -154,9 +177,6 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
             //Sanitize inputs
             $last_name = $this->sanitizeInput($payload[0]);
             $phone_number = $this->sanitizeInput($payload[1]);
-
-//            $last_name = filter_var($payload[0], FILTER_SANITIZE_STRING);
-//            $phone_number = filter_var($payload[1], FILTER_SANITIZE_STRING);
             $phone_number_truncated = ltrim($phone_number, '1');
 
             $params = array(
@@ -194,23 +214,11 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
     }
 
     /**
-     * @param $phone
-     * @return string
-     */
-    public function parsePhoneField($phone)
-    {
-        if ($phone) {
-            $replace = array("(", ")", " ", "-");
-            return str_replace($replace, "", $phone);
-        }
-    }
-
-    /**
      * Validates code sent via SMS
      * @param $code
-     * @return bool
+     * @return array
      */
-    public function validateCode($code): bool
+    public function validateCode($code): array
     {
         //Sanitize input
         try {
@@ -218,26 +226,31 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
 
             $params = array(
                 "return_format" => "json",
-                "fields" => array("participant_otp_code", "participant_otp_code_ts", "record_id"),
+                "fields" => array("participant_otp_code", "participant_otp_code_ts", "record_id", "admin"),
                 "events" => array("participant_arm_2"),
             );
 
-            $json = json_decode(REDCap::getData($params));
+            $json = json_decode(REDCap::getData($params), true);
 
             foreach ($json as $record) {
-                if ($record->participant_otp_code === $code) {
-                    if (!empty($record->participant_otp_code_ts)) { //Check if OTP code has been generated recently
-                        $timeDifference = strtotime("now") - strtotime($record->participant_otp_code_ts);
-                        if ($timeDifference < 1800) //30 minute interval to login before having to retry
-                            return true;
-                        else
+                if ($record['participant_otp_code'] === $code) {
+                    if (!empty($record['participant_otp_code_ts'])) { //Check if OTP code has been generated recently
+                        $timeDifference = strtotime("now") - strtotime($record['participant_otp_code_ts']);
+                        if ($timeDifference < 3600) { //60 minute interval to login before having to retry
+                            $returnPayload['chat_sessions'] = $this->getUserSessions($record);
+                            $returnPayload['current_user'] = $record;
+                            $return_o["result"] = json_encode($returnPayload); //Necessary result key for returning via JSMO
+                            return $return_o;
+
+                        }else {
                             throw new Exception ("Code has expired, please refresh and try logging in again");
+                        }
                     }
                 }
 
             }
-
-            return false;
+            throw new Exception ('Invalid code');
+//            return false;
 
         } catch (\Exception $e) {
             $msg = $e->getMessage();
@@ -255,14 +268,76 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
     }
 
     /**
-     * Sanitizes user input in the action queue nested array
-     * @param $payload
-     * @return array|null
+     * Grab session details for a given user ID
+     * @param $record
+     * @return array
      */
-    public function sanitizeInput($payload): array|string
+    public function getUserSessions($record): array
     {
-        $sanitizer = new Sanitizer();
-        return $sanitizer->sanitize($payload);
+        $params = array(
+            "return_format" => "json",
+            "fields" => array(
+                "record_id",
+                "ts_status",
+                "ts_start",
+                "ts_start_2",
+                "ts_authorized_participants",
+                "ts_title",
+                "ts_topic"
+            ),
+            "events" => array("therapy_session_arm_1"),
+        );
+
+        $full_sessions = json_decode(REDCap::getData($params), true); //Grab all therapy sessions
+        $user_sessions = [];
+
+        foreach($full_sessions as $session){
+            if(!empty($session['ts_authorized_participants'])){
+                $str_arr = explode (",", $session['ts_authorized_participants']);
+                if(in_array($record['record_id'], $str_arr)) {
+                    $session['ts_authorized_participants'] = $str_arr; //Save as array
+                    $user_sessions[] = $session;
+
+                }
+            }
+        }
+
+        return $user_sessions;
+    }
+
+    /**
+     * Given an array of record IDs, find the affiliated participant records
+     * @param $payload
+     * @return array
+     */
+    public function getParticipants($payload): array
+    {
+        try {
+            if(!isset($payload['participants']) || sizeof($payload['participants']) === 0){
+                throw new Exception('No record_id passed');
+        }
+            $params = array(
+                "return_format" => "json",
+                "records" => $payload['participants'],
+                "fields" => array(
+                    "record_id",
+                    "participant_first_name",
+                    "admin",
+                    "participant_status"
+                ),
+                "events" => array("participant_arm_2"),
+            );
+
+            $json = json_decode(REDCap::getData($params, true));
+            $returnPayload["data"] = $json;
+            return ["result" => json_encode($returnPayload)];
+        } catch (\Exception $e) {
+            $msg = $e->getMessage();
+            \REDCap::logEvent("Error: $msg");
+            $this->emError("Error: $msg");
+            return ["result" => json_encode($msg)];
+        }
+
     }
 
     /**
@@ -405,6 +480,9 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
             case "getActions":
                 $this->handleActions($payload);
                 break;
+            case "getParticipants":
+                $sanitized = $this->sanitizeInput($payload);
+                return $this->getParticipants($sanitized);
             case "addAction":
                 $this->addAction($payload);
                 break;

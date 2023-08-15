@@ -79,6 +79,18 @@
             })
         },
 
+        getParticipants: (payload) => {
+            module.ajax('getParticipants', payload)
+                .then((res) => {
+                    if(res?.result){
+                        let a = JSON.parse(res?.result)
+                        console.log(a)
+                    }
+                        // callback('validateCode', JSON.parse(res?.result))
+                    // console.log(res)
+                }).catch(err => console.log(err))
+        },
+
         getChatSessionDetails: function(payload) {
             module.ajax('getChatSessionDetails', payload).then(function (response) {
                 console.log("RESPONSE", response);
@@ -113,7 +125,8 @@
             module
                 .ajax('validateCode', code)
                 .then(res=> {
-                    callback('validateCode', res)
+                    if(res?.result)
+                        callback('validateCode', JSON.parse(res?.result))
                 })
                 .catch(err => errorCallback('validateCode', err))
         }
