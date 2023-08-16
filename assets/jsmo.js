@@ -79,16 +79,20 @@
             })
         },
 
-        getParticipants: (payload) => {
+        getParticipants: (payload, callback, errorCallback) => {
             module.ajax('getParticipants', payload)
                 .then((res) => {
-                    if(res?.result){
-                        let a = JSON.parse(res?.result)
-                        console.log(a)
-                    }
-                        // callback('validateCode', JSON.parse(res?.result))
-                    // console.log(res)
-                }).catch(err => console.log(err))
+                    if(res?.result)
+                        callback(JSON.parse(res?.result))
+                }).catch(err => errorCallback(err))
+        },
+
+        updateParticipants: (payload, callback, errorCallback) => {
+            module.ajax('updateParticipants', payload)
+                .then(res => {
+                    if(res?.result)
+                        callback(JSON.parse(res?.result))
+                }).catch(err => errorCallback)
         },
 
         getChatSessionDetails: function(payload) {
