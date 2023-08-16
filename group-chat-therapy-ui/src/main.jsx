@@ -11,11 +11,17 @@ import ChatRoom from './views/chatroom/chatroom.jsx'
 import Landing from './views/landing/landing.jsx'
 import Error from './views/error/error.jsx'
 import Login from './views/login/login.jsx'
+import Select from './views/select/select.jsx'
 
 const router = createHashRouter([
     {
         path: "/landing",
         element: <Landing />,
+        errorElement: <Error/>
+    },
+    {
+        path: "/select",
+        element: <Select/>,
         errorElement: <Error/>
     },
     {
