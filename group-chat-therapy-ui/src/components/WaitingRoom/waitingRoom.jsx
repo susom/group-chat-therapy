@@ -10,62 +10,81 @@ import './waitingRoom.css';
 
 import {SessionContext} from "../../contexts/Session.jsx";
 
-export const WaitingRoom = () => {
+export const WaitingRoom = ({session}) => {
     const session_context = useContext(SessionContext);
     const [online, setOnline] = useState([])
     const [chatroom, setChatroom] = useState([])
 
-    useEffect(() => {
-        // console.log(session_context)
-        // console.log(session_context?.chatSessionDetails)
+    let jsmoModule;
+    if(import.meta?.env?.MODE !== 'development')
+        jsmoModule = ExternalModules.Stanford.GroupChatTherapy
 
-        if(session_context?.chatSessionDetails?.participants){
-            let chat = []
-            let online = []
-
-            for(let participant of session_context?.chatSessionDetails?.participants) {
-                if (participant.status === 'online')
-                    online.push(participant)
-                else
-                    chat.push(participant)
-            }
-            // console.log(online)
-            setOnline(online)
-            setChatroom(chat)
+    const jsmoSuccessCallback = (res) => {
+        if(res){
+            let filtered = res?.data.filter(e => parseInt(e.admin) !== 1)
+            setOnline(filtered)
+            console.log('participants', filtered)
         }
 
-        // setOnline([{name: "Andy Martin"}, {name: "Jordan Schultz"}])
-        // setChatroom([{name: "Ihab Zeedia"}, {name: "Becky Chiu"}])
-    }, [session_context])
+    }
+
+    const jsmoErrorCallback = (err) => {
+        console.log(err)
+    }
+
+    useEffect(() => {
+        console.log('inside waiting room', session)
+        if(session?.record_id){
+            jsmoModule.getParticipants(
+                {'participants' : session?.ts_authorized_participants},
+                (res) => {
+                    if(res){
+                        let filtered = res?.data.filter(e => parseInt(e.admin) !== 1)
+                        setOnline(filtered)
+                        console.log('participants', filtered)
+                    }
+                },
+                (err) => {
+                    console.log(err)
+                }
+            )
+        }
+
+    }, [session])
 
     const admit = (e) => {
-        // console.log(e.target.value)
-        // console.log(e)
-        let value = e.target.value
-        console.log(value)
-        console.log(session_context)
-        let copy = session_context;
-        let index = copy?.full?.chat_session_details?.participants.findIndex(e=> e.participant_id === value)
-        if(index){
-            copy.full.chat_session_details.participants[index]['status'] = 'chat'
-        }
+        let {value: participant_id} = e.target
+        console.log('in admit')
+        console.log(participant_id)
+        let copy = session;
 
-        session_context.setData(copy)
-        console.log(index)
-        console.log(session_context)
+        // let index = copy?.full?.chat_session_details?.participants.findIndex(e=> e.participant_id === participant_id)
+        // if(index){
+        //     copy.full.chat_session_details.participants[index]['status'] = 'chat'
+        // }
+
+        jsmoModule.updateParticipants(
+            {'record_id': session?.record_id, 'action': 'admit', 'participant_id': participant_id},
+            jsmoSuccessCallback,
+            jsmoErrorCallback
+        )
+        // session_context.setData(copy)
+        // console.log(index)
         // session_context.setData()
     }
 
     const generateStacks = (arr, type) => {
-        return arr.map((e,i) =>
-            <Stack key={i} direction="horizontal" gap={3}>
-                <div className="me-auto">{e.display_name}</div>
-                {type === 'waitingRoom' ?
-                    <Button onClick={admit} value={e?.participant_id} variant="outline-success">Admit</Button> :
-                    <Button variant="outline-danger">Revoke</Button>
-                }
-            </Stack>
-        )
+        return arr.map((e,i) => {
+            return (
+                <Stack key={i} direction="horizontal" gap={3}>
+                    <div className="me-auto">{e.participant_first_name}</div>
+                    {type === 'waitingRoom' ?
+                        <Button onClick={admit} value={e?.record_id} variant="outline-success">Admit</Button> :
+                        <Button variant="outline-danger">Revoke</Button>
+                    }
+                </Stack>
+            )
+        })
     }
 
     return (
@@ -76,35 +95,34 @@ export const WaitingRoom = () => {
                     <Accordion.Body>
                         <div>
                             <strong><div className="text-decoration-underline">Description</div></strong>
-                            {session_context?.chatSessionDetails?.description}
+                            {session?.ts_topic}
                         </div>
                         <div>
-                            <strong><div className="text-decoration-underline">Date</div></strong>
-                            {session_context?.chatSessionDetails?.date}
+                            <strong><div className="text-decoration-underline">Start Date</div></strong>
+                            {session?.ts_start}
                         </div>
-
                     </Accordion.Body>
                 </Accordion.Item>
             </Accordion>
             <Nav variant="tabs" className="mb-3 admin-container" justify>
                 <Nav.Item>
                     <Nav.Link eventKey="online">
-                        <div>Waiting Room <Badge pill bg="danger">{online.length}</Badge></div>
+                        <div>Waiting Room <Badge pill bg="danger">{online?.length ? online.length : 0}</Badge></div>
                     </Nav.Link>
                 </Nav.Item>
                 <Nav.Item>
-                    <Nav.Link eventKey="chatroom">Chat Room <Badge pill bg="success">{chatroom.length}</Badge></Nav.Link>
+                    <Nav.Link eventKey="chatroom">Chat Room <Badge pill bg="success">{chatroom?.length ? chatroom.length : 0}</Badge></Nav.Link>
                 </Nav.Item>
             </Nav>
             <Tab.Content>
                 <Tab.Pane eventKey="online">
                     <Stack gap={2}>
-                        {generateStacks(online, 'waitingRoom')}
+                        { online && generateStacks(online, 'waitingRoom')}
                     </Stack>
                 </Tab.Pane>
                 <Tab.Pane eventKey="chatroom">
                     <Stack gap={2}>
-                        {generateStacks(chatroom, 'chatRoom')}
+                        { chatroom && generateStacks(chatroom, 'chatRoom')}
                     </Stack>
                 </Tab.Pane>
             </Tab.Content>
