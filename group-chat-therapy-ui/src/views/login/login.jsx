@@ -23,7 +23,7 @@ export default function Login() {
     const [lastName, setLastName] = useState('')
     const [loading, setLoading] = useState(false)
     const [code, setCode] = useState('')
-    const [showCode, setShowCode] = useState(false)
+    const [showCode, setShowCode] = useState(true)
 
     const [error, setError] = useState('')
     const [lastNameError, setLastNameError] = useState(false)
@@ -32,7 +32,6 @@ export default function Login() {
     let jsmoModule;
     if(import.meta?.env?.MODE !== 'development')
         jsmoModule = ExternalModules.Stanford.GroupChatTherapy
-
     /**
      * Callback passed to execute react functions in JSMO
      * @param type String : Possible values = 'validateCode' and 'validateUserPhone'
@@ -41,29 +40,31 @@ export default function Login() {
     const callback = (type, res) => {
         if (type === 'validateCode') { //User is inputting code from OTP
             res ? setError('') : setError('Invalid code entered')
-
             //TODO FAKING FOR NOW TO TEST UI
+            /*
+                    {participant_id: "123xyz" , display_name : "Mr. Therapist", status : "online"},
+                    {participant_id: "abc456" , display_name : "Gilligan", status : "chat"},
+                    {participant_id: "def789" , display_name : "Wally", status : "online"},
+             */
             const res_fake = {
-                chat_session_details : {
-                    chat_id : "123456abcxyz",
-                    title : "Alcohol Intervention",
-                    description : "Group Session Chat for Dudes",
+                chat_sessions : [{
+                    record_id : "TS01",
+                    ts_title : "Alcohol Intervention",
+                    ts_topic : "Group Session Chat for Dudes",
                     date : "2023-07-21",
-                    time_start : 1100,
-                    time_end : 1300,
-                    therapist : "123xyz",
+                    ts_start : "2023-07-08 10:04:18",
                     whiteboard : "",
-
-                    participants :  [
-                        {participant_id: "123xyz" , display_name : "Mr. Therapist", status : "online"},
-                        {participant_id: "abc456" , display_name : "Gilligan", status : "chat"},
-                        {participant_id: "def789" , display_name : "Wally", status : "online"},
-                        {participant_id: "abcdfd" , display_name : "Jeff Green", status : "online"},
-                        {participant_id: "234d3e" , display_name : "Jonathan Gee", status : "online"},
-                        {participant_id: "4gdfa3" , display_name : "Kent Miles", status : "online"},
-
-                    ]
+                    ts_authorized_participants :  ['2','3']
                 },
+                {
+                    record_id : "TS04",
+                    ts_title : "Depression 101",
+                    ts_topic : "Group Session for depression",
+                    date : "2023-07-21",
+                    ts_start : "2023-12-08 10:04:18",
+                    whiteboard : "",
+                    ts_authorized_participants :  ['2','3','4']
+                }],
                 assessments : [
                     { participant_id : "abc456",
                         required : [
@@ -75,8 +76,8 @@ export default function Login() {
                 ],
                 participantID : "abc456"
             }
-            session_context.setData(res_fake);
-            navigate(`/landing`)
+            session_context.setData(res);
+            navigate(`/select`)
         } else { //User is checking existence within study
             res ? setError('') : setError('Invalid credentials supplied')
             setShowCode(res)
@@ -101,13 +102,15 @@ export default function Login() {
         if (!lastName) {
             setLastNameError(true)
         }
-        callback('validateCode')
-        return;
+        // jsmoModule.getParticipants({'participants': ['3','4']})
+        // callback('validateCode')
+        // return;
+
         if (showCode) { //User has entered a code
             setLoading(true);
 
             //TODO DISABLING FOR NOW FOR TESTING UI
-            // jsmoModule.validateCode(code, callback, errorCallback);
+            jsmoModule.validateCode(code, callback, errorCallback);
             // callback('validateCode')
         } else if (lastName && phone) { // User needs to be verified as part of study, sent OTP
             setLoading(true);
@@ -115,7 +118,7 @@ export default function Login() {
             //TODO TEMPORARY PLACEMENT FOR TESTING UI
             // callback("validateCode", true);
 
-            //TODO DISABLING FOR NOW FOR TESTING UI
+
             jsmoModule.validateUserPhone(lastName, phone, callback, errorCallback)
             // jsmoModule.addAction("Testing!")
             // let testActions = [{
@@ -134,7 +137,7 @@ export default function Login() {
             // }];
             //
             // jsmoModule.handleActions({maxID: 1370, actionQueue: testDeleteAction})
-            // navigate("/chat");
+            // navigate("/select");
         } else {
             setError('Something went wrong')
         }

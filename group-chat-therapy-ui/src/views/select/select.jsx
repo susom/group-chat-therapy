@@ -31,15 +31,12 @@ export default function Select(){
 
     const jumpTo = (e) => {
         let sessions = session_context?.data?.chat_sessions
-        console.log(sessions)
         let index = sessions.findIndex(session=> session.record_id === e.target.value)
-        console.log(index)
         if(index !== -1 ){ //Pass props from selected session to landing
             navigate("/landing", { state: sessions[index] })
         }
 
     }
-    console.log(session_context)
     const renderRows = () => {
         const items = session_context?.data?.chat_sessions.map((e,i) => (
             <Accordion.Item className="mb-3" key={i} eventKey={i}>
@@ -50,11 +47,11 @@ export default function Select(){
                 <Accordion.Body>
                     <div>
                         <div className="text-decoration-underline"><strong>Chat ID</strong></div>
-                        <div className="">{e.chat_id}</div>
+                        <div className="">{e.record_id}</div>
                     </div>
                     <div>
-                        <div className="text-decoration-underline"><strong>Date</strong></div>
-                        <div className="ml-5">{e.date}</div>
+                        <div className="text-decoration-underline"><strong>Start Date</strong></div>
+                        <div className="ml-5">{e.ts_start}</div>
                     </div>
                     <div>
                         <strong><div className="text-decoration-underline">Description</div></strong>

@@ -1,5 +1,5 @@
 import React, {useContext, useEffect} from "react";
-import {Link, Navigate, useNavigate} from "react-router-dom";
+import {Link, Navigate, useNavigate, useLocation} from "react-router-dom";
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
@@ -18,7 +18,10 @@ import './landing.css';
 export default function Landing() {
     const session_context = useContext(SessionContext);
     const navigate = useNavigate()
+    const {state: selectedSession} = useLocation(); //Grab
+
     useEffect(() => {
+
         // if (!session_context?.participantID) {
         //     console.log('Redirected, not logged in')
         //     navigate("/", {replace: true})
@@ -27,53 +30,53 @@ export default function Landing() {
 
     const renderList = () => {
         return (
+            <ListGroup as="ol" className="my-2 survey-list">
+                <ListGroup.Item
+                    action
+                    as="li"
+                >
+                    <div>
+                        <div className="fw-bold">
+                            <Badge className="float-end" bg="danger" pill>
+                                Not complete
+                            </Badge>
+                        </div>
+                        Mental health questionnaire
+                    </div>
 
-                    <ListGroup as="ol" className="my-2 survey-list">
-                        <ListGroup.Item
-                            action
-                            as="li"
-                        >
-                            <div>
-                                <div className="fw-bold">
-                                    <Badge className="float-end" bg="danger" pill>
-                                        Not complete
-                                    </Badge>
-                                </div>
-                                Mental health questionnaire
-                            </div>
+                </ListGroup.Item>
+                <ListGroup.Item
+                    action
+                    as="li"
+                    disabled
+                >
+                    <div>
+                        <div className="fw-bold">
+                            <Badge className="float-end" bg="success" pill>
+                                Complete
+                            </Badge>
+                        </div>
+                        Physical health questionnaire
+                    </div>
+                </ListGroup.Item>
 
-                        </ListGroup.Item>
-                        <ListGroup.Item
-                            action
-                            as="li"
-                            disabled
-                        >
-                            <div>
-                                <div className="fw-bold">
-                                    <Badge className="float-end" bg="success" pill>
-                                        Complete
-                                    </Badge>
-                                </div>
-                                Physical health questionnaire
-                            </div>
-                        </ListGroup.Item>
-
-                    </ListGroup>
+            </ListGroup>
         )
     }
 
     const enterChat = () => {
-        navigate("/chat")
+        // navigate("/chat")
     }
 
     const renderAdmin = () => {
-        const {chat_id, title} = session_context.chatSessionDetails || ''
         return (
             <Container className='session-detail mt-3'>
                 <Card>
-                    <Card.Header><strong>{title}</strong> - #({chat_id})</Card.Header>
+                    <Card.Header><strong>{selectedSession?.ts_title}</strong> - #{selectedSession?.record_id}</Card.Header>
                     <Card.Body>
-                        <WaitingRoom/>
+                        <WaitingRoom
+                            session = {selectedSession}
+                        />
                     </Card.Body>
                     <Card.Footer>
                         <Button className="float-end" onClick={enterChat}>Enter Chat</Button>
@@ -108,10 +111,10 @@ export default function Landing() {
     }
 
 
-    if (!session_context?.participantID) {
-        return <Navigate to="/"/>
-    } else {
-        const isAdmin = false
+    // if (!session_context?.data?.participantID) {
+    //     return <Navigate to="/"/>
+    // } else {
+        const isAdmin = true
         return (
             <>
                 <Navbar bg="light" className="bg-body-tertiary main-nav">
@@ -130,5 +133,5 @@ export default function Landing() {
                 {isAdmin ? renderAdmin() : renderParticipant()}
             </>
         )
-    }
+    // }
 }
