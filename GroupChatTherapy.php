@@ -282,6 +282,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
                 "ts_start",
                 "ts_start_2",
                 "ts_authorized_participants",
+                "ts_chat_room_participants",
                 "ts_title",
                 "ts_topic"
             ),
@@ -292,13 +293,13 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
         $user_sessions = [];
 
         foreach($full_sessions as $session){
-            if(!empty($session['ts_authorized_participants'])){
-                $str_arr = explode (",", $session['ts_authorized_participants']);
-                if(in_array($record['record_id'], $str_arr)) {
-                    $session['ts_authorized_participants'] = $str_arr; //Save as array
-                    $user_sessions[] = $session;
+            $participants_arr = !empty($session['ts_authorized_participants']) ? explode (",", $session['ts_authorized_participants']) : [];
+            $in_chat_arr = !empty($session['ts_chat_room_participants']) ? explode (",", $session['ts_chat_room_participants']) : [];
+            if(in_array($record['record_id'], $participants_arr) || in_array($record['record_id'], $in_chat_arr)) { // If user is a part of either participant field or in chat field
+                $session['ts_authorized_participants'] = $participants_arr; //Save as array
+                $session['ts_chat_room_participants'] = $in_chat_arr;
 
-                }
+                $user_sessions[] = $session;
             }
         }
 
@@ -341,6 +342,85 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
     }
 
     /**
+     * @param $payload
+     * @return array
+     */
+    public function updateParticipants($payload): array
+    {
+        try {
+            if(empty($payload['record_id']) || empty($payload['action']) || empty($payload['participant_id']))
+                throw new Exception('Incorrect payload passed to updateParticipants');
+
+            $params = array(
+                "return_format" => "json",
+                "records" => array($payload['record_id']),
+                "fields" => array(
+                    "record_id",
+                    "ts_status",
+                    "ts_start",
+                    "ts_start_2",
+                    "ts_authorized_participants",
+                    "ts_chat_room_participants",
+                    "ts_title",
+                    "ts_topic"
+                ),
+                "events" => array("therapy_session_arm_1"),
+            );
+
+            $json = json_decode(REDCap::getData($params), true);
+            if(sizeof($json)){
+                $data = current($json);
+                $participants_arr = !empty($data['ts_authorized_participants']) ? explode (",", $data['ts_authorized_participants']) : [];
+                $in_chat_arr = !empty($data['ts_chat_room_participants']) ? explode (",", $data['ts_chat_room_participants']) : [];
+
+                if($payload['action'] === 'admit'){
+                    $index = array_search($payload['participant_id'], $participants_arr);
+                    if($index != -1){
+                        $in_chat_arr[] = $participants_arr[$index]; //Append participant to in_chat and remove from participants array
+                        unset($participants_arr[$index]);
+                    }
+//                    TODO: ADD REVOKE
+
+                } else if($payload['action'] === 'revoke') {
+                    $participants_arr = explode (",", $data['ts_chat_room_participants']);
+                } else {
+                    throw new Exception('Action specified in payload is incorrect');
+                }
+
+                $data['ts_chat_room_participants'] = array_values($in_chat_arr);
+                $data['ts_authorized_participants'] = array_values($participants_arr);
+
+                $saveData = array(
+                    array(
+                        "record_id" => $payload['record_id'],
+                        "ts_authorized_participants" => implode(',', $participants_arr),
+                        "ts_chat_room_participants" => implode(',', $in_chat_arr),
+                        "redcap_event_name" => "therapy_session_arm_1"
+                    )
+                );
+
+                $response = REDCap::saveData('json', json_encode($saveData), 'overwrite');
+                if (!empty($response['errors'])) {
+                    $this->emError("Could not update record with " . json_encode($response['errors']));
+                    throw new Exception("Could not update record with " . json_encode($response['errors']));
+                }
+                $returnPayload["data"] = $data;
+                return ["result" => json_encode($returnPayload)];
+//                return $response;
+            } else {
+                $rec = $payload['record_id'];
+                throw new Exception("Get data call returned no results given record_id $rec");
+            }
+//            return $payload;
+        } catch (\Exception $e) {
+            $msg = $e->getMessage();
+            \REDCap::logEvent("Error: $msg");
+            $this->emError("Error: $msg");
+            return ["result" => json_encode($msg)];
+        }
+    }
+
+    /**
      * Polling function will call this endpoint.
      * @param array $payload
      * @return array
@@ -353,7 +433,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
             $start = hrtime(true);
 
             if (count($actionQueue)) { //User has actions to process
-//                $this->addAction($actionQueue);
+                $this->addAction($actionQueue);
             }
 
             //If no event queue has been passed, simply return actions
@@ -483,6 +563,9 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
             case "getParticipants":
                 $sanitized = $this->sanitizeInput($payload);
                 return $this->getParticipants($sanitized);
+            case "updateParticipants":
+                $sanitized = $this->sanitizeInput($payload);
+                return $this->updateParticipants($sanitized);
             case "addAction":
                 $this->addAction($payload);
                 break;
