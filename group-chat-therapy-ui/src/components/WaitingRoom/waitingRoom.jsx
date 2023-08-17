@@ -14,34 +14,25 @@ export const WaitingRoom = ({session}) => {
     const session_context = useContext(SessionContext);
     const [online, setOnline] = useState([])
     const [chatroom, setChatroom] = useState([])
-
+    const [participantDetails, setParticipantDetails] = useState([])
+    const [selectedSession, setSelectedSession] = useState({})
     let jsmoModule;
     if(import.meta?.env?.MODE !== 'development')
         jsmoModule = ExternalModules.Stanford.GroupChatTherapy
 
-    const jsmoSuccessCallback = (res) => {
-        if(res){
-            let filtered = res?.data.filter(e => parseInt(e.admin) !== 1)
-            setOnline(filtered)
-            console.log('participants', filtered)
-        }
-
-    }
-
-    const jsmoErrorCallback = (err) => {
-        console.log(err)
-    }
 
     useEffect(() => {
-        console.log('inside waiting room', session)
+        // console.log('inside waiting room', session)
+        setSelectedSession(session)
+
         if(session?.record_id){
             jsmoModule.getParticipants(
-                {'participants' : session?.ts_authorized_participants},
+                {'participants' : [...session?.ts_authorized_participants, ...session?.ts_chat_room_participants]},
                 (res) => {
                     if(res){
-                        let filtered = res?.data.filter(e => parseInt(e.admin) !== 1)
-                        setOnline(filtered)
-                        console.log('participants', filtered)
+                        let filtered = res?.data.filter(e => parseInt(e.admin) !== 1) //remove admins from waiting room list
+                        setParticipantDetails(filtered)
+                        // console.log('participants', filtered)
                     }
                 },
                 (err) => {
@@ -54,37 +45,56 @@ export const WaitingRoom = ({session}) => {
 
     const admit = (e) => {
         let {value: participant_id} = e.target
-        console.log('in admit')
-        console.log(participant_id)
-        let copy = session;
-
-        // let index = copy?.full?.chat_session_details?.participants.findIndex(e=> e.participant_id === participant_id)
-        // if(index){
-        //     copy.full.chat_session_details.participants[index]['status'] = 'chat'
-        // }
 
         jsmoModule.updateParticipants(
-            {'record_id': session?.record_id, 'action': 'admit', 'participant_id': participant_id},
-            jsmoSuccessCallback,
-            jsmoErrorCallback
+            {'record_id': selectedSession?.record_id, 'action': 'admit', 'participant_id': participant_id},
+            (res) => {
+                if(res) {
+                    setSelectedSession(res?.data)
+                }
+            },
+            (err) => {
+                console.log('callback err', err)
+            }
         )
-        // session_context.setData(copy)
-        // console.log(index)
-        // session_context.setData()
+
     }
 
-    const generateStacks = (arr, type) => {
-        return arr.map((e,i) => {
-            return (
-                <Stack key={i} direction="horizontal" gap={3}>
-                    <div className="me-auto">{e.participant_first_name}</div>
-                    {type === 'waitingRoom' ?
-                        <Button onClick={admit} value={e?.record_id} variant="outline-success">Admit</Button> :
-                        <Button variant="outline-danger">Revoke</Button>
-                    }
-                </Stack>
-            )
-        })
+    const generateStacks = (type) => {
+        if(type === 'waitingRoom') {
+            return selectedSession?.ts_authorized_participants?.map((e,i) => {
+                let detail = participantDetails?.find(el => el.record_id === e)
+                if(detail)
+                    return (
+                        <Stack key={i} direction="horizontal" gap={3}>
+                            <div className="me-auto">{detail?.participant_first_name}</div>
+                            <Button onClick={admit} value={detail?.record_id} variant="outline-success">Admit</Button>
+                        </Stack>
+                    )
+            })
+        } else {
+            return selectedSession?.ts_chat_room_participants?.map((e,i) => {
+                let detail = participantDetails?.find(el => el.record_id === e)
+                if(detail)
+                    return (
+                        <Stack key={i} direction="horizontal" gap={3}>
+                            <div className="me-auto">{detail?.participant_first_name}</div>
+                                <Button variant="outline-danger">Revoke</Button>
+                        </Stack>
+                    )
+            })
+        }
+        // return arr?.map((e,i) => {
+        //     return (
+        //         <Stack key={i} direction="horizontal" gap={3}>
+        //             <div className="me-auto">{e.participant_first_name}</div>
+        //             {type === 'waitingRoom' ?
+        //                 <Button onClick={admit} value={e?.record_id} variant="outline-success">Admit</Button> :
+        //                 <Button variant="outline-danger">Revoke</Button>
+        //             }
+        //         </Stack>
+        //     )
+        // })
     }
 
     return (
@@ -95,11 +105,11 @@ export const WaitingRoom = ({session}) => {
                     <Accordion.Body>
                         <div>
                             <strong><div className="text-decoration-underline">Description</div></strong>
-                            {session?.ts_topic}
+                            {selectedSession?.ts_topic}
                         </div>
                         <div>
                             <strong><div className="text-decoration-underline">Start Date</div></strong>
-                            {session?.ts_start}
+                            {selectedSession?.ts_start}
                         </div>
                     </Accordion.Body>
                 </Accordion.Item>
@@ -107,22 +117,22 @@ export const WaitingRoom = ({session}) => {
             <Nav variant="tabs" className="mb-3 admin-container" justify>
                 <Nav.Item>
                     <Nav.Link eventKey="online">
-                        <div>Waiting Room <Badge pill bg="danger">{online?.length ? online.length : 0}</Badge></div>
+                        <div>Waiting Room <Badge pill bg="danger">{selectedSession?.ts_authorized_participants?.length ? selectedSession?.ts_authorized_participants?.length : 0}</Badge></div>
                     </Nav.Link>
                 </Nav.Item>
                 <Nav.Item>
-                    <Nav.Link eventKey="chatroom">Chat Room <Badge pill bg="success">{chatroom?.length ? chatroom.length : 0}</Badge></Nav.Link>
+                    <Nav.Link eventKey="chatroom">Chat Room <Badge pill bg="success">{selectedSession?.ts_chat_room_participants?.length ? selectedSession?.ts_chat_room_participants?.length : 0}</Badge></Nav.Link>
                 </Nav.Item>
             </Nav>
             <Tab.Content>
                 <Tab.Pane eventKey="online">
                     <Stack gap={2}>
-                        { online && generateStacks(online, 'waitingRoom')}
+                        { participantDetails && selectedSession && generateStacks('waitingRoom')}
                     </Stack>
                 </Tab.Pane>
                 <Tab.Pane eventKey="chatroom">
                     <Stack gap={2}>
-                        { chatroom && generateStacks(chatroom, 'chatRoom')}
+                        { participantDetails && selectedSession && generateStacks( 'chatRoom')}
                     </Stack>
                 </Tab.Pane>
             </Tab.Content>
