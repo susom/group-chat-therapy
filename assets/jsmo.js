@@ -92,7 +92,7 @@
                 .then(res => {
                     if(res?.result)
                         callback(JSON.parse(res?.result))
-                }).catch(err => errorCallback)
+                }).catch(err => errorCallback(err))
         },
 
         getChatSessionDetails: function(payload) {
