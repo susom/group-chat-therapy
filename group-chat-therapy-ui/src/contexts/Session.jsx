@@ -196,49 +196,49 @@ export const SessionContextProvider = ({children}) => {
 
 
     // INIT SESSION START WITH LOGIN PAYLOAD
-    useEffect(() => {
-        if (data && !isPollingActions) {
-            console.log("GOT INITIAL DATA PAYLOAD in Session useEffect()", data);
-
-            const chat = data;
-
-            //SET CHAT SESSION ID
-            setChatSessionID(data.chat_session_details.chat_id);
-
-            //SET INITIAL CHAT SESSION DETAILS
-            setChatSessionDetails(data.chat_session_details);
-
-            //SET CURRENT USER BY "participant_id" (aka PHP Session ID?)
-            setParticipantID(data.participantID);
-
-            //SET LOOKUP FOR MAPPING participant_ids to DISPLAY NAMES
-            const participantsLookup = data.chat_session_details.participants.reduce((obj, participant) => {
-                obj[participant.participant_id] = participant.display_name;
-                return obj;
-            }, {});
-            setParticipantsLookUp(participantsLookup);
-
-            //IF THIS IS A PARTICIPANT , THEN NEED TO CHECK THEIR ASSESSMENTS STATUS
-            if(isAdmin) {
-                //DO A ROLL UP OF ALL THE ASSESSMENTS , BUT DOES NOT NEED TO BLOCK ENTRY INTO CHAT SESSION
-
-
-            }else{
-                const {assessments} = chat;
-                setAssessments(assessments);
-
-                const participantAssessments    = assessments.find(a => a.participant_id === data.participant_id);
-                const areAllAssessmentsComplete = participantAssessments?.required.every(a => a.status);
-                if (areAllAssessmentsComplete) {
-                    // Stop polling assessments and start polling group chats
-                    setAssessmentStatus(true);
-                }
-            }
-
-            //LETS START THE POLLING
-            setIsPollingActions(true);
-        }
-    }, [data]);
+    // useEffect(() => {
+    //     if (data && !isPollingActions) {
+    //         console.log("GOT INITIAL DATA PAYLOAD in Session useEffect()", data);
+    //
+    //         const chat = data;
+    //
+    //         //SET CHAT SESSION ID
+    //         setChatSessionID(data.chat_session_details.chat_id);
+    //
+    //         //SET INITIAL CHAT SESSION DETAILS
+    //         setChatSessionDetails(data.chat_session_details);
+    //
+    //         //SET CURRENT USER BY "participant_id" (aka PHP Session ID?)
+    //         setParticipantID(data.participantID);
+    //
+    //         //SET LOOKUP FOR MAPPING participant_ids to DISPLAY NAMES
+    //         const participantsLookup = data.chat_session_details.participants.reduce((obj, participant) => {
+    //             obj[participant.participant_id] = participant.display_name;
+    //             return obj;
+    //         }, {});
+    //         setParticipantsLookUp(participantsLookup);
+    //
+    //         //IF THIS IS A PARTICIPANT , THEN NEED TO CHECK THEIR ASSESSMENTS STATUS
+    //         if(isAdmin) {
+    //             //DO A ROLL UP OF ALL THE ASSESSMENTS , BUT DOES NOT NEED TO BLOCK ENTRY INTO CHAT SESSION
+    //
+    //
+    //         }else{
+    //             const {assessments} = chat;
+    //             setAssessments(assessments);
+    //
+    //             const participantAssessments    = assessments.find(a => a.participant_id === data.participant_id);
+    //             const areAllAssessmentsComplete = participantAssessments?.required.every(a => a.status);
+    //             if (areAllAssessmentsComplete) {
+    //                 // Stop polling assessments and start polling group chats
+    //                 setAssessmentStatus(true);
+    //             }
+    //         }
+    //
+    //         //LETS START THE POLLING
+    //         setIsPollingActions(true);
+    //     }
+    // }, [data]);
 
 
     // POLL FOR ACTIONS
@@ -546,7 +546,7 @@ export const SessionContextProvider = ({children}) => {
     return (
         <SessionContext.Provider value={{
                                         setData,
-                                        full:data,
+                                        data,
                                         getActionsIntervalID,
                                         setIsPollingPaused,
                                         chatSessionID,
@@ -558,7 +558,7 @@ export const SessionContextProvider = ({children}) => {
                                         participantsLookUp,
                                         participants,
                                         allChats,
-                                        sendAction,
+                                        sendAction, //function
                                         removeMessage
         }}>
             {children}
