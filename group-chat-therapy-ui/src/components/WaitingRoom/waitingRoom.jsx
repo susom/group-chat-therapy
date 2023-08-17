@@ -10,8 +10,10 @@ import './waitingRoom.css';
 
 import {SessionContext} from "../../contexts/Session.jsx";
 
-export const WaitingRoom = ({session}) => {
+export const WaitingRoom = () => {
     const session_context = useContext(SessionContext);
+    const {selected_session} = session_context?.data
+    // console.log(session_context)
     const [online, setOnline] = useState([])
     const [chatroom, setChatroom] = useState([])
     const [participantDetails, setParticipantDetails] = useState([])
@@ -23,16 +25,19 @@ export const WaitingRoom = ({session}) => {
 
     useEffect(() => {
         // console.log('inside waiting room', session)
-        setSelectedSession(session)
+        setSelectedSession(session_context?.data?.selected_session)
 
-        if(session?.record_id){
+        if(session_context?.data?.selected_session?.record_id){
             jsmoModule.getParticipants(
-                {'participants' : [...session?.ts_authorized_participants, ...session?.ts_chat_room_participants]},
+                {'participants' : [
+                    ...session_context?.data?.selected_session?.ts_authorized_participants,
+                    ...session_context?.data?.selected_session?.ts_chat_room_participants
+                    ]},
                 (res) => {
                     if(res){
-                        let filtered = res?.data.filter(e => parseInt(e.admin) !== 1) //remove admins from waiting room list
+                        let filtered = res?.data?.filter(e => parseInt(e.admin) !== 1) //remove admins from waiting room list
                         setParticipantDetails(filtered)
-                        // console.log('participants', filtered)
+                        console.log('participants', filtered)
                     }
                 },
                 (err) => {
@@ -41,16 +46,22 @@ export const WaitingRoom = ({session}) => {
             )
         }
 
-    }, [session])
+    }, [session_context, selectedSession])
 
     const admit = (e) => {
         let {value: participant_id} = e.target
+        const {selected_session} = session_context?.data
 
         jsmoModule.updateParticipants(
-            {'record_id': selectedSession?.record_id, 'action': 'admit', 'participant_id': participant_id},
+            {'record_id': selected_session?.record_id, 'action': 'admit', 'participant_id': participant_id},
             (res) => {
                 if(res) {
-                    setSelectedSession(res?.data)
+                    let copy = session_context?.data
+                    copy['selected_session'] = res?.data
+                    session_context.setData(copy)
+                    setSelectedSession(copy['selected_session'])
+                    // session_context?.setData()
+                    // setSelectedSession(res?.data)
                 }
             },
             (err) => {
@@ -62,7 +73,7 @@ export const WaitingRoom = ({session}) => {
 
     const generateStacks = (type) => {
         if(type === 'waitingRoom') {
-            return selectedSession?.ts_authorized_participants?.map((e,i) => {
+            return selected_session?.ts_authorized_participants?.map((e,i) => {
                 let detail = participantDetails?.find(el => el.record_id === e)
                 if(detail)
                     return (
@@ -73,7 +84,7 @@ export const WaitingRoom = ({session}) => {
                     )
             })
         } else {
-            return selectedSession?.ts_chat_room_participants?.map((e,i) => {
+            return selected_session?.ts_chat_room_participants?.map((e,i) => {
                 let detail = participantDetails?.find(el => el.record_id === e)
                 if(detail)
                     return (
@@ -105,11 +116,11 @@ export const WaitingRoom = ({session}) => {
                     <Accordion.Body>
                         <div>
                             <strong><div className="text-decoration-underline">Description</div></strong>
-                            {selectedSession?.ts_topic}
+                            {selected_session?.ts_topic}
                         </div>
                         <div>
                             <strong><div className="text-decoration-underline">Start Date</div></strong>
-                            {selectedSession?.ts_start}
+                            {selected_session?.ts_start}
                         </div>
                     </Accordion.Body>
                 </Accordion.Item>
@@ -117,22 +128,22 @@ export const WaitingRoom = ({session}) => {
             <Nav variant="tabs" className="mb-3 admin-container" justify>
                 <Nav.Item>
                     <Nav.Link eventKey="online">
-                        <div>Waiting Room <Badge pill bg="danger">{selectedSession?.ts_authorized_participants?.length ? selectedSession?.ts_authorized_participants?.length : 0}</Badge></div>
+                        <div>Waiting Room <Badge pill bg="danger">{selected_session?.ts_authorized_participants?.length ? selected_session?.ts_authorized_participants?.length : 0}</Badge></div>
                     </Nav.Link>
                 </Nav.Item>
                 <Nav.Item>
-                    <Nav.Link eventKey="chatroom">Chat Room <Badge pill bg="success">{selectedSession?.ts_chat_room_participants?.length ? selectedSession?.ts_chat_room_participants?.length : 0}</Badge></Nav.Link>
+                    <Nav.Link eventKey="chatroom">Chat Room <Badge pill bg="success">{selected_session?.ts_chat_room_participants?.length ? selected_session?.ts_chat_room_participants?.length : 0}</Badge></Nav.Link>
                 </Nav.Item>
             </Nav>
             <Tab.Content>
                 <Tab.Pane eventKey="online">
                     <Stack gap={2}>
-                        { participantDetails && selectedSession && generateStacks('waitingRoom')}
+                        { participantDetails && selected_session && generateStacks('waitingRoom')}
                     </Stack>
                 </Tab.Pane>
                 <Tab.Pane eventKey="chatroom">
                     <Stack gap={2}>
-                        { participantDetails && selectedSession && generateStacks( 'chatRoom')}
+                        { participantDetails && selected_session && generateStacks( 'chatRoom')}
                     </Stack>
                 </Tab.Pane>
             </Tab.Content>

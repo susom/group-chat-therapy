@@ -77,6 +77,7 @@ export default function Login() {
                 participantID : "abc456"
             }
             session_context.setData(res);
+            console.log('setting session_context', res)
             navigate(`/select`)
         } else { //User is checking existence within study
             res ? setError('') : setError('Invalid credentials supplied')

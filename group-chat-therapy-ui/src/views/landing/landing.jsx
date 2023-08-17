@@ -18,7 +18,6 @@ import './landing.css';
 export default function Landing() {
     const session_context = useContext(SessionContext);
     const navigate = useNavigate()
-    const {state: selectedSession} = useLocation(); //Grab
 
     useEffect(() => {
 
@@ -65,17 +64,18 @@ export default function Landing() {
     }
 
     const enterChat = () => {
-        // navigate("/chat")
+        navigate("/chat")
     }
 
     const renderAdmin = () => {
+        const {selected_session} = session_context?.data
         return (
             <Container className='session-detail mt-3'>
                 <Card>
-                    <Card.Header><strong>{selectedSession?.ts_title}</strong> - #{selectedSession?.record_id}</Card.Header>
+                    <Card.Header><strong>{selected_session?.ts_title}</strong> - #{selected_session?.record_id}</Card.Header>
                     <Card.Body>
                         <WaitingRoom
-                            session = {selectedSession}
+                            session = {selected_session}
                         />
                     </Card.Body>
                     <Card.Footer>
@@ -114,7 +114,7 @@ export default function Landing() {
     // if (!session_context?.data?.participantID) {
     //     return <Navigate to="/"/>
     // } else {
-        const isAdmin = true
+        const isAdmin = session_context?.data?.current_user?.admin
         return (
             <>
                 <Navbar bg="light" className="bg-body-tertiary main-nav">
@@ -124,7 +124,7 @@ export default function Landing() {
                         <Navbar.Toggle />
                         <Navbar.Collapse className="justify-content-end">
                             <Navbar.Text>
-                                Signed in as: {session_context?.participantID}
+                                Signed in as: {session_context?.data?.current_user?.participant_first_name}
                             </Navbar.Text>
                         </Navbar.Collapse>
                     </Container>

@@ -226,7 +226,14 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
 
             $params = array(
                 "return_format" => "json",
-                "fields" => array("participant_otp_code", "participant_otp_code_ts", "record_id", "admin"),
+                "fields" => array(
+                    "participant_otp_code",
+                    "participant_otp_code_ts",
+                    "participant_first_name",
+                    "participant_last_name",
+                    "record_id",
+                    "admin"
+                ),
                 "events" => array("participant_arm_2"),
             );
 
@@ -295,10 +302,13 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
         foreach($full_sessions as $session){
             $participants_arr = !empty($session['ts_authorized_participants']) ? explode (",", $session['ts_authorized_participants']) : [];
             $in_chat_arr = !empty($session['ts_chat_room_participants']) ? explode (",", $session['ts_chat_room_participants']) : [];
-            if(in_array($record['record_id'], $participants_arr) || in_array($record['record_id'], $in_chat_arr)) { // If user is a part of either participant field or in chat field
+            if($record['admin']){
                 $session['ts_authorized_participants'] = $participants_arr; //Save as array
                 $session['ts_chat_room_participants'] = $in_chat_arr;
-
+                $user_sessions[] = $session;
+            } else if(in_array($record['record_id'], $participants_arr) || in_array($record['record_id'], $in_chat_arr)) { // If user is a part of either participant field or in chat field
+                $session['ts_authorized_participants'] = $participants_arr; //Save as array
+                $session['ts_chat_room_participants'] = $in_chat_arr;
                 $user_sessions[] = $session;
             }
         }

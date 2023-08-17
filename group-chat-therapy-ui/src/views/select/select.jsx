@@ -33,7 +33,11 @@ export default function Select(){
         let sessions = session_context?.data?.chat_sessions
         let index = sessions.findIndex(session=> session.record_id === e.target.value)
         if(index !== -1 ){ //Pass props from selected session to landing
-            navigate("/landing", { state: sessions[index] })
+            let copy = session_context.data
+            copy['selected_session'] = sessions[index]
+            session_context.setData(copy)
+            // navigate("/landing", { state: sessions[index] })
+            navigate("/landing")
         }
 
     }
