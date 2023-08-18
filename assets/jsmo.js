@@ -79,6 +79,22 @@
             })
         },
 
+        getWhiteboard : (payload, callback, errorCallback) => {
+            module.ajax('getWhiteboard', payload)
+                .then((res) => {
+                    if(res?.result)
+                        callback(JSON.parse(res?.result))
+                }).catch(err => errorCallback(err))
+        },
+
+        setWhiteboard: (payload, callback, errorCallback) => {
+            module.ajax('setWhiteboard', payload)
+                .then((res) => {
+                    if(res?.result)
+                        callback(JSON.parse(res?.result))
+                }).catch(err => errorCallback(err))
+        },
+
         getParticipants: (payload, callback, errorCallback) => {
             module.ajax('getParticipants', payload)
                 .then((res) => {
