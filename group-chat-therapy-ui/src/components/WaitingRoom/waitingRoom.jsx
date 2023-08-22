@@ -16,7 +16,8 @@ export const WaitingRoom = () => {
     const {selected_session} = session_context?.data
     const [participantDetails, setParticipantDetails] = useState([])
     const [selectedSession, setSelectedSession] = useState({})
-    const [pageLoading, setPageLoading] = useState(true)
+    const [loading, setLoading] = useState(false)
+    const [pageLoad, setPageLoad] = useState(true)
 
     let jsmoModule;
     if (import.meta?.env?.MODE !== 'development')
@@ -37,13 +38,13 @@ export const WaitingRoom = () => {
                     if (res) {
                         let filtered = res?.data?.filter(e => parseInt(e.admin) !== 1) //remove admins from waiting room list
                         setParticipantDetails(filtered)
-                        setPageLoading(false)
                         console.log('participants', filtered)
+                        setPageLoad(false)
                     }
                 },
                 (err) => {
-                    setPageLoading(false)
                     console.log(err)
+                    setPageLoad(false)
                 }
             )
         }
@@ -59,10 +60,12 @@ export const WaitingRoom = () => {
                     copy['selected_session'] = res?.data
                     session_context.setData(copy)
                     setSelectedSession(copy['selected_session'])
+                    setLoading(false)
                 }
             },
             (err) => {
                 console.log('callback err', err)
+                setLoading(false)
             }
         )
 
@@ -72,30 +75,38 @@ export const WaitingRoom = () => {
         const {value: participant_id} = e.target
         const type = e.target.getAttribute('data-type')
         const {selected_session} = session_context?.data
+        setLoading(e.target.getAttribute('data-index')) //Set loading for singular button
         sendAjax({'record_id': selected_session?.record_id, 'action': type, 'participant_id': participant_id})
     }
 
 
     const generateStacks = (type) => {
         let arr = type === 'waitingRoom' ? selectedSession?.ts_authorized_participants : selectedSession?.ts_chat_room_participants
-
-        return arr?.map((e, i) => {
-            let detail = participantDetails?.find(el => el.record_id === e)
-            if (detail)
-                return (
-                    <Stack key={i} direction="horizontal" gap={3}>
-                        <div className="me-auto">{detail?.participant_first_name}</div>
-                        {
-                            type === 'waitingRoom' ?
-                                <Button data-type="admit" onClick={handleParticipants} value={detail?.record_id}
-                                        variant="outline-success">Admit</Button>
-                                :
-                                <Button data-type="revoke" onClick={handleParticipants} value={detail?.record_id}
-                                        variant="outline-danger">Revoke</Button>
-                        }
-                    </Stack>
-                )
-        })
+        if(pageLoad){ //render placeholders if page load
+            return (
+                <div className="d-flex justify-content-center mt-5">
+                    <Spinner animation="border" variant="primary" />
+                </div>
+            )
+        } else {
+            return arr?.map((e, i) => {
+                let detail = participantDetails?.find(el => el.record_id === e)
+                if (detail)
+                    return (
+                        <Stack key={i} direction="horizontal" gap={3}>
+                            <div className="me-auto">{detail?.participant_first_name}</div>
+                            {
+                                type === 'waitingRoom' ?
+                                    <Button data-type="admit" data-index={i} onClick={handleParticipants} value={detail?.record_id}
+                                            disabled={loading} variant="outline-success">{parseInt(loading) === i ? <Spinner className="spinner-button" size="sm" ></Spinner> : "Admit"}</Button>
+                                    :
+                                    <Button data-type="revoke" data-index={i} onClick={handleParticipants} value={detail?.record_id}
+                                            disabled={loading} variant="outline-danger">{parseInt(loading) === i ? <Spinner className="spinner-button" size="sm" ></Spinner> :  "Revoke"}</Button>
+                            }
+                        </Stack>
+                    )
+            })
+        }
     }
 
     return (
@@ -135,12 +146,12 @@ export const WaitingRoom = () => {
             <Tab.Content>
                 <Tab.Pane eventKey="online">
                     <Stack gap={2}>
-                        {participantDetails && selected_session && generateStacks('waitingRoom')}
+                        { generateStacks('waitingRoom')}
                     </Stack>
                 </Tab.Pane>
                 <Tab.Pane eventKey="chatroom">
                     <Stack gap={2}>
-                        {participantDetails && selected_session && generateStacks('chatRoom')}
+                        { generateStacks('chatRoom')}
                     </Stack>
                 </Tab.Pane>
             </Tab.Content>
