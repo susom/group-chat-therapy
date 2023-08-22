@@ -33,12 +33,11 @@ export const WaitingRoom = () => {
                     ...session_context?.data?.selected_session?.ts_chat_room_participants,
                         session_context?.data?.selected_session?.ts_therapist
                     ]},
+
                 (res) => {
                     if (res) {
                         let filtered = res?.data?.filter(e => parseInt(e.admin) !== 1) //remove admins from waiting room list
                         setParticipantDetails(filtered)
-
-                        console.log('waitingRoom getParticipants', filtered);
 
                         const participant_lookup = res?.data?.reduce((acc, item) => {
                             acc[item.record_id] = item.participant_first_name;
@@ -50,6 +49,9 @@ export const WaitingRoom = () => {
                             session_context.setParticipantsLookUp(participant_lookup);
                             console.log("participantLookUp", participant_lookup, participant_lookup[4]);
                         }
+
+                        setPageLoading(false)
+                        console.log('participants', filtered)
                     }
                 },
                 (err) => {
