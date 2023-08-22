@@ -78,7 +78,13 @@
                 console.log("Error", err);
             })
         },
-
+        getUserSessions: function(payload, callback, errorCallback) {
+            module.ajax('getUserSessions', payload)
+                .then((res) => {
+                    if(res?.result)
+                        callback(JSON.parse(res?.result))
+                }).catch(err => errorCallback(err))
+        },
         getWhiteboard : (payload, callback, errorCallback) => {
             module.ajax('getWhiteboard', payload)
                 .then((res) => {

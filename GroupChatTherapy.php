@@ -244,7 +244,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
                     if (!empty($record['participant_otp_code_ts'])) { //Check if OTP code has been generated recently
                         $timeDifference = strtotime("now") - strtotime($record['participant_otp_code_ts']);
                         if ($timeDifference < 3600) { //60 minute interval to login before having to retry
-                            $returnPayload['chat_sessions'] = $this->getUserSessions($record);
+//                            $returnPayload['chat_sessions'] = $this->getUserSessions($record);
                             $returnPayload['current_user'] = $record;
                             $return_o["result"] = json_encode($returnPayload); //Necessary result key for returning via JSMO
                             return $return_o;
@@ -313,7 +313,8 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
             }
         }
 
-        return $user_sessions;
+        return ["result" => json_encode($user_sessions)]; //Necessary result key for returning via JSMO
+
     }
 
     /**
@@ -622,40 +623,44 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
     public function redcap_module_ajax($action, $payload, $project_id, $record, $instrument, $event_id, $repeat_instance,
                                        $survey_hash, $response_id, $survey_queue_hash, $page, $page_full, $user_id, $group_id)
     {
-        $foo = func_get_args();
-        switch ($action) {
-            case "TestAction":
-                session_start();
-                $count = $_SESSION['count'] ?? 0;
+//        $foo = func_get_args();
+        $sanitized = $this->sanitizeInput($payload);
 
-                \REDCap::logEvent("Test Action Received");
-                $result = [
-                    "success" => true,
-                    "user_id" => $user_id,
-                    "session_id" => session_id(),
-                    "session" => session_encode(),
-                    "count" => $count
-                ];
-                $_SESSION['count']++;
-                break;
+        switch ($action) {
+//            case "TestAction":
+//                session_start();
+//                $count = $_SESSION['count'] ?? 0;
+//
+//                \REDCap::logEvent("Test Action Received");
+//                $result = [
+//                    "success" => true,
+//                    "user_id" => $user_id,
+//                    "session_id" => session_id(),
+//                    "session" => session_encode(),
+//                    "count" => $count
+//                ];
+//                $_SESSION['count']++;
+//                break;
             case "getWhiteboard":
                 $sanitized = $this->sanitizeInput($payload);
                 return $this->getWhiteboard($sanitized);
             case "setWhiteboard":
                 $sanitized = $this->sanitizeInput($payload);
                 return $this->setWhiteboard($sanitized);
-            case "getActions":
-                $this->handleActions($payload);
-                break;
+//            case "getActions":
+//                $this->handleActions($payload);
+//                break;
             case "getParticipants":
                 $sanitized = $this->sanitizeInput($payload);
                 return $this->getParticipants($sanitized);
             case "updateParticipants":
                 $sanitized = $this->sanitizeInput($payload);
                 return $this->updateParticipants($sanitized);
-            case "addAction":
-                $this->addAction($payload);
-                break;
+            case "getUserSessions":
+                return $this->getUserSessions($payload);
+//            case "addAction":
+//                $this->addAction($payload);
+//                break;
             case "validateUserPhone": //TODO: Add server timeout
                 return $this->validateUserPhone($payload);
             case "validateCode":
