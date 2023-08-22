@@ -378,6 +378,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
             );
 
             $json = json_decode(REDCap::getData($params), true);
+
             if(sizeof($json)){
                 $data = current($json);
                 $participants_arr = !empty($data['ts_authorized_participants']) ? explode (",", $data['ts_authorized_participants']) : [];
@@ -385,14 +386,16 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
 
                 if($payload['action'] === 'admit'){
                     $index = array_search($payload['participant_id'], $participants_arr);
-                    if($index != -1){
+                    if($index !== false){
                         $in_chat_arr[] = $participants_arr[$index]; //Append participant to in_chat and remove from participants array
                         unset($participants_arr[$index]);
                     }
-//                    TODO: ADD REVOKE
-
                 } else if($payload['action'] === 'revoke') {
-                    $participants_arr = explode (",", $data['ts_chat_room_participants']);
+                    $index = array_search($payload['participant_id'], $in_chat_arr);
+                    if($index !== false){
+                        $participants_arr[] = $in_chat_arr[$index];
+                        unset($in_chat_arr[$index]);
+                    }
                 } else {
                     throw new Exception('Action specified in payload is incorrect');
                 }
