@@ -5,3 +5,8 @@
 .chat-room-detail button {
     padding: 10px;
 }
+
+.spinner-button {
+    height: 1.5rem;
+    width: 1.5rem;
+}
