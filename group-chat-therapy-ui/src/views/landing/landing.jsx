@@ -1,8 +1,6 @@
 import React, {useContext, useEffect} from "react";
 import {Link, Navigate, useNavigate, useLocation} from "react-router-dom";
 import Container from 'react-bootstrap/Container';
-import Row from 'react-bootstrap/Row'
-import Col from 'react-bootstrap/Col'
 import Alert from 'react-bootstrap/Alert';
 import ListGroup from "react-bootstrap/ListGroup";
 import Badge from "react-bootstrap/Badge";
@@ -11,6 +9,7 @@ import Button from "react-bootstrap/Button";
 import Navbar from "react-bootstrap/Navbar";
 import Spinner from "react-bootstrap/Spinner";
 
+import {NavHeader} from "../../components/NavHeader/navheader.jsx";
 import {WaitingRoom} from "../../components/WaitingRoom/waitingRoom.jsx";
 import {SessionContext} from "../../contexts/Session.jsx";
 import './landing.css';
@@ -33,6 +32,7 @@ export default function Landing() {
                 <ListGroup.Item
                     action
                     as="li"
+                    className="my-2"
                 >
                     <div>
                         <div className="fw-bold">
@@ -68,14 +68,15 @@ export default function Landing() {
     }
 
     const renderAdmin = () => {
-        const {selected_session} = session_context?.data
+        const sel = session_context?.data?.selected_session
+
         return (
             <Container className='session-detail mt-3'>
                 <Card>
-                    <Card.Header><strong>{selected_session?.ts_title}</strong> - #{selected_session?.record_id}</Card.Header>
+                    <Card.Header><strong>{sel?.ts_title}</strong> - #{sel?.record_id}</Card.Header>
                     <Card.Body>
                         <WaitingRoom
-                            session = {selected_session}
+                            session = {sel}
                         />
                     </Card.Body>
                     <Card.Footer>
@@ -98,11 +99,9 @@ export default function Landing() {
                             <span>Waiting for Admin to enter chat    </span>
                             <Spinner className="info-spinner ms-auto" animation="border" variant="info"/>
                         </div>
-
                     </Alert>
                 </Card.Body>
                 <Card.Footer>
-
                     <Button disabled className="float-end" onClick={enterChat}>Enter Chat</Button>
                 </Card.Footer>
                 </Card>
@@ -114,22 +113,11 @@ export default function Landing() {
     // if (!session_context?.data?.participantID) {
     //     return <Navigate to="/"/>
     // } else {
-        const isAdmin = session_context?.data?.current_user?.admin
+        const isAdmin = !session_context?.data?.current_user?.admin
+
         return (
             <>
-                <Navbar bg="light" className="bg-body-tertiary main-nav">
-                    <Container>
-                        {/*<Navbar.Brand>{session_context?.isAdmin ? "Admin" : "Participant"}</Navbar.Brand>*/}
-                        <Navbar.Brand>{isAdmin ? "Admin" : "Participant"}</Navbar.Brand>
-                        <Navbar.Toggle />
-                        <Navbar.Collapse className="justify-content-end">
-                            <Navbar.Text>
-                                Signed in as: {session_context?.data?.current_user?.participant_first_name}
-                            </Navbar.Text>
-                        </Navbar.Collapse>
-                    </Container>
-                </Navbar>
-                {/*{session_context?.isAdmin ? renderAdmin() : renderParticipant()}*/}
+               <NavHeader/>
                 {isAdmin ? renderAdmin() : renderParticipant()}
             </>
         )
