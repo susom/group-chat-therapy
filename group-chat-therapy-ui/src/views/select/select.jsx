@@ -1,18 +1,16 @@
 
 import React, {useContext} from "react";
-import Navbar from "react-bootstrap/Navbar";
 import Container from "react-bootstrap/Container";
 import {SessionContext} from "../../contexts/Session.jsx";
 import {useNavigate} from "react-router-dom";
 import Accordion from "react-bootstrap/Accordion";
-import Row from "react-bootstrap/Row";
-import Col from "react-bootstrap/Col";
-import Badge from "react-bootstrap/Badge";
+
 import Tab from "react-bootstrap/Tab";
-import Stack from "react-bootstrap/Stack";
 import Card from "react-bootstrap/Card";
 import Button from "react-bootstrap/Button";
 import './select.css';
+
+import {NavHeader} from "../../components/NavHeader/navheader.jsx";
 
 export default function Select(){
     const session_context = useContext(SessionContext);
@@ -79,17 +77,7 @@ export default function Select(){
 
     return (
         <>
-            <Navbar bg="light" className="bg-body-tertiary main-nav">
-                <Container>
-                    <Navbar.Brand>{isAdmin ? "Admin" : "Participant"}</Navbar.Brand>
-                    <Navbar.Toggle />
-                    <Navbar.Collapse className="justify-content-end">
-                        <Navbar.Text>
-                            Signed in as: {session_context?.data?.participantID}
-                        </Navbar.Text>
-                    </Navbar.Collapse>
-                </Container>
-            </Navbar>
+           <NavHeader/>
             <div>
                 <Container className='session-detail mt-3'>
                     <Card>
