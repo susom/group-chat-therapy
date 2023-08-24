@@ -5,13 +5,15 @@ import ReactionPopup from './ReactionPopup.jsx';
 import { XSquare, Plus, Trash, ReplyFill } from 'react-bootstrap-icons';
 
 import {SessionContext} from "./../contexts/Session.jsx";
+import {ChatContext} from "./../contexts/Chat.jsx";
 import ReplyMessage from "./ReplyMessage.jsx";
 
 export default function Message({ message, onReply, showReactions = true, showReply = true, isReply = false, onCloseReply, replyMessage, className = ""}) {
     const session_context           = useContext(SessionContext);
+    const chat_context              = useContext(ChatContext);
     const participantsLookUp        = session_context.participantsLookUp;
-    const participant_id            = session_context.participantID;
-    const therapistID               = session_context.chatSessionDetails.therapist;
+    const participant_id            = session_context.data?.current_user?.record_id ;
+    const therapistID               = session_context.data?.selected_session?.ts_therapist || null;
 
     const [reactions, setReactions]                 = useState(message.reactions || []);
     const [showReactionPopup, setShowReactionPopup] = useState(false);
@@ -49,10 +51,10 @@ export default function Message({ message, onReply, showReactions = true, showRe
         };
 
         // DELETE FROM LOCAL VIEW FOR NOW, RESOLVE ON PAYLOAD REFRESH OF NEW ACTIONS
-        session_context.removeMessage(message.id);
+        chat_context.removeMessage(message.id);
 
         //SEND THE ACTION TO THE actionQUEUE
-        session_context.sendAction(deleteAction);
+        chat_context.sendAction(deleteAction);
 
         console.log(`Message ${message.id} deleted.`);
     }
@@ -64,6 +66,7 @@ export default function Message({ message, onReply, showReactions = true, showRe
             type : "reaction",
             target : message.id,
             user : participant_id,
+            first_name : participant_name,
             icon : reaction,
         };
 
@@ -72,13 +75,12 @@ export default function Message({ message, onReply, showReactions = true, showRe
         setReactions(updatedLocalReactions); // update the local reactions state
 
         //SEND THE ACTION TO THE actionQUEUE
-        session_context.sendAction(newReaction);
+        chat_context.sendAction(newReaction);
     }
 
     const handleReply = (id) => {
         console.log(`replying to message id ${id}`);
         onReply(id);
-
 
         // Set up the Fake UI
     }

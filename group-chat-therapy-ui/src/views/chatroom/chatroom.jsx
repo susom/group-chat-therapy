@@ -1,9 +1,11 @@
-import React, {useState, useContext, useEffect} from "react";
+import React, {useState, useMemo, useContext, useEffect} from "react";
 import {Link} from "react-router-dom";
 
 import { Container, Row, Col, Tab, Nav, Form, Button, Card } from 'react-bootstrap';
 import { PeopleFill, Send, People, Person } from 'react-bootstrap-icons';
 import {SessionContext} from "../../contexts/Session.jsx";
+import { ChatContextProvider, ChatContext } from "../../contexts/Chat.jsx";
+
 import {getAllSessions, deleteSession, deleteAllData} from "../../components/database/dexie.js";
 
 import MessagesDisplay from "../../components/MessagesDisplay.jsx";
@@ -14,44 +16,64 @@ import './chatroom.css';
 import { debounce } from 'lodash';
 
 export default function ChatRoom() {
-    const session_context = useContext(SessionContext);
+    return (
+        <ChatContextProvider>
+            <ChatRoomContent />
+        </ChatContextProvider>
+    );
+}
+
+function ChatRoomContent() {
+    const session_context                               = useContext(SessionContext);
+    const chat_context                                  = useContext(ChatContext);
 
     // CHAT SESSION DETAILS
-    const participant_id                    = session_context.participantID;
-    const isAdmin                           = session_context.isAdmin;
-    const participant_lookup                = session_context.participantsLookUp;
-    const chat_details                      = session_context.chatSessionDetails;
-    const whiteboard                        = chat_details?.whiteboard !== "" ? chat_details?.whiteboard : "Nothing here yet.";
+    const participant_details                           = session_context?.data?.current_user || {};
+    const participant_id                                = participant_details?.record_id;
+    const isAdmin                                       = participant_details?.admin === "1";
+
+    const chat_details                                  = session_context?.data?.selected_session || {};
+    const whiteboard                                    = chat_details?.ts_whiteboard !== "" ? chat_details?.ts_whiteboard : "Nothing here yet.";
+    const date_string                                   = chat_details?.ts_start ? chat_details?.ts_start : "";
 
     //CHAT VARS CACHE
-    const sessionContextAllChats            = session_context.allChats;
-    const [allChats, setAllChats]           = useState({ ...sessionContextAllChats });
-    const [selectedChat, setSelectedChat]   = useState('groupChat');
-    const sessionContextMentionCounts       = session_context.mentionCounts;
-    const [mentionCounts, setMentionCounts] = useState({ ...sessionContextMentionCounts });
-    const date_string                       = chat_details?.date ? chat_details?.date : "";
-    const [dateComps, setDateComps]         = useState(dateComponents(date_string));
+    // const [dateComps, setDateComps]                     = useState(dateComponents(date_string));
+
+    const chatContextAllChats                           = chat_context.allChats;
+    const [allChats, setAllChats]                       = useState({ ...chatContextAllChats });
+    const [selectedChat, setSelectedChat]               = useState('groupChat');
+    const chatContextMentionCounts                      = chat_context.mentionCounts;
+    // const [mentionCounts, setMentionCounts]             = useState({ ...chatContextMentionCounts });
+
     const [whiteboardContent, setWhiteboardContent]     = useState(whiteboard);
     const [whiteboardIsChanged, setWhiteboardIsChanged] = useState(false);
 
     //MESSAGE HANDLING
-    const [message, setMessage]                     = useState('');
-    const [startMessageTime, setStartMessageTime]   = useState(null);
-    const [keystrokes, setKeystrokes]               = useState([]);
-    const [currentWord, setCurrentWord]             = useState('');
-    const [replyTo, setReplyTo] = useState(null);
+    const [message, setMessage]                         = useState('');
+    const [startMessageTime, setStartMessageTime]       = useState(null);
+    const [keystrokes, setKeystrokes]                   = useState([]);
+    const [currentWord, setCurrentWord]                 = useState('');
+    const [replyTo, setReplyTo]                         = useState(null);
 
-    useEffect(() => {
-        setMentionCounts({ ...sessionContextMentionCounts });
-    }, [sessionContextMentionCounts]);
+    const mentionCounts = useMemo(() => {
+        return { ...chatContextMentionCounts };
+    }, [chatContextMentionCounts]);
 
-    useEffect(() => {
-        setAllChats({ ...sessionContextAllChats });
-    }, [sessionContextAllChats]);
+    // useEffect(() => {
+    //     setMentionCounts({ ...chatContextMentionCounts });
+    // }, [chatContextMentionCounts]);
 
-    useEffect(() => {
-        setDateComps(dateComponents(date_string));
+    const dateComps = useMemo(() => {
+        return dateComponents(date_string);
     }, [date_string]);
+
+    // useEffect(() => {
+    //     setDateComps(dateComponents(date_string));
+    // }, [date_string]);
+
+    useEffect(() => {
+        setAllChats({ ...chatContextAllChats });
+    }, [chatContextAllChats]);
 
     const handleInputChange = e => {
         if (startMessageTime === null) {
@@ -61,7 +83,7 @@ export default function ChatRoom() {
         const value = e.target.value;
         setMessage(value);
         console.log("resetMentions for selectedChat", selectedChat)
-        session_context.resetMentions(selectedChat);
+        chat_context.resetMentions(selectedChat);
     };
 
     const handleWhiteboardChange = (e) => {
@@ -70,7 +92,7 @@ export default function ChatRoom() {
     };
 
     const updateWhiteboard = () => {
-        session_context.callAjax({whiteBoardContent : whiteboardContent},"setWhiteBoardContent");
+        chat_context.callAjax({whiteBoardContent : whiteboardContent},"setWhiteBoardContent");
         setWhiteboardContent(whiteboardContent);
     };
 
@@ -88,7 +110,7 @@ export default function ChatRoom() {
             const timestamp = new Date().toISOString();
 
             // Sanitize the user input
-            const { body: sanitizedBody } = session_context.isMentioned({ body: message }, session_context.participantsLookUp, participant_id, true);
+            const { body: sanitizedBody } = chat_context.isMentioned({ body: message }, session_context.participantsLookUp, participant_id, true);
             // Prepare your payload here
             const newAction = {
                 id : 12345,
@@ -114,7 +136,7 @@ export default function ChatRoom() {
             });
 
             //ADD ACTION TO QUEUE TO BE PICKED UP AT NEXT POLL
-            session_context.sendAction(newAction);
+            chat_context.sendAction(newAction);
 
             // Reset states
             setMessage('');
@@ -135,35 +157,46 @@ export default function ChatRoom() {
         return { month, day, year };
     }
 
+    function formatTime(dateString) {
+        const date = new Date(dateString);
+
+        let hours = date.getHours();
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+
+        const amOrPm = hours >= 12 ? 'pm' : 'am';
+        hours = hours % 12 || 12;  // Convert to 12-hour format and ensure 12:00 is shown as 12, not 0
+
+        return `${hours}:${minutes} ${amOrPm}`;
+    }
+
+
     return (
         <div id={`main`}>
             <GlobalHeader/>
 
-
             <Container className={"chat_room"}>
-
-                    {chat_details ? ( <Row className={"chat_details"}>
-                                        <Col xs={3} className={`chat_date order-last order-md-first`}>
-                                            <div className="su-date-stacked ">
-                                                <span className="su-date-stacked__month">{dateComps.month}</span>
-                                                <span className="su-date-stacked__day">{dateComps.day}</span>
-                                                <span className="su-date-stacked__year">{dateComps.year}</span>
-                                            </div>
-                                        </Col>
-                                        <Col xs={9}>
-                                            <ul>
-                                                <li>
-                                                    <h2>{chat_details.title}</h2>
-                                                    <p>{chat_details.description}</p>
-                                                </li>
-                                                <li><b>Session Schedule : </b>  {chat_details.time_start} - {chat_details.time_end}</li>
-                                                <li><b>Therapist : </b> {participant_lookup[chat_details.therapist]}</li>
-                                            </ul>
-                                        </Col>
-                                    </Row>
-                        ) : (
-                            <p>Loading...</p>
-                        )}
+                {chat_details ? ( <Row className={"chat_details"}>
+                        <Col xs={3} className={`chat_date order-last order-md-first`}>
+                            <div className="su-date-stacked ">
+                                <span className="su-date-stacked__month">{dateComps.month}</span>
+                                <span className="su-date-stacked__day">{dateComps.day}</span>
+                                <span className="su-date-stacked__year">{dateComps.year}</span>
+                            </div>
+                        </Col>
+                        <Col xs={9}>
+                            <ul>
+                                <li>
+                                    <h2>{chat_details.ts_title}</h2>
+                                    <p>{chat_details.ts_topic}</p>
+                                </li>
+                                <li><b>Session Schedule : </b>  {formatTime(chat_details.ts_start)} - {formatTime(chat_details.ts_start_2)}</li>
+                                <li><b>Therapist : </b> {session_context.participantsLookUp[chat_details.ts_therapist]}</li>
+                            </ul>
+                        </Col>
+                    </Row>
+                ) : (
+                    <p>Loading...</p>
+                )}
 
                 <Row className={"chat_ui"}>
                     <Col>
@@ -175,7 +208,7 @@ export default function ChatRoom() {
                                             <Card.Title>Whiteboard</Card.Title>
                                             {
                                                 chat_details && (
-                                                    participant_id === chat_details.therapist ? (
+                                                    participant_id === chat_details.ts_therapist ? (
                                                         <Form className={`whiteboard_form`} onSubmit={(e) => { e.preventDefault(); updateWhiteboard(); }}>
                                                             <Form.Control
                                                                 as="textarea"
@@ -206,7 +239,7 @@ export default function ChatRoom() {
                                     <Col md={1} xs={12}>
                                         <Nav variant="pills" className="flex-md-column flex-xs-row mt-2 chat_tab">
                                             <Nav.Item>
-                                                <Nav.Link eventKey="groupChat" onClick={() => session_context.resetMentions("groupChat")}>
+                                                <Nav.Link eventKey="groupChat" onClick={() => chat_context.resetMentions("groupChat")}>
                                                     <People  size={20} title={`Group Chat`}/>
                                                     {mentionCounts["groupChat"] > 0 && <span className="badge">{mentionCounts["groupChat"]}</span>}
                                                 </Nav.Link>
@@ -216,10 +249,10 @@ export default function ChatRoom() {
                                                 if (chatKey === 'groupChat') return null;
 
                                                 const participantIDs    = chatKey.split('|');
-                                                const participantNames  = participantIDs.map(id => participant_lookup[id]).join(', ');
+                                                const participantNames  = participantIDs.map(id => session_context.participantsLookUp[id]).join(', ');
                                                 return (
                                                     <Nav.Item key={index}>
-                                                        <Nav.Link eventKey={chatKey} onClick={() => session_context.resetMentions(chatKey)}>
+                                                        <Nav.Link eventKey={chatKey} onClick={() => chat_context.resetMentions(chatKey)}>
                                                             <Person  size={20}  title={`Private Chat with ${participantNames}`}/>
                                                             {mentionCounts[chatKey] > 0 && <span className="badge">{mentionCounts[chatKey]}</span>}
                                                         </Nav.Link>
@@ -256,12 +289,12 @@ export default function ChatRoom() {
                                                         value={message}
                                                         onKeyDown={handleKeyDown}
                                                         onChange={handleInputChange}
-                                                        onFocus={() => session_context.resetMentions(selectedChat)}
+                                                        onFocus={() => chat_context.resetMentions(selectedChat)}
                                                         className={`chat_input`}
                                                     />
                                                 </Col>
                                                 <Col xs="2">
-                                                    <Button variant="primary" type="submit" className="w-100 send_message" onClick={() => session_context.resetMentions(selectedChat)}><Send size={20}  title={`Send Message`}/></Button>
+                                                    <Button variant="primary" type="submit" className="w-100 send_message" onClick={() => chat_context.resetMentions(selectedChat)}><Send size={20}  title={`Send Message`}/></Button>
                                                 </Col>
                                             </Row>
                                         </Form>
@@ -273,9 +306,8 @@ export default function ChatRoom() {
                 </Row>
             </Container>
 
-
             <GlobalFooter/>
-
         </div>
     );
 }
+

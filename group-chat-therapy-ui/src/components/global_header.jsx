@@ -1,9 +1,6 @@
-import React , { useContext } from "react";
-import {SessionContext} from "./../contexts/Session.jsx";
+import React  from "react";
 
 export default function GlobalHeader() {
-    const session_context   = useContext(SessionContext);
-
     return (
         <section className="su-brand-bar">
             <div className="su-brand-bar__container">

@@ -13,6 +13,7 @@ use Exception;
 use REDCap;
 use Twilio\Exceptions\TwilioException;
 use Twilio\Rest\Client;
+use function PHPUnit\Framework\isEmpty;
 
 // use \Logging;
 
@@ -88,6 +89,29 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
     }
 
     /**
+     * @param $phone
+     * @return string
+     */
+    public function parsePhoneField($phone)
+    {
+        if ($phone) {
+            $replace = array("(", ")", " ", "-");
+            return str_replace($replace, "", $phone);
+        }
+    }
+
+    /**
+     * Sanitizes user input in the action queue nested array
+     * @param $payload
+     * @return array|null
+     */
+    public function sanitizeInput($payload): array|string
+    {
+        $sanitizer = new Sanitizer();
+        return $sanitizer->sanitize($payload);
+    }
+
+    /**
      * Send SMS with body payload
      * @param $body
      * @param $phone_number
@@ -125,7 +149,9 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
         $saveData = array(
             array(
                 "record_id" => $record,
-                "code" => $code
+                "participant_otp_code" => $code,
+                "participant_otp_code_ts" => date("Y-m-d H:i:s"),
+                "redcap_event_name" => "participant_arm_2"
             )
         );
 
@@ -149,25 +175,29 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
         try {
 
             //Sanitize inputs
-            $last_name = filter_var($payload[0], FILTER_SANITIZE_STRING);
-            $phone_number = filter_var($payload[1], FILTER_SANITIZE_STRING);
+            $last_name = $this->sanitizeInput($payload[0]);
+            $phone_number = $this->sanitizeInput($payload[1]);
             $phone_number_truncated = ltrim($phone_number, '1');
 
             $params = array(
                 "return_format" => "json",
-                "fields" => array("phone", "last_name", "record_id")
+                "fields" => array("participant_phone_number", "participant_first_name", "record_id"),
+                "events" => array("participant_arm_2"),
+//                "filterLogic" => "[participant_phone_number] = $phone_number_truncated"
             );
 
             $json = REDCap::getData($params);
-            $decoded = current(json_decode($json, true));
-
-            if (strtolower($decoded['last_name']) === strtolower($last_name) && $decoded['phone'] === $phone_number_truncated) {
-                $this->generateOneTimePassword($decoded['record_id'], $decoded['phone']);
-                return true;
-            } else {
-                throw new Exception ("Invalid credentials");
+            $json = json_decode($json);
+            foreach ($json as $entry) {
+                $phoneParsed = $this->parsePhoneField($entry->participant_phone_number);
+                if (strtolower($entry->participant_first_name) === strtolower($last_name) && $phoneParsed === $phone_number_truncated) {
+                    $this->generateOneTimePassword($entry->record_id, $phoneParsed);
+                    return true;
+                }
             }
 
+//            TODO: RATE LIMITING
+            throw new Exception ("Invalid credentials");
 
         } catch (\Exception $e) {
             $msg = $e->getMessage();
@@ -183,37 +213,221 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
         }
     }
 
-
     /**
      * Validates code sent via SMS
      * @param $code
-     * @return bool
+     * @return array
      */
-    public function validateCode($code): bool
+    public function validateCode($code): array
     {
         //Sanitize input
-        $code = filter_var($code, FILTER_SANITIZE_STRING);
-        $code = strtolower($code);
+        try {
+            $code = strtolower($this->sanitizeInput($code));
 
-        $params = array(
-            "return_format" => "json",
-            "fields" => array("code")
-        );
-        $json = REDCap::getData($params);
-        $decoded = current(json_decode($json, true));
-        //TODO Send session data here for initial caching
-        return ($decoded['code'] === $code);
+            $params = array(
+                "return_format" => "json",
+                "fields" => array(
+                    "participant_otp_code",
+                    "participant_otp_code_ts",
+                    "participant_first_name",
+                    "participant_last_name",
+                    "record_id",
+                    "admin"
+                ),
+                "events" => array("participant_arm_2"),
+            );
+
+            $json = json_decode(REDCap::getData($params), true);
+
+            foreach ($json as $record) {
+                if ($record['participant_otp_code'] === $code) {
+                    if (!empty($record['participant_otp_code_ts'])) { //Check if OTP code has been generated recently
+                        $timeDifference = strtotime("now") - strtotime($record['participant_otp_code_ts']);
+                        if ($timeDifference < 3600) { //60 minute interval to login before having to retry
+                            $returnPayload['chat_sessions'] = $this->getUserSessions($record);
+                            $returnPayload['current_user'] = $record;
+                            $return_o["result"] = json_encode($returnPayload); //Necessary result key for returning via JSMO
+                            return $return_o;
+
+                        }else {
+                            throw new Exception ("Code has expired, please refresh and try logging in again");
+                        }
+                    }
+                }
+
+            }
+            throw new Exception ('Invalid code');
+//            return false;
+
+        } catch (\Exception $e) {
+            $msg = $e->getMessage();
+            \REDCap::logEvent("Error: $msg");
+            $this->emError("Error: $msg");
+
+            echo json_encode(array(
+                'error' => array(
+                    'msg' => $e->getMessage(),
+                ),
+            ));
+            die;
+        }
+
     }
 
     /**
-     * Sanitizes user input in the action queue nested array
-     * @param $payload
-     * @return array|null
+     * Grab session details for a given user ID
+     * @param $record
+     * @return array
      */
-    public function sanitizeInput($payload): array|string
+    public function getUserSessions($record): array
     {
-        $sanitizer = new Sanitizer();
-        return $sanitizer->sanitize($payload);
+        $params = array(
+            "return_format" => "json",
+            "fields" => array(
+                "record_id",
+                "ts_status",
+                "ts_start",
+                "ts_start_2",
+                "ts_authorized_participants",
+                "ts_chat_room_participants",
+                "ts_title",
+                "ts_topic"
+            ),
+            "events" => array("therapy_session_arm_1"),
+        );
+
+        $full_sessions = json_decode(REDCap::getData($params), true); //Grab all therapy sessions
+        $user_sessions = [];
+
+        foreach($full_sessions as $session){
+            $participants_arr = !empty($session['ts_authorized_participants']) ? explode (",", $session['ts_authorized_participants']) : [];
+            $in_chat_arr = !empty($session['ts_chat_room_participants']) ? explode (",", $session['ts_chat_room_participants']) : [];
+            if($record['admin']){
+                $session['ts_authorized_participants'] = $participants_arr; //Save as array
+                $session['ts_chat_room_participants'] = $in_chat_arr;
+                $user_sessions[] = $session;
+            } else if(in_array($record['record_id'], $participants_arr) || in_array($record['record_id'], $in_chat_arr)) { // If user is a part of either participant field or in chat field
+                $session['ts_authorized_participants'] = $participants_arr; //Save as array
+                $session['ts_chat_room_participants'] = $in_chat_arr;
+                $user_sessions[] = $session;
+            }
+        }
+
+        return $user_sessions;
+    }
+
+    /**
+     * Given an array of record IDs, find the affiliated participant records
+     * @param $payload
+     * @return array
+     */
+    public function getParticipants($payload): array
+    {
+        try {
+            if(!isset($payload['participants']) || sizeof($payload['participants']) === 0){
+                throw new Exception('No record_id passed');
+        }
+            $params = array(
+                "return_format" => "json",
+                "records" => $payload['participants'],
+                "fields" => array(
+                    "record_id",
+                    "participant_first_name",
+                    "admin",
+                    "participant_status"
+                ),
+                "events" => array("participant_arm_2"),
+            );
+
+            $json = json_decode(REDCap::getData($params, true));
+            $returnPayload["data"] = $json;
+            return ["result" => json_encode($returnPayload)];
+        } catch (\Exception $e) {
+            $msg = $e->getMessage();
+            \REDCap::logEvent("Error: $msg");
+            $this->emError("Error: $msg");
+            return ["result" => json_encode($msg)];
+        }
+
+    }
+
+    /**
+     * @param $payload
+     * @return array
+     */
+    public function updateParticipants($payload): array
+    {
+        try {
+            if(empty($payload['record_id']) || empty($payload['action']) || empty($payload['participant_id']))
+                throw new Exception('Incorrect payload passed to updateParticipants');
+
+            $params = array(
+                "return_format" => "json",
+                "records" => array($payload['record_id']),
+                "fields" => array(
+                    "record_id",
+                    "ts_status",
+                    "ts_start",
+                    "ts_start_2",
+                    "ts_authorized_participants",
+                    "ts_chat_room_participants",
+                    "ts_title",
+                    "ts_topic"
+                ),
+                "events" => array("therapy_session_arm_1"),
+            );
+
+            $json = json_decode(REDCap::getData($params), true);
+            if(sizeof($json)){
+                $data = current($json);
+                $participants_arr = !empty($data['ts_authorized_participants']) ? explode (",", $data['ts_authorized_participants']) : [];
+                $in_chat_arr = !empty($data['ts_chat_room_participants']) ? explode (",", $data['ts_chat_room_participants']) : [];
+
+                if($payload['action'] === 'admit'){
+                    $index = array_search($payload['participant_id'], $participants_arr);
+                    if($index != -1){
+                        $in_chat_arr[] = $participants_arr[$index]; //Append participant to in_chat and remove from participants array
+                        unset($participants_arr[$index]);
+                    }
+//                    TODO: ADD REVOKE
+
+                } else if($payload['action'] === 'revoke') {
+                    $participants_arr = explode (",", $data['ts_chat_room_participants']);
+                } else {
+                    throw new Exception('Action specified in payload is incorrect');
+                }
+
+                $data['ts_chat_room_participants'] = array_values($in_chat_arr);
+                $data['ts_authorized_participants'] = array_values($participants_arr);
+
+                $saveData = array(
+                    array(
+                        "record_id" => $payload['record_id'],
+                        "ts_authorized_participants" => implode(',', $participants_arr),
+                        "ts_chat_room_participants" => implode(',', $in_chat_arr),
+                        "redcap_event_name" => "therapy_session_arm_1"
+                    )
+                );
+
+                $response = REDCap::saveData('json', json_encode($saveData), 'overwrite');
+                if (!empty($response['errors'])) {
+                    $this->emError("Could not update record with " . json_encode($response['errors']));
+                    throw new Exception("Could not update record with " . json_encode($response['errors']));
+                }
+                $returnPayload["data"] = $data;
+                return ["result" => json_encode($returnPayload)];
+//                return $response;
+            } else {
+                $rec = $payload['record_id'];
+                throw new Exception("Get data call returned no results given record_id $rec");
+            }
+//            return $payload;
+        } catch (\Exception $e) {
+            $msg = $e->getMessage();
+            \REDCap::logEvent("Error: $msg");
+            $this->emError("Error: $msg");
+            return ["result" => json_encode($msg)];
+        }
     }
 
     /**
@@ -229,7 +443,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
             $start = hrtime(true);
 
             if (count($actionQueue)) { //User has actions to process
-//                $this->addAction($actionQueue);
+                $this->addAction($actionQueue);
             }
 
             //If no event queue has been passed, simply return actions
@@ -298,11 +512,11 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
         $project_id = $this->getProjectId();
         $actions = Action::getActionsAfter($this, $project_id, $max);
 
-        foreach($actions as $v){
+        foreach ($actions as $v) {
             $action = $v->getAction();
-            if($action['type'] === 'delete') {
+            if ($action['type'] === 'delete') {
                 $target = $action['target'];
-                if(isset($results[$target])){
+                if (isset($results[$target])) {
                     unset($results[$target]);
                     continue;
                 }
@@ -356,6 +570,12 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
             case "getActions":
                 $this->handleActions($payload);
                 break;
+            case "getParticipants":
+                $sanitized = $this->sanitizeInput($payload);
+                return $this->getParticipants($sanitized);
+            case "updateParticipants":
+                $sanitized = $this->sanitizeInput($payload);
+                return $this->updateParticipants($sanitized);
             case "addAction":
                 $this->addAction($payload);
                 break;

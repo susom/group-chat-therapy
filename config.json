@@ -38,7 +38,9 @@
         "addAction",
         "validateUserPhone",
         "validateCode",
-        "handleActions"
+        "handleActions",
+        "getParticipants",
+        "updateParticipants"
     ],
 
     "no-auth-ajax-actions": [

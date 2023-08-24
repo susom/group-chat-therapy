@@ -1,9 +1,6 @@
-import React , { useContext } from "react";
-import {SessionContext} from "./../contexts/Session.jsx";
+import React  from "react";
 
 export default function GlobalFooter() {
-    const session_context   = useContext(SessionContext);
-
     return (
         <div className="su-global-footer [ modifier_class ]">
             <div className="su-global-footer__container" title="Common Stanford resources">

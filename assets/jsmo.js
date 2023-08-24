@@ -190,13 +190,23 @@
                     ...fake_data,
                     ...response
                 };
-                setStateVarCallBack(fake_response);
+                // setStateVarCallBack(fake_response);
 
+
+                console.log("jsmo handleActions",response);
                 // TODO WHEN BACKEND READY, USE response ONLY
-                // setStateVarCallBack(response);
+                setStateVarCallBack(response);
             }).catch(function (err) {
                 console.log("Error", err);
             })
+        },
+
+        getParticipants: (payload, callback, errorCallback) => {
+            module.ajax('getParticipants', payload)
+                .then((res) => {
+                    if(res?.result)
+                        callback(JSON.parse(res?.result))
+                }).catch(err => errorCallback(err))
         },
 
         /**
@@ -226,57 +236,18 @@
             return response;
         },
 
-        /**
-         * POSTS payload (participant_id maybe not necessary) and retrieves object of Latest ChatSession Details
-         * @param payload
-         * @param setStateVarCallBack
-         */
-        getChatSessionDetails: function(payload, setStateVarCallBack) {
-            const motivationalMessages = [
-                "Believe you can and you're halfway there.",
-                "Don't wait for the perfect moment, take the moment and make it perfect.",
-                "It does not matter how slowly you go, as long as you do not stop.",
-                "Believe in yourself and all that you are. Know that there is something inside you that is greater than any obstacle.",
-                "The only way to do great work is to love what you do."
-            ];
-
-            let response = {
-                chat_id : "123456abcxyz",
-                title : "Alcohol Intervention",
-                description : "Group Session Chat for Dudes",
-                date : "2023-07-21",
-                time_start : "11:30 AM",
-                time_end : "01:30 PM",
-                therapist : "123xyz",
-                whiteboard : motivationalMessages[Math.floor(Math.random() * motivationalMessages.length)],
-
-                participants :  [
-                    {participant_id: "123xyz" , display_name : "Mr. Therapist", status : "online"},
-                    {participant_id: "abc456" , display_name : "Gilligan", status : "online"},
-                    {participant_id: "def789" , display_name : "Wally", status : "online"}
-                ]
-            };
-
-            // module.ajax('getChatSessionDetails', payload).then(function (response) {
-            //     console.log("RESPONSE", response);
-            //     setStateVarCallBack(response);
-            // }).catch(function (err) {
-            //     console.log("Error", err);
-            // })
-
-            setStateVarCallBack(response);
-            return response;
-        },
-
         setWhiteBoardContent : function(payload){
             console.log("ajax action", payload);
-            // module.ajax('setWhiteBoardContent', payload).then(function (response) {
-            //     console.log("RESPONSE", response);
-            //     setStateVarCallBack(response);
-            // }).catch(function (err) {
-            //     console.log("Error", err);
-            // })
+            module.ajax('setWhiteBoardContent', payload).then(function (response) {
+                console.log("RESPONSE", response);
+                setStateVarCallBack(response);
+            }).catch(function (err) {
+                console.log("Error", err);
+            })
         },
+
+
+
 
         // Get a list of all the actions from the log tables
         getActions: function () {
@@ -315,6 +286,33 @@
             })
         },
 
+
+        getAssessments: function(payload) {
+            module.ajax('getAssessments', payload).then(function (response) {
+                console.log("RESPONSE", response);
+            }).catch(function (err) {
+                console.log("Error", err);
+            })
+        },
+
+
+
+        updateParticipants: (payload, callback, errorCallback) => {
+            module.ajax('updateParticipants', payload)
+                .then(res => {
+                    if(res?.result)
+                        callback(JSON.parse(res?.result))
+                }).catch(err => errorCallback(err))
+        },
+
+        getChatSessionDetails: function(payload) {
+            module.ajax('getChatSessionDetails', payload).then(function (response) {
+                console.log("RESPONSE", response);
+            }).catch(function (err) {
+                console.log("Error", err);
+            })
+        },
+
         /**
          * Validates Last name, phone to determine user participation in study & send OTP
          * @param lastName
@@ -342,7 +340,8 @@
             module
                 .ajax('validateCode', code)
                 .then(res=> {
-                    callback('validateCode', res)
+                    if(res?.result)
+                        callback('validateCode', JSON.parse(res?.result))
                 })
                 .catch(err => errorCallback('validateCode', err))
         }
