@@ -10,7 +10,7 @@ require_once "ASEMLO.php";
  */
 class Action extends ASEMLO
 {
-    /** @var GroupChatTherapy $this->module */
+    /** @var GroupChatTherapy $this ->module */
 
 
     /**
@@ -32,14 +32,16 @@ class Action extends ASEMLO
     // }
 
     /** GETTERS */
-    public function getPayload() {
+    public function getPayload()
+    {
         // The payload is in the settings table and has the json object
         // TODO:? Should we json_decode here?
         return $this->getValue('payload');
 
     }
 
-    public function getAction() {
+    public function getAction()
+    {
         $message = $this->getValue('message');
         $decoded = json_decode($message, true);
         $decoded['timestamp'] = $this->getValue('timestamp');
@@ -55,11 +57,12 @@ class Action extends ASEMLO
      * @param $note
      * @return void
      */
-    public function addNote($note) {
+    public function addNote($note)
+    {
         $note = $this->getValue('note') ?? '';
         $prefix = empty($note) ? "" : "\n----\n";
         $this->setValue('note',
-            $prefix. "[" . date("Y-m-d H:i:s") . "] " .
+            $prefix . "[" . date("Y-m-d H:i:s") . "] " .
             $note
         );
     }
@@ -75,25 +78,22 @@ class Action extends ASEMLO
      * @return array Action
      * @throws \Exception
      */
-    public static function getActionsAfter($module, $project_id, $action_id = null) {
+    public static function getActionsAfter($module, $project_id, $action_id = null, $session_id)
+    {
+        if (empty($action_id))
+            $action_id = 0;
 
-        if (empty($action_id)) $action_id = 0;
-        $type = self::OBJECT_NAME;
-        $filter_clause = "project_id = ? and log_id > ? order by log_id asc";
+        $filter_clause = "project_id = ? and log_id > ? and session_id = ? order by log_id asc";
         $objs = self::queryObjects(
-            $module, $filter_clause, [$project_id, $action_id]
+            $module, $filter_clause, [$project_id, $action_id, $session_id]
         );
+
         $count = count($objs);
         if ($count > 0) {
             $module->emDebug("Loaded $count CS in need of action");
         }
-        if ($count == 0) {
-            // None found, return false;
-            $result = [];
-        } else {
-            $result = $objs;
-        }
-        return $result;
+
+        return $count === 0 ? [] : $objs;
     }
 
 }
