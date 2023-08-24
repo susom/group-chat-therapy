@@ -249,7 +249,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
                             $return_o["result"] = json_encode($returnPayload); //Necessary result key for returning via JSMO
                             return $return_o;
 
-                        }else {
+                        } else {
                             throw new Exception ("Code has expired, please refresh and try logging in again");
                         }
                     }
@@ -301,14 +301,14 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
         $full_sessions = json_decode(REDCap::getData($params), true); //Grab all therapy sessions
         $user_sessions = [];
 
-        foreach($full_sessions as $session){
-            $participants_arr = !empty($session['ts_authorized_participants']) ? explode (",", $session['ts_authorized_participants']) : [];
-            $in_chat_arr = !empty($session['ts_chat_room_participants']) ? explode (",", $session['ts_chat_room_participants']) : [];
-            if($record['admin']){
+        foreach ($full_sessions as $session) {
+            $participants_arr = !empty($session['ts_authorized_participants']) ? explode(",", $session['ts_authorized_participants']) : [];
+            $in_chat_arr = !empty($session['ts_chat_room_participants']) ? explode(",", $session['ts_chat_room_participants']) : [];
+            if ($record['admin']) {
                 $session['ts_authorized_participants'] = $participants_arr; //Save as array
                 $session['ts_chat_room_participants'] = $in_chat_arr;
                 $user_sessions[] = $session;
-            } else if(in_array($record['record_id'], $participants_arr) || in_array($record['record_id'], $in_chat_arr)) { // If user is a part of either participant field or in chat field
+            } else if (in_array($record['record_id'], $participants_arr) || in_array($record['record_id'], $in_chat_arr)) { // If user is a part of either participant field or in chat field
                 $session['ts_authorized_participants'] = $participants_arr; //Save as array
                 $session['ts_chat_room_participants'] = $in_chat_arr;
                 $user_sessions[] = $session;
@@ -327,9 +327,9 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
     public function getParticipants($payload): array
     {
         try {
-            if(!isset($payload['participants']) || sizeof($payload['participants']) === 0){
+            if (!isset($payload['participants']) || sizeof($payload['participants']) === 0) {
                 throw new Exception('No record_id passed');
-        }
+            }
             $params = array(
                 "return_format" => "json",
                 "records" => $payload['participants'],
@@ -361,7 +361,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
     public function updateParticipants($payload): array
     {
         try {
-            if(empty($payload['record_id']) || empty($payload['action']) || empty($payload['participant_id']))
+            if (empty($payload['record_id']) || empty($payload['action']) || empty($payload['participant_id']))
                 throw new Exception('Incorrect payload passed to updateParticipants');
 
             $params = array(
@@ -382,20 +382,23 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
 
             $json = json_decode(REDCap::getData($params), true);
 
-            if(sizeof($json)){
-                $data = current($json);
-                $participants_arr = !empty($data['ts_authorized_participants']) ? explode (",", $data['ts_authorized_participants']) : [];
-                $in_chat_arr = !empty($data['ts_chat_room_participants']) ? explode (",", $data['ts_chat_room_participants']) : [];
 
-                if($payload['action'] === 'admit'){
+            if (sizeof($json)) {
+                $data = current($json);
+                $participants_arr = !empty($data['ts_authorized_participants']) ? explode(",", $data['ts_authorized_participants']) : [];
+                $in_chat_arr = !empty($data['ts_chat_room_participants']) ? explode(",", $data['ts_chat_room_participants']) : [];
+
+                if ($payload['action'] === 'admit') {
                     $index = array_search($payload['participant_id'], $participants_arr);
-                    if($index !== false){
+
+                    if ($index !== false) {
                         $in_chat_arr[] = $participants_arr[$index]; //Append participant to in_chat and remove from participants array
                         unset($participants_arr[$index]);
                     }
-                } else if($payload['action'] === 'revoke') {
+                } else if ($payload['action'] === 'revoke') {
                     $index = array_search($payload['participant_id'], $in_chat_arr);
-                    if($index !== false){
+                    if ($index !== false) {
+
                         $participants_arr[] = $in_chat_arr[$index];
                         unset($in_chat_arr[$index]);
                     }
@@ -442,7 +445,9 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
     public function getWhiteboard($payload): array
     {
         try {
-            if(empty($payload['record_id']))
+
+            if (empty($payload['record_id']))
+
                 throw new Exception('No Record ID passed');
 
             $params = array(
@@ -473,9 +478,12 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
      * @param $payload
      * @return array
      */
-    public function setWhiteboard($payload): array {
+
+    public function setWhiteboard($payload): array
+    {
         try {
-            if(empty($payload['ts_whiteboard']) || empty($payload['record_id']))
+            if (empty($payload['ts_whiteboard']) || empty($payload['record_id']))
+
                 throw new Exception('Incorrect parameters passed to setWhiteboard');
 
             $saveData = array(
@@ -510,18 +518,23 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
     public function handleActions(array $payload): array
     {
         try {
-            $max = intval($this->sanitizeInput($payload['maxID'])) ?? 0;
-            $actionQueue = $this->sanitizeInput($payload['actionQueue']) ?? [];
-            $session_id = $this->sanitizeInput($payload['session_id']);
+
+            $max = intval(($payload['maxID'])) ?? 0;
+            $session_id = $payload['sessionID'];
+            $actionQueue = $payload['actionQueue'] ?? [];
+
+            if (empty($session_id))
+                throw new Exception('No session ID passed');
+
 
             $start = hrtime(true);
 
             if (count($actionQueue)) { //User has actions to process
-                $this->addAction($actionQueue);
+//                $this->addAction($actionQueue, $session_id);
             }
 
             //If no event queue has been passed, simply return actions
-            $ret = $this->getActions($max);
+            $ret = $this->getActions($max, $session_id);
 
             $stop = hrtime(true);
             $ret['serverTime'] = ($stop - $start) / 1000000;
@@ -548,13 +561,18 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
      * @return void
      * @throws Exception
      */
-    public function addAction(array $actions): void
+    public function addAction(array $actions, string $session_id): void
     {
         try {
+            if (!isset($session_id))
+                throw new Exception('No session id passed to action');
+
             $this->emDebug("Adding actions", $actions);
             foreach ($actions as $k => $v) {
                 $action = new Action($this);
-                $action->setValue('session_id', 'Bar');
+
+                $action->setValue('session_id', $session_id);
+
                 $action->setValue('message', json_encode($v));
                 $action->save();
                 $this->emDebug("Added action " . $action->getId());
@@ -580,11 +598,11 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
      * @return array[]
      * @throws Exception
      */
-    public function getActions(int $max = 0): array
+    public function getActions(int $max = 0, string $session_id): array
     {
         $results = [];
         $project_id = $this->getProjectId();
-        $actions = Action::getActionsAfter($this, $project_id, $max);
+        $actions = Action::getActionsAfter($this, $project_id, $max, $session_id);
 
         foreach ($actions as $v) {
             $action = $v->getAction();
@@ -644,10 +662,8 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
 //                $_SESSION['count']++;
 //                break;
             case "getWhiteboard":
-                $sanitized = $this->sanitizeInput($payload);
                 return $this->getWhiteboard($sanitized);
             case "setWhiteboard":
-                $sanitized = $this->sanitizeInput($payload);
                 return $this->setWhiteboard($sanitized);
 //            case "getActions":
 //                $this->handleActions($payload);
@@ -668,7 +684,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
             case "validateCode":
                 return $this->validateCode($payload);
             case "handleActions":
-                return $this->handleActions($payload);
+                return $this->handleActions($sanitized);
             default:
                 // Action not defined
                 throw new Exception ("Action $action is not defined");

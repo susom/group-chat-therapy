@@ -450,10 +450,11 @@ class ASEMLO
             throw Exception ("query filter must have parameter for each question mark");
         }
 
-        // Add type filter
+
         $sql = "select log_id where " . static::NAME_COLUMN . "= ?" . (empty($filter_clause) ? "" : " and " . $filter_clause);
         $params = array_merge([self::getObjectName()], $parameters);
         $module->emDebug($sql, $params);
+
         $result = $framework->queryLogs($sql,$params);
         $ids = [];
         while ($row = $result->fetch_assoc()) {

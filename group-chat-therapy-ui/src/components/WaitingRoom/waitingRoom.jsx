@@ -29,6 +29,7 @@ export const WaitingRoom = () => {
         if (session_context?.data?.selected_session?.record_id) {
             jsmoModule.getParticipants(
 
+
                 {'participants' : [
                     ...session_context?.data?.selected_session?.ts_authorized_participants,
                     ...session_context?.data?.selected_session?.ts_chat_room_participants,

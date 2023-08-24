@@ -1,5 +1,6 @@
 
-import React, {useContext} from "react";
+import React, {useContext, useEffect, useState} from "react";
+
 import Container from "react-bootstrap/Container";
 import {SessionContext} from "../../contexts/Session.jsx";
 import {useNavigate} from "react-router-dom";
@@ -15,7 +16,26 @@ import {NavHeader} from "../../components/NavHeader/navheader.jsx";
 export default function Select(){
     const session_context = useContext(SessionContext);
     const navigate = useNavigate()
-    const isAdmin = true
+    const [chatSessions, setChatSessions] = useState([])
+
+    let jsmoModule;
+    if (import.meta?.env?.MODE !== 'development')
+        jsmoModule = ExternalModules.Stanford.GroupChatTherapy
+
+    useEffect(() => {
+        jsmoModule.getUserSessions(
+            session_context?.data?.current_user,
+            (res) => {
+                if (res) {
+                    setChatSessions(res)
+                    console.log(res)
+                }
+            },
+            (err) => {
+                console.log(err)
+            }
+        )
+    }, []);
 
     const parseDate = (date) => {
         // let time = Date(date)
@@ -28,19 +48,17 @@ export default function Select(){
     }
 
     const jumpTo = (e) => {
-        let sessions = session_context?.data?.chat_sessions
-        let index = sessions.findIndex(session=> session.record_id === e.target.value)
+        let index = chatSessions.findIndex(session=> session.record_id === e.target.value)
         if(index !== -1 ){ //Pass props from selected session to landing
             let copy = session_context.data
-            copy['selected_session'] = sessions[index]
+            copy['selected_session'] = chatSessions[index]
             session_context.setData(copy)
-            // navigate("/landing", { state: sessions[index] })
             navigate("/landing")
         }
 
     }
     const renderRows = () => {
-        const items = session_context?.data?.chat_sessions.map((e,i) => (
+        const items = chatSessions?.map((e,i) => (
             <Accordion.Item className="mb-3" key={i} eventKey={i}>
                 <Accordion.Header className="accHeader">
                     <span>{`${e.ts_title}`}</span>
