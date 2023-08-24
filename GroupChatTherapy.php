@@ -291,7 +291,9 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
                 "ts_authorized_participants",
                 "ts_chat_room_participants",
                 "ts_title",
-                "ts_topic"
+                "ts_therapist",
+                "ts_topic",
+                "ts_whiteboard"
             ),
             "events" => array("therapy_session_arm_1"),
         );
@@ -416,12 +418,78 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
                 }
                 $returnPayload["data"] = $data;
                 return ["result" => json_encode($returnPayload)];
-//                return $response;
             } else {
                 $rec = $payload['record_id'];
                 throw new Exception("Get data call returned no results given record_id $rec");
             }
-//            return $payload;
+        } catch (\Exception $e) {
+            $msg = $e->getMessage();
+            \REDCap::logEvent("Error: $msg");
+            $this->emError("Error: $msg");
+            return ["result" => json_encode($msg)];
+        }
+    }
+
+    /**
+     * Grab Whiteboard for a given session
+     * @param $payload
+     * @return array
+     */
+    public function getWhiteboard($payload): array
+    {
+        try {
+            if(empty($payload['record_id']))
+                throw new Exception('No Record ID passed');
+
+            $params = array(
+                "return_format" => "json",
+                "records" => array($payload['record_id']),
+                "fields" => array(
+                    "ts_whiteboard",
+                ),
+                "events" => array("therapy_session_arm_1"),
+            );
+
+            $json = json_decode(REDCap::getData($params), true);
+
+            $returnPayload["data"] = $json;
+            return ["result" => json_encode($returnPayload)];
+
+        } catch (\Exception $e) {
+            $msg = $e->getMessage();
+            \REDCap::logEvent("Error: $msg");
+            $this->emError("Error: $msg");
+            return ["result" => json_encode($msg)];
+        }
+
+    }
+
+    /**
+     * Set whiteboard content given a session
+     * @param $payload
+     * @return array
+     */
+    public function setWhiteboard($payload): array {
+        try {
+            if(empty($payload['ts_whiteboard']) || empty($payload['record_id']))
+                throw new Exception('Incorrect parameters passed to setWhiteboard');
+
+            $saveData = array(
+                array(
+                    "record_id" => $payload['record_id'],
+                    "ts_whiteboard" => $payload['ts_whiteboard'],
+                )
+            );
+
+            $response = REDCap::saveData('json', json_encode($saveData), 'overwrite');
+            if (!empty($response['errors'])) {
+                $this->emError("Could not update record with " . json_encode($response['errors']));
+                throw new Exception("Could not update record with " . json_encode($response['errors']));
+            }
+
+            $returnPayload["data"] = "Success";
+            return ["result" => json_encode($returnPayload)];
+
         } catch (\Exception $e) {
             $msg = $e->getMessage();
             \REDCap::logEvent("Error: $msg");
@@ -440,6 +508,8 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
         try {
             $max = intval($this->sanitizeInput($payload['maxID'])) ?? 0;
             $actionQueue = $this->sanitizeInput($payload['actionQueue']) ?? [];
+            $session_id = $this->sanitizeInput($payload['session_id']);
+
             $start = hrtime(true);
 
             if (count($actionQueue)) { //User has actions to process
@@ -480,7 +550,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
             $this->emDebug("Adding actions", $actions);
             foreach ($actions as $k => $v) {
                 $action = new Action($this);
-                $action->setValue('Foo', 'Bar');
+                $action->setValue('session_id', 'Bar');
                 $action->setValue('message', json_encode($v));
                 $action->save();
                 $this->emDebug("Added action " . $action->getId());
@@ -567,6 +637,12 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
                 ];
                 $_SESSION['count']++;
                 break;
+            case "getWhiteboard":
+                $sanitized = $this->sanitizeInput($payload);
+                return $this->getWhiteboard($sanitized);
+            case "setWhiteboard":
+                $sanitized = $this->sanitizeInput($payload);
+                return $this->setWhiteboard($sanitized);
             case "getActions":
                 $this->handleActions($payload);
                 break;

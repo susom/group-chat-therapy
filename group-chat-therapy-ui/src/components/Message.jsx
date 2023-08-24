@@ -9,15 +9,16 @@ import {ChatContext} from "./../contexts/Chat.jsx";
 import ReplyMessage from "./ReplyMessage.jsx";
 
 export default function Message({ message, onReply, showReactions = true, showReply = true, isReply = false, onCloseReply, replyMessage, className = ""}) {
-    const session_context           = useContext(SessionContext);
-    const chat_context              = useContext(ChatContext);
-    const participantsLookUp        = session_context.participantsLookUp;
-    const participant_id            = session_context.data?.current_user?.record_id ;
-    const therapistID               = session_context.data?.selected_session?.ts_therapist || null;
+    const session_context                           = useContext(SessionContext);
+    const chat_context                              = useContext(ChatContext);
+    const participantsLookUp                        = session_context.participantsLookUp;
+    const participant_id                            = session_context.data?.current_user?.record_id ;
+    const chat_session_id                           = session_context.data?.selected_session?.record_id;
+    const therapistID                               = session_context.data?.selected_session?.ts_therapist || null;
 
     const [reactions, setReactions]                 = useState(message.reactions || []);
     const [showReactionPopup, setShowReactionPopup] = useState(false);
-    const timeoutRef = useRef(null);
+    const timeoutRef                                = useRef(null);
 
     useEffect(() => {
         setReactions(message.reactions || []);
@@ -47,7 +48,8 @@ export default function Message({ message, onReply, showReactions = true, showRe
         const deleteAction  = {
             "client_ts": timestamp,
             "type": "delete",
-            "target": message.id
+            "target": message.id,
+            "sessionID" : chat_session_id
         };
 
         // DELETE FROM LOCAL VIEW FOR NOW, RESOLVE ON PAYLOAD REFRESH OF NEW ACTIONS
@@ -68,6 +70,7 @@ export default function Message({ message, onReply, showReactions = true, showRe
             user : participant_id,
             first_name : participant_name,
             icon : reaction,
+            sessionID : chat_session_id
         };
 
         //ADD IT TO THE LOCAL VIEW FOR NOW, RESOLVE ON PAYLOAD REFRESH OF NEW ACTIONS

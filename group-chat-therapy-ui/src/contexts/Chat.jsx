@@ -12,8 +12,6 @@ export const ChatContextProvider = ({children}) => {
     //RAW DATA PAYLOADS GO HERE
     const [data, setData]                                   = useState(); //raw INITIAL data
     const [actions, setActions]                             = useState([]); //local session store of actions
-    const [chatSessionDetails, setChatSessionDetails]       = useState(null); //chat details
-    const [assessments, setAssessments]                     = useState([]); //participant assessments
 
     //ONE TIME IDs
     const [chatSessionID, setChatSessionID]                 = useState(null); //current chat id
@@ -29,12 +27,10 @@ export const ChatContextProvider = ({children}) => {
     const [sendActionQueue, setSendActionQueue]             = useState([]); // keep queue of actions to post during each poll
 
     const [newActions,setNewActions]                        = useState(null);
-    const [newAssessments,setNewAssessments]                = useState(null);
-    const [newSessionDetails,setNewSessionDetails]          = useState(null);
 
     //STATUS VARS
-    const [assessmentsStatus, setAssessmentStatus]          = useState(false); //participant required assessments status
     const [maxID, setMaxID]                                 = useState(null); //latest action id
+    const [whiteboardUpdate, setWhiteboardUpdate]           = useState(false); //whiteboard updating
 
     //PROCESSED DATA - FOR UI CONSUMPTION
     const [allChats, setAllChats]                           = useState({"groupChat" : []}); //same as group chat but direct
@@ -44,7 +40,7 @@ export const ChatContextProvider = ({children}) => {
     // INIT CHAT SESSION
     useEffect(() => {
         if (!isPollingActions && session_context?.data?.selected_session) {
-            console.log("inside CHAT CONTEXT initial useEffect");
+            console.log("inside CHAT CONTEXT initial useEffect", session_context?.data);
 
             setChatSessionID(session_context.data.selected_session["record_id"]);
             setParticipants(session_context.data.selected_session["ts_chat_room_participants"]);
@@ -99,7 +95,8 @@ export const ChatContextProvider = ({children}) => {
         const module = ExternalModules.Stanford.GroupChatTherapy;
         switch(actionType){
             case "setWhiteBoardContent" :
-                module.setWhiteBoardContent(payload);
+
+                module.setWhiteboard(payload, setWhiteboardUpdate, setWhiteboardUpdate);
                 break;
 
             default:
@@ -178,9 +175,8 @@ export const ChatContextProvider = ({children}) => {
 
     const processAction = (action, actionsArray, allChats) => {
         // MAKE "DEEP" COPIES
-        let newAllChats     = JSON.parse(JSON.stringify(allChats));
         let updatedActionsArray;
-        console.log("processAction .length here?");
+        let newAllChats     = JSON.parse(JSON.stringify(allChats));
         const allChatsKey   = action.recipients?.length > 0 ? action.recipients.sort().join("|") : "groupChat";
 
         switch(action.type) {
@@ -265,16 +261,20 @@ export const ChatContextProvider = ({children}) => {
                 updatedActionsArray = [...actionsArray, action];
                 break;
 
-            // case 'update_assessments':
-            //     // Remove the 'assessments' action from the actionsArray
-            //     fetchAssessments();
-            //     updatedActionsArray = actionsArray.filter(prevAction => prevAction.type !== 'assessments');
-            //     break;
-
-            case 'update_chat_details':
             case 'whiteboard':
-                // Remove the 'whiteboard' action from the actionsArray
-                fetchChatSessionDetails();
+                if (session_context?.data) {
+                    // Create a shallow copy of data
+                    const copyof = { ...session_context.data };
+
+                    // Create a copy of selected_session
+                    copyof.selected_session = {
+                        ...copyof.selected_session,
+                        ts_whiteboard: action.body
+                    };
+
+                    session_context.setData(copyof);
+                }
+
                 updatedActionsArray = actionsArray.filter(prevAction => prevAction.type !== 'whiteboard');
                 break;
 
@@ -306,16 +306,17 @@ export const ChatContextProvider = ({children}) => {
 
     // POST ACTIONS QUEUE AND FETCH LATEST ACTIONS
     useEffect(() => {
+        console.log("newActions useeffect", newActions);
         if (!newActions) return;
 
         const cur_actionsArr    = actionsRef.current;
         const cur_allChats      = allChatsRef.current;
 
-        const new_actions       = newActions.actions;
-        const new_max_id        = new_actions && new_actions[new_actions.length-1]?.id;
+        const new_actions       = newActions.data;
+        const keys              = Object.keys(new_actions);
+        const lastActionKey     = keys[keys.length - 1];
+        const new_max_id        = new_actions && new_actions[lastActionKey]?.id;
         const server_time       = newActions.serverTime;
-
-        // console.log("newActions", newActions);
 
         //actionQueue sent, now Empty it
         clearActionQueue();
@@ -329,8 +330,9 @@ export const ChatContextProvider = ({children}) => {
         let updatedActions      = [...cur_actionsArr];
         let updatedAllChats     = {...cur_allChats};
 
+        console.log("new_actions coming through!", new_actions);
         // PROCESS EACH NEW ACTION
-        new_actions.forEach(action => {
+        Object.values(new_actions).forEach(action => {
             let result = processAction(action, updatedActions, updatedAllChats);
             updatedActions      = result.actionsArray;
             updatedAllChats     = result.allChats;
@@ -351,35 +353,6 @@ export const ChatContextProvider = ({children}) => {
         console.log("callAjax", {sessionID : chatSessionID, maxID : previous_max_id, actionQueue : cur_actionQueue});
         callAjax({sessionID : chatSessionID, maxID : previous_max_id, actionQueue : cur_actionQueue},"handleActions");
     }
-
-
-    //REFRESH ASSESSMENTS/STATUS
-    // useEffect(() => {
-    //     if (!newAssessments) return;
-    //     const participantAssessments    = newAssessments.find(a => a.participant_id === data.participant_id);
-    //     const areAllAssessmentsComplete = participantAssessments?.required.every(a => a.status);
-    //     setAssessments(newAssessments);
-    //
-    //     if (areAllAssessmentsComplete) {
-    //         setAssessmentStatus(true);
-    //     }
-    // }, [newAssessments]);  // Run this effect when newActions changes
-
-    const fetchAssessments = async () => {
-        callAjax({ participant_id : participantID },"getAssessments");
-    };
-
-
-    //REFRESH CHAT SESSION DETAILS
-    // useEffect(() => {
-    //     if (!newSessionDetails) return;
-    //     setChatSessionDetails(newSessionDetails);
-    // }, [newSessionDetails]);  // Run this effect when newActions changes
-
-    const fetchChatSessionDetails = async () => {
-        callAjax({ chat_session_id : chatSessionID },"getChatSessionDetails");
-    }
-
 
     //REMOVE MESSAGE FROM UI (AND LOCAL CACHE OF MESSAGE ITEMS)
     const removeMessage = (messageId) => {
@@ -408,7 +381,6 @@ export const ChatContextProvider = ({children}) => {
         }
     }
 
-
     return (
         <ChatContext.Provider value={{
             setData,
@@ -418,12 +390,6 @@ export const ChatContextProvider = ({children}) => {
             chatSessionID,
             participantID,
             isAdmin,
-            // chatSessionDetails,
-            // assessments,
-            // assessmentsStatus,
-            // setParticipantsLookUp,
-            // participantsLookUp,
-            // participants,
             allChats,
             sendAction,
             removeMessage,

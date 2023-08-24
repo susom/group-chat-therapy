@@ -33,19 +33,18 @@ function ChatRoomContent() {
     const isAdmin                                       = participant_details?.admin === "1";
 
     const chat_details                                  = session_context?.data?.selected_session || {};
-    const whiteboard                                    = chat_details?.ts_whiteboard !== "" ? chat_details?.ts_whiteboard : "Nothing here yet.";
+    const chat_session_id                               = chat_details?.record_id || null;
     const date_string                                   = chat_details?.ts_start ? chat_details?.ts_start : "";
 
     //CHAT VARS CACHE
-    // const [dateComps, setDateComps]                     = useState(dateComponents(date_string));
-
     const chatContextAllChats                           = chat_context.allChats;
     const [allChats, setAllChats]                       = useState({ ...chatContextAllChats });
     const [selectedChat, setSelectedChat]               = useState('groupChat');
+    // const [whiteboard, setWhiteboard]                   = useState(chat_details?.ts_whiteboard !== "" ? chat_details?.ts_whiteboard : "Nothing here yet.");
     const chatContextMentionCounts                      = chat_context.mentionCounts;
     // const [mentionCounts, setMentionCounts]             = useState({ ...chatContextMentionCounts });
 
-    const [whiteboardContent, setWhiteboardContent]     = useState(whiteboard);
+    const [whiteboardContent, setWhiteboardContent]     = useState(chat_details?.ts_whiteboard !== "" ? chat_details?.ts_whiteboard : "Nothing here yet.");
     const [whiteboardIsChanged, setWhiteboardIsChanged] = useState(false);
 
     //MESSAGE HANDLING
@@ -54,6 +53,7 @@ function ChatRoomContent() {
     const [keystrokes, setKeystrokes]                   = useState([]);
     const [currentWord, setCurrentWord]                 = useState('');
     const [replyTo, setReplyTo]                         = useState(null);
+
 
     const mentionCounts = useMemo(() => {
         return { ...chatContextMentionCounts };
@@ -67,13 +67,15 @@ function ChatRoomContent() {
         return dateComponents(date_string);
     }, [date_string]);
 
-    // useEffect(() => {
-    //     setDateComps(dateComponents(date_string));
-    // }, [date_string]);
+    useEffect(() => {
+        console.log('session_context.data changed!', session_context.data.selected_session.ts_whiteboard);
+        setWhiteboardContent(session_context.data.selected_session.ts_whiteboard);
+    }, [session_context.data.selected_session.ts_whiteboard]);
 
     useEffect(() => {
         setAllChats({ ...chatContextAllChats });
     }, [chatContextAllChats]);
+
 
     const handleInputChange = e => {
         if (startMessageTime === null) {
@@ -92,7 +94,20 @@ function ChatRoomContent() {
     };
 
     const updateWhiteboard = () => {
-        chat_context.callAjax({whiteBoardContent : whiteboardContent},"setWhiteBoardContent");
+        chat_context.callAjax({sessionID : [chat_session_id], whiteBoardContent : whiteboardContent}, "setWhiteboard");
+
+        const timestamp = new Date().toISOString();
+        const newAction = {
+            sessionID : chat_session_id,
+            client_ts : timestamp,
+            type : "whiteboard",
+            body : whiteboardContent,  // Use the sanitized message
+            user : participant_id
+        };
+
+        //ADD ACTION TO QUEUE TO BE PICKED UP AT NEXT POLL
+        chat_context.sendAction(newAction);
+
         setWhiteboardContent(whiteboardContent);
     };
 
@@ -115,7 +130,7 @@ function ChatRoomContent() {
             const newAction = {
                 id : 12345,
                 isFake : true,
-
+                sessionID : chat_session_id,
                 client_ts : timestamp,
                 type : "message",
                 body : sanitizedBody,  // Use the sanitized message
@@ -219,7 +234,7 @@ function ChatRoomContent() {
                                                             <Button type="submit" className="mt-2 whiteboard_btn" disabled={!whiteboardIsChanged}>Update Whiteboard</Button>
                                                         </Form>
                                                     ) : (
-                                                        <Card.Text>{whiteboard}</Card.Text>
+                                                        <Card.Text>{whiteboardContent}</Card.Text>
                                                     )
                                                 )
                                             }

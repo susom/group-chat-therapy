@@ -40,7 +40,9 @@
         "validateCode",
         "handleActions",
         "getParticipants",
-        "updateParticipants"
+        "updateParticipants",
+        "setWhiteboard",
+        "getWhiteboard"
     ],
 
     "no-auth-ajax-actions": [

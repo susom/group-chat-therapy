@@ -31,13 +31,25 @@ export const WaitingRoom = () => {
             jsmoModule.getParticipants(
                 {'participants' : [
                     ...session_context?.data?.selected_session?.ts_authorized_participants,
-                    ...session_context?.data?.selected_session?.ts_chat_room_participants
+                    ...session_context?.data?.selected_session?.ts_chat_room_participants,
+                        session_context?.data?.selected_session?.ts_therapist
                     ]},
                 (res) => {
                     if(res){
                         let filtered = res?.data?.filter(e => parseInt(e.admin) !== 1) //remove admins from waiting room list
                         setParticipantDetails(filtered)
-                        console.log('participants', filtered)
+                        console.log('waitingRoom getParticipants', filtered);
+
+                        const participant_lookup = res?.data?.reduce((acc, item) => {
+                            acc[item.record_id] = item.participant_first_name;
+                            return acc;
+                        }, {});
+
+                        // Only update the state if participant_lookup is different from the previous value
+                        if (JSON.stringify(session_context.participantsLookUp) !== JSON.stringify(participant_lookup)) {
+                            session_context.setParticipantsLookUp(participant_lookup);
+                            console.log("participantLookUp", participant_lookup, participant_lookup[4]);
+                        }
                     }
                 },
                 (err) => {

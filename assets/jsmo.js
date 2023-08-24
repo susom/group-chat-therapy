@@ -185,13 +185,12 @@
             // console.log("posting actionsQueue", payload);
 
             module.ajax('handleActions', payload).then(function (response) {
-                const fake_data     = generateFakeData(payload.maxID); // Use fake data instead of the AJAX call
-                const fake_response = {
-                    ...fake_data,
-                    ...response
-                };
+                // const fake_data     = generateFakeData(payload.maxID); // Use fake data instead of the AJAX call
+                // const fake_response = {
+                //     ...fake_data,
+                //     ...response
+                // };
                 // setStateVarCallBack(fake_response);
-
 
                 console.log("jsmo handleActions",response);
                 // TODO WHEN BACKEND READY, USE response ONLY
@@ -235,18 +234,6 @@
             setStateVarCallBack(response);
             return response;
         },
-
-        setWhiteBoardContent : function(payload){
-            console.log("ajax action", payload);
-            module.ajax('setWhiteBoardContent', payload).then(function (response) {
-                console.log("RESPONSE", response);
-                setStateVarCallBack(response);
-            }).catch(function (err) {
-                console.log("Error", err);
-            })
-        },
-
-
 
 
         // Get a list of all the actions from the log tables
@@ -295,7 +282,29 @@
             })
         },
 
+        getWhiteboard : (payload, callback, errorCallback) => {
+            module.ajax('getWhiteboard', payload)
+                .then((res) => {
+                    if(res?.result)
+                        callback(JSON.parse(res?.result))
+                }).catch(err => errorCallback(err))
+        },
 
+        setWhiteboard: (payload, callback, errorCallback) => {
+            module.ajax('setWhiteboard', payload)
+                .then((res) => {
+                    if(res?.result)
+                        callback(JSON.parse(res?.result))
+                }).catch(err => errorCallback(err))
+        },
+
+        getParticipants: (payload, callback, errorCallback) => {
+            module.ajax('getParticipants', payload)
+                .then((res) => {
+                    if(res?.result)
+                        callback(JSON.parse(res?.result))
+                }).catch(err => errorCallback(err))
+        },
 
         updateParticipants: (payload, callback, errorCallback) => {
             module.ajax('updateParticipants', payload)
