@@ -113,12 +113,12 @@ export default function Landing() {
     // if (!session_context?.data?.participantID) {
     //     return <Navigate to="/"/>
     // } else {
-        const isAdmin = !session_context?.data?.current_user?.admin
+        const isAdmin = session_context?.data?.current_user?.admin
 
         return (
             <>
                <NavHeader/>
-                {isAdmin ? renderAdmin() : renderParticipant()}
+                {isAdmin === "1" ? renderAdmin() : renderParticipant()}
             </>
         )
     // }
