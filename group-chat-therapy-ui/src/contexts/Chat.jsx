@@ -20,7 +20,7 @@ export const ChatContextProvider = ({children}) => {
     const [participants, setParticipants]                   = useState([]);
 
     //POLLING VARS
-    const [intervalLength, setIntervalLength]               = useState(10000); //default 3 seconds? depending on ping back can increase or throttle
+    const [intervalLength, setIntervalLength]               = useState(5000); //default 3 seconds? depending on ping back can increase or throttle
     const [getActionsIntervalID, setGetActionsIntervalID]   = useState(null); //polling interval id (to cancel it)
     const [isPollingPaused, setIsPollingPaused]             = useState(false); //if cancelling poll, set this flag to easily restart the poll
     const [isPollingActions, setIsPollingActions]           = useState(false); // to kick off polling one time
@@ -40,8 +40,6 @@ export const ChatContextProvider = ({children}) => {
     // INIT CHAT SESSION
     useEffect(() => {
         if (!isPollingActions && session_context?.data?.selected_session) {
-            console.log("inside CHAT CONTEXT initial useEffect", session_context?.data);
-
             setChatSessionID(session_context.data.selected_session["record_id"]);
             setParticipants(session_context.data.selected_session["ts_chat_room_participants"]);
 
@@ -54,8 +52,6 @@ export const ChatContextProvider = ({children}) => {
     useEffect(() => {
         //SHOULD ONLY BE CALLED ONCE AFTER THE INITIAL USE EFFECT
         if (isPollingActions && !isPollingPaused) {
-            console.log("kicking off the polling chatSessionID participants", chatSessionID, participants);
-
             const interval = setInterval(fetchActions, intervalLength);
 
             //Use with isPollingPaused(true) to pause
@@ -76,7 +72,7 @@ export const ChatContextProvider = ({children}) => {
                 // Check if the message mentions the current participant ID
                 const mentionsCurrentParticipant =
                     message.containsMention &&
-                    message.body.includes(`@${participantsLookUp[participantID]}`) &&
+                    message.body.includes(`@${session_context.participantsLookUp[participantID]}`) &&
                     (!message.wasSeen || message.wasSeen === false);
 
                 return mentionsCurrentParticipant ? count + 1 : count;
@@ -94,9 +90,27 @@ export const ChatContextProvider = ({children}) => {
     const callAjax = (payload, actionType) => {
         const module = ExternalModules.Stanford.GroupChatTherapy;
         switch(actionType){
-            case "setWhiteBoardContent" :
-
+            case "setWhiteboard" :
                 module.setWhiteboard(payload, setWhiteboardUpdate, setWhiteboardUpdate);
+                break;
+
+            case "getParticipants" :
+                module.getParticipants(payload, (res) => {
+                    if (res) {
+                        const participant_lookup = res?.data?.reduce((acc, item) => {
+                            acc[item.record_id] = item.participant_first_name;
+                            return acc;
+                        }, {});
+
+                        // Only update the state if participant_lookup is different from the previous value
+                        if (JSON.stringify(session_context.participantsLookUp) !== JSON.stringify(participant_lookup)) {
+                            session_context.setParticipantsLookUp(participant_lookup);
+                            console.log("participantLookUp", participant_lookup);
+                        }
+                    }
+                }, (err) => {
+                    console.log("getParticipants error");
+                });
                 break;
 
             default:
@@ -181,6 +195,7 @@ export const ChatContextProvider = ({children}) => {
 
         switch(action.type) {
             case 'delete':
+                console.log("delete", action);
                 Object.keys(newAllChats).forEach(chatKey => {
                     newAllChats[chatKey] = newAllChats[chatKey].filter(
                         message => message.id !== action.target
@@ -253,11 +268,14 @@ export const ChatContextProvider = ({children}) => {
                             if (!message.reactions) {
                                 message.reactions = [];
                             }
+
                             message.reactions.push(action);
+                            console.log("reaction", message, newAllChats);
                         }
                     });
                 }
 
+                console.log("newALlchats", newAllChats);
                 updatedActionsArray = [...actionsArray, action];
                 break;
 
@@ -306,7 +324,6 @@ export const ChatContextProvider = ({children}) => {
 
     // POST ACTIONS QUEUE AND FETCH LATEST ACTIONS
     useEffect(() => {
-        console.log("newActions useeffect", newActions);
         if (!newActions) return;
 
         const cur_actionsArr    = actionsRef.current;
@@ -350,7 +367,7 @@ export const ChatContextProvider = ({children}) => {
         const cur_actionQueue   = sendActionQueueRef.current;
 
         //EVERY fetchActions SHOULD POST participant_id, maxID and current sendActionQueue
-        console.log("callAjax", {sessionID : chatSessionID, maxID : previous_max_id, actionQueue : cur_actionQueue});
+        // console.log("callAjax", {sessionID : chatSessionID, maxID : previous_max_id, actionQueue : cur_actionQueue});
         callAjax({sessionID : chatSessionID, maxID : previous_max_id, actionQueue : cur_actionQueue},"handleActions");
     }
 

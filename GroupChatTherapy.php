@@ -530,7 +530,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
             $start = hrtime(true);
 
             if (count($actionQueue)) { //User has actions to process
-//                $this->addAction($actionQueue, $session_id);
+                $this->addAction($actionQueue, $session_id);
             }
 
             //If no event queue has been passed, simply return actions

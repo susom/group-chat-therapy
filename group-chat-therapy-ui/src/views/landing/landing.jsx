@@ -15,16 +15,8 @@ import {SessionContext} from "../../contexts/Session.jsx";
 import './landing.css';
 
 export default function Landing() {
-    const session_context = useContext(SessionContext);
+    const session_context   = useContext(SessionContext);
     const navigate = useNavigate()
-
-    useEffect(() => {
-
-        // if (!session_context?.participantID) {
-        //     console.log('Redirected, not logged in')
-        //     navigate("/", {replace: true})
-        // }
-    }, [])
 
     const renderList = () => {
         return (
@@ -102,7 +94,7 @@ export default function Landing() {
                     </Alert>
                 </Card.Body>
                 <Card.Footer>
-                    <Button disabled className="float-end" onClick={enterChat}>Enter Chat</Button>
+                    <Button className="float-end" onClick={enterChat}>Enter Chat</Button>
                 </Card.Footer>
                 </Card>
             </Container>
@@ -113,7 +105,7 @@ export default function Landing() {
     // if (!session_context?.data?.participantID) {
     //     return <Navigate to="/"/>
     // } else {
-        const isAdmin = !session_context?.data?.current_user?.admin
+        const isAdmin = session_context?.data?.current_user?.admin
 
         return (
             <>

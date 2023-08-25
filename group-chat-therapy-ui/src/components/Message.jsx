@@ -68,7 +68,6 @@ export default function Message({ message, onReply, showReactions = true, showRe
             type : "reaction",
             target : message.id,
             user : participant_id,
-            first_name : participant_name,
             icon : reaction,
             sessionID : chat_session_id
         };

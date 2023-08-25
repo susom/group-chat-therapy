@@ -6,32 +6,32 @@
     //TODO DELETE generateFakeData(maxID) WHEN BACKEND SET
     function generateFakeData(maxID) {
         const icons = ["heart", "smile", "sad", "angry"];
-        const users = ["123xyz", "abc456", "def789"];
+        const users = [2,3,4];
         const notice_arr = ["Foo has left the session", "Bar has joined the session"];
         const messageBodies = [
-            "@Gilligan @Mr_Therapist Hi there!",
-            "@Mr_Therapist Sounds great!",
+            "@Irvin @Schultz Hi there!",
+            "@Schultz Sounds great!",
             "Absolutely!",
-            "@Gilligan @Mr_Therapist Good point!",
+            "@Irvin @Schultz Good point!",
             "Interesting.",
-            "@Wally I agree.",
+            "@Andy I agree.",
             "Definitely!",
-            "@Mr_Therapist Let's do that.",
+            "@Schultz Let's do that.",
             "Sure thing.",
-            "@Gilligan Hmm, let's see.",
+            "@Irvin Hmm, let's see.",
             "How's your day been so far?",
             "That's a really insightful observation.",
-            "@Wally @Mr_Therapist I've been looking at different strategies recently.",
+            "@Andy @Schultz I've been looking at different strategies recently.",
             "Can we explore your last point in more detail?",
-            "@Mr_Therapist How about we try a different approach?",
-            "@Gilligan Could you elaborate on that point?",
+            "@Schultz How about we try a different approach?",
+            "@Irvin Could you elaborate on that point?",
             "What are your thoughts on this matter?",
             "How have you been feeling about your progress?",
-            "@Wally @Mr_Therapist I just read an interesting article about cognitive behavior therapy. I think it has some points that could apply to our discussion.",
-            "@Mr_Therapist I'm really pleased with the progress we've made so far. You're showing a lot of resilience and perseverance.",
+            "@Andy @Schultz I just read an interesting article about cognitive behavior therapy. I think it has some points that could apply to our discussion.",
+            "@Schultz I'm really pleased with the progress we've made so far. You're showing a lot of resilience and perseverance.",
             "Let's discuss some coping mechanisms for when you're feeling stressed or overwhelmed. It might be helpful to have some strategies in place.",
-            "@Gilligan Your thoughts and feelings are important. Don't hesitate to share anything that comes to mind, even if it seems unrelated.",
-            "@Mr_Therapist Remember, there's no rush in this process. It's about making sustainable changes, not instant fixes.",
+            "@Irvin Your thoughts and feelings are important. Don't hesitate to share anything that comes to mind, even if it seems unrelated.",
+            "@Schultz Remember, there's no rush in this process. It's about making sustainable changes, not instant fixes.",
             "It seems like you're dealing with a lot right now. I want to remind you that it's okay to take a step back when you need to."
         ];
         const server_timestamp = new Date().toISOString();
@@ -185,14 +185,14 @@
             // console.log("posting actionsQueue", payload);
 
             module.ajax('handleActions', payload).then(function (response) {
-                // const fake_data     = generateFakeData(payload.maxID); // Use fake data instead of the AJAX call
-                // const fake_response = {
-                //     ...fake_data,
-                //     ...response
-                // };
+                const fake_data     = generateFakeData(payload.maxID); // Use fake data instead of the AJAX call
+                const fake_response = {
+                    ...fake_data,
+                    ...response
+                };
                 // setStateVarCallBack(fake_response);
 
-                console.log("jsmo handleActions",response);
+                // console.log("jsmo handleActions",fake_response);
                 // TODO WHEN BACKEND READY, USE response ONLY
                 setStateVarCallBack(response);
             }).catch(function (err) {

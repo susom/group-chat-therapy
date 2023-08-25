@@ -13,6 +13,7 @@ import GlobalHeader from "../../components/global_header.jsx";
 import GlobalFooter from "../../components/global_footer.jsx";
 
 import './chatroom.css';
+import '../../assets/css/decanter.css';
 import { debounce } from 'lodash';
 
 export default function ChatRoom() {
@@ -40,7 +41,6 @@ function ChatRoomContent() {
     const chatContextAllChats                           = chat_context.allChats;
     const [allChats, setAllChats]                       = useState({ ...chatContextAllChats });
     const [selectedChat, setSelectedChat]               = useState('groupChat');
-    // const [whiteboard, setWhiteboard]                   = useState(chat_details?.ts_whiteboard !== "" ? chat_details?.ts_whiteboard : "Nothing here yet.");
     const chatContextMentionCounts                      = chat_context.mentionCounts;
     // const [mentionCounts, setMentionCounts]             = useState({ ...chatContextMentionCounts });
 
@@ -53,6 +53,21 @@ function ChatRoomContent() {
     const [keystrokes, setKeystrokes]                   = useState([]);
     const [currentWord, setCurrentWord]                 = useState('');
     const [replyTo, setReplyTo]                         = useState(null);
+
+
+    useEffect(() => {
+        const selectedSession = session_context?.data?.selected_session;
+        if (selectedSession?.record_id) {
+            const payload = {
+                'participants': [
+                    ...selectedSession.ts_authorized_participants,
+                    ...selectedSession.ts_chat_room_participants,
+                    selectedSession.ts_therapist
+                ]
+            };
+            chat_context.callAjax(payload, "getParticipants");
+        }
+    }, [session_context?.data?.selected_session?.record_id]);
 
 
     const mentionCounts = useMemo(() => {
@@ -68,7 +83,6 @@ function ChatRoomContent() {
     }, [date_string]);
 
     useEffect(() => {
-        console.log('session_context.data changed!', session_context.data.selected_session.ts_whiteboard);
         setWhiteboardContent(session_context.data.selected_session.ts_whiteboard);
     }, [session_context.data.selected_session.ts_whiteboard]);
 
@@ -94,7 +108,7 @@ function ChatRoomContent() {
     };
 
     const updateWhiteboard = () => {
-        chat_context.callAjax({sessionID : [chat_session_id], whiteBoardContent : whiteboardContent}, "setWhiteboard");
+        chat_context.callAjax({record_id : chat_session_id, ts_whiteboard : whiteboardContent}, "setWhiteboard");
 
         const timestamp = new Date().toISOString();
         const newAction = {
