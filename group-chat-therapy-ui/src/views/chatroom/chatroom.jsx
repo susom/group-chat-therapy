@@ -112,11 +112,12 @@ function ChatRoomContent() {
 
         const timestamp = new Date().toISOString();
         const newAction = {
-            sessionID : chat_session_id,
-            client_ts : timestamp,
             type : "whiteboard",
+            sessionID : chat_session_id,
+            user : participant_id,
             body : whiteboardContent,  // Use the sanitized message
-            user : participant_id
+            client_ts : timestamp
+
         };
 
         //ADD ACTION TO QUEUE TO BE PICKED UP AT NEXT POLL
@@ -144,15 +145,16 @@ function ChatRoomContent() {
             const newAction = {
                 id : 12345,
                 isFake : true,
-                sessionID : chat_session_id,
-                client_ts : timestamp,
+
                 type : "message",
-                body : sanitizedBody,  // Use the sanitized message
+                sessionID : chat_session_id,
                 user : participant_id,
+                body : sanitizedBody,  // Use the sanitized message
+                target: replyTo || null,
                 recipients : selectedChat === 'groupChat' ? [] : [selectedChat],
+                client_ts : timestamp,
                 time_to_complete : duration,
-                character_history : keystrokes,
-                target: replyTo || null
+                character_history : keystrokes
             };
 
             // Add the message to the local chat history

@@ -20,7 +20,7 @@ export const ChatContextProvider = ({children}) => {
     const [participants, setParticipants]                   = useState([]);
 
     //POLLING VARS
-    const [intervalLength, setIntervalLength]               = useState(5000); //default 3 seconds? depending on ping back can increase or throttle
+    const [intervalLength, setIntervalLength]               = useState(10000); //default 3 seconds? depending on ping back can increase or throttle
     const [getActionsIntervalID, setGetActionsIntervalID]   = useState(null); //polling interval id (to cancel it)
     const [isPollingPaused, setIsPollingPaused]             = useState(false); //if cancelling poll, set this flag to easily restart the poll
     const [isPollingActions, setIsPollingActions]           = useState(false); // to kick off polling one time
@@ -42,7 +42,7 @@ export const ChatContextProvider = ({children}) => {
         if (!isPollingActions && session_context?.data?.selected_session) {
             setChatSessionID(session_context.data.selected_session["record_id"]);
             setParticipants(session_context.data.selected_session["ts_chat_room_participants"]);
-
+            setParticipantID(session_context.data.current_user.record_id);
             //LETS START THE POLLING
             setIsPollingActions(true);
         }
@@ -52,6 +52,7 @@ export const ChatContextProvider = ({children}) => {
     useEffect(() => {
         //SHOULD ONLY BE CALLED ONCE AFTER THE INITIAL USE EFFECT
         if (isPollingActions && !isPollingPaused) {
+            // const interval = setInterval(fetchActions, intervalLength);
             const interval = setInterval(fetchActions, intervalLength);
 
             //Use with isPollingPaused(true) to pause
@@ -128,17 +129,18 @@ export const ChatContextProvider = ({children}) => {
 
         if (message && typeof message.body === 'string') {
             newBody = message.body.replace(pattern, (match) => {
-                const cleanMention = match.substring(1).trim();
+                const cleanMention      = match.substring(1).trim();
                 const participantValues = Object.values(participantsLookUp);
                 if (participantValues.includes(cleanMention)) {
                     containsMention = true;
+                    console.log("looking for some bold tags", cleanMention, participantsLookUp, participant_id, participantsLookUp[participant_id], cleanMention === participantsLookUp[participant_id], sanitize);
+
                     return (cleanMention === participantsLookUp[participant_id] && !sanitize) ?  `<b>${match}</b>` : match; // If sanitizing, return the match with '@', else return it with '<b>'
                 } else {
                     return sanitize ? cleanMention : match; // if sanitizing and it's not a valid participant, remove '@'
                 }
             });
         }
-
         return { body: newBody, containsMention: containsMention };
     }
 
@@ -171,12 +173,16 @@ export const ChatContextProvider = ({children}) => {
         // Create a copy of the new action
         // then delete these added fake properties for temporary display
         let actionCopy = { ...new_action };
+
+
         delete actionCopy.id;
         delete actionCopy.isFake;
 
         // Add the new action to the queue
         const newQueue = [...sendActionQueue, actionCopy];
         setSendActionQueue(newQueue);
+
+        console.log("actionCopy", actionCopy, newQueue);
 
         // Save the new queue to local storage
         localStorage.setItem('sendActionQueue', JSON.stringify(newQueue));
@@ -190,6 +196,8 @@ export const ChatContextProvider = ({children}) => {
     const processAction = (action, actionsArray, allChats) => {
         // MAKE "DEEP" COPIES
         let updatedActionsArray;
+        let foundMatch      = false;
+
         let newAllChats     = JSON.parse(JSON.stringify(allChats));
         const allChatsKey   = action.recipients?.length > 0 ? action.recipients.sort().join("|") : "groupChat";
 
@@ -198,14 +206,14 @@ export const ChatContextProvider = ({children}) => {
                 console.log("delete", action);
                 Object.keys(newAllChats).forEach(chatKey => {
                     newAllChats[chatKey] = newAllChats[chatKey].filter(
-                        message => message.id !== action.target
+                        message => message.id !== parseInt(action.target)
                     );
                     if (newAllChats.hasOwnProperty(chatKey) && newAllChats[chatKey].length === 0) {
                         delete newAllChats[chatKey];
                     }
                 });
 
-                updatedActionsArray = actionsArray.filter(prevAction => prevAction.id !== action.id && prevAction.id !== action.target);
+                updatedActionsArray = actionsArray.filter(prevAction => prevAction.id !== action.id && prevAction.id !== parseInt(action.target));
                 break;
 
             case 'notice':
@@ -248,13 +256,18 @@ export const ChatContextProvider = ({children}) => {
 
             case 'message_read':
                 for (const chatKey in newAllChats) {
-                    newAllChats[chatKey].forEach(message => {
-                        if (message.id === action.target) {
+                    if (foundMatch) break;
+
+                    newAllChats[chatKey].some(message => {
+                        if (message.id === parseInt(action.target)) {
                             if (!message.read_by) {
                                 message.read_by = [];
                             }
                             message.read_by.push(action);
+                            foundMatch = true;
+                            return true; // This breaks out of the some() loop
                         }
+                        return false; // Continue iterating
                     });
                 }
 
@@ -263,19 +276,21 @@ export const ChatContextProvider = ({children}) => {
 
             case 'reaction':
                 for (const chatKey in newAllChats) {
-                    newAllChats[chatKey].forEach(message => {
-                        if (message.id === action.target) {
+                    if (foundMatch) break;
+
+                    newAllChats[chatKey].some(message => {
+                        if (message.id === parseInt(action.target)) {
                             if (!message.reactions) {
                                 message.reactions = [];
                             }
-
                             message.reactions.push(action);
-                            console.log("reaction", message, newAllChats);
+                            foundMatch = true;
+                            return true; // This breaks out of the some() loop
                         }
+                        return false; // Continue iterating
                     });
                 }
 
-                console.log("newALlchats", newAllChats);
                 updatedActionsArray = [...actionsArray, action];
                 break;
 
@@ -347,10 +362,9 @@ export const ChatContextProvider = ({children}) => {
         let updatedActions      = [...cur_actionsArr];
         let updatedAllChats     = {...cur_allChats};
 
-        console.log("new_actions coming through!", new_actions);
         // PROCESS EACH NEW ACTION
         Object.values(new_actions).forEach(action => {
-            let result = processAction(action, updatedActions, updatedAllChats);
+            let result          = processAction(action, updatedActions, updatedAllChats);
             updatedActions      = result.actionsArray;
             updatedAllChats     = result.allChats;
         });

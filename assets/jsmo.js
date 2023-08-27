@@ -182,19 +182,10 @@
          * @param setStateVarCallBack
          */
         handleActions: function (payload, setStateVarCallBack) {
-            // console.log("posting actionsQueue", payload);
-
-            module.ajax('handleActions', payload).then(function (response) {
-                const fake_data     = generateFakeData(payload.maxID); // Use fake data instead of the AJAX call
-                const fake_response = {
-                    ...fake_data,
-                    ...response
-                };
-                // setStateVarCallBack(fake_response);
-
-                // console.log("jsmo handleActions",fake_response);
-                // TODO WHEN BACKEND READY, USE response ONLY
-                setStateVarCallBack(response);
+            module.ajax('handleActions', payload).then(function (res) {
+                if(res) {
+                    setStateVarCallBack(res)
+                }
             }).catch(function (err) {
                 console.log("Error", err);
             })

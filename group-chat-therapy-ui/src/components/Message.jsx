@@ -46,10 +46,10 @@ export default function Message({ message, onReply, showReactions = true, showRe
     const handleDelete = () => {
         const timestamp     = new Date().toISOString();
         const deleteAction  = {
-            "client_ts": timestamp,
             "type": "delete",
+            "sessionID" : chat_session_id,
             "target": message.id,
-            "sessionID" : chat_session_id
+            "client_ts": timestamp
         };
 
         // DELETE FROM LOCAL VIEW FOR NOW, RESOLVE ON PAYLOAD REFRESH OF NEW ACTIONS
@@ -64,12 +64,12 @@ export default function Message({ message, onReply, showReactions = true, showRe
     const onReact = (reaction) => {
         const timestamp     = new Date().toISOString();
         const newReaction   = {
-            client_ts : timestamp,
             type : "reaction",
-            target : message.id,
-            user : participant_id,
+            sessionID : chat_session_id,
             icon : reaction,
-            sessionID : chat_session_id
+            user : participant_id,
+            target : message.id,
+            client_ts : timestamp
         };
 
         //ADD IT TO THE LOCAL VIEW FOR NOW, RESOLVE ON PAYLOAD REFRESH OF NEW ACTIONS
@@ -107,7 +107,7 @@ export default function Message({ message, onReply, showReactions = true, showRe
     return (
         <dl className={`${message.type} ${participant_id === message.user ? 'self' : ''} ${message.isFake ? 'fake' : ''} ${className} ${message.containsMention ? "callout" : ""} ${message.wasSeen ? "seen" : ""}`}>
             <dt className={'participant'}>
-                {isReply ? `Replying to ${participantsLookUp[message.user]}` : participantsLookUp[message.user]}
+               {isReply ? `Replying to ${participantsLookUp[message.user]}` : participantsLookUp[message.user]}
             </dt>
 
             <dd className={`message_body`}>
@@ -124,7 +124,7 @@ export default function Message({ message, onReply, showReactions = true, showRe
                 )}
             </dd>
             <dd className={'timestamp'}>{ message.isFake ? 'Sending...' : formatTime(message.timestamp) }</dd>
-            <dd className={'reactions'}>{reactions && reactions.filter(reaction => reaction.target === message.id).map(reaction => (
+            <dd className={'reactions'}>{reactions && reactions.filter(reaction => parseInt(reaction.target) === message.id).map(reaction => (
                 <Reaction reaction={reaction} key={reaction.id} displayOnly={true} />
             ))}</dd>
 

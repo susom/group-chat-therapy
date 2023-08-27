@@ -35,7 +35,7 @@ export default function MessagesDisplay({messages, replyTo, setReplyTo}) {
                     {messages.map((message, index) => {
                         let replyMessage = null;
                         if (message.type === 'message') {
-                            replyMessage = messages.find(m => m.id === message.target);
+                            replyMessage = messages.find(m => m.id === parseInt(message.target));
                         }
                         return (
                             <Message key={index}
