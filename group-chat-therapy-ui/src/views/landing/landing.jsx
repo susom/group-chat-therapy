@@ -110,7 +110,7 @@ export default function Landing() {
         return (
             <>
                <NavHeader/>
-                {isAdmin ? renderAdmin() : renderParticipant()}
+                {isAdmin === "1" ? renderAdmin() : renderParticipant()}
             </>
         )
     // }

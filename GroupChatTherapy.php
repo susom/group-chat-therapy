@@ -181,16 +181,15 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
 
             $params = array(
                 "return_format" => "json",
-                "fields" => array("participant_phone_number", "participant_first_name", "record_id"),
+                "fields" => array("participant_phone_number", "participant_display_name", "record_id"),
                 "events" => array("participant_arm_2"),
-//                "filterLogic" => "[participant_phone_number] = $phone_number_truncated"
             );
 
             $json = REDCap::getData($params);
             $json = json_decode($json);
             foreach ($json as $entry) {
                 $phoneParsed = $this->parsePhoneField($entry->participant_phone_number);
-                if (strtolower($entry->participant_first_name) === strtolower($last_name) && $phoneParsed === $phone_number_truncated) {
+                if (strtolower($entry->participant_display_name) === strtolower($last_name) && $phoneParsed === $phone_number_truncated) {
                     $this->generateOneTimePassword($entry->record_id, $phoneParsed);
                     return true;
                 }
