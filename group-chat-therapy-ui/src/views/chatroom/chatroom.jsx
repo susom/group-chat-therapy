@@ -234,28 +234,7 @@ function ChatRoomContent() {
                         <Container fluid>
                             <Row>
                                 <Col md={{ span: 11, offset: 1 }} xs={12} className={"whiteboard"}>
-                                    <Card>
-                                        <Card.Body>
-                                            <Card.Title>Whiteboard</Card.Title>
-                                            {
-                                                chat_details && (
-                                                    participant_id === chat_details.ts_therapist ? (
-                                                        <Form className={`whiteboard_form`} onSubmit={(e) => { e.preventDefault(); updateWhiteboard(); }}>
-                                                            <Form.Control
-                                                                as="textarea"
-                                                                value={whiteboardContent}
-                                                                onChange={handleWhiteboardChange}
-                                                                placeholder="Edit the whiteboard content..."
-                                                            />
-                                                            <Button type="submit" className="mt-2 whiteboard_btn" disabled={!whiteboardIsChanged}>Update Whiteboard</Button>
-                                                        </Form>
-                                                    ) : (
-                                                        <Card.Text>{whiteboardContent}</Card.Text>
-                                                    )
-                                                )
-                                            }
-                                        </Card.Body>
-                                    </Card>
+
                                 </Col>
                             </Row>
                             <Row>
@@ -273,6 +252,7 @@ function ChatRoomContent() {
                                                 <Nav.Link eventKey="groupChat" onClick={() => chat_context.resetMentions("groupChat")}>
                                                     <People  size={20} title={`Group Chat`}/>
                                                     {mentionCounts["groupChat"] > 0 && <span className="badge">{mentionCounts["groupChat"]}</span>}
+                                                    <b>Group</b>
                                                 </Nav.Link>
                                             </Nav.Item>
                                             {Object.keys(allChats).map((chatKey, index) => {
@@ -286,6 +266,7 @@ function ChatRoomContent() {
                                                         <Nav.Link eventKey={chatKey} onClick={() => chat_context.resetMentions(chatKey)}>
                                                             <Person  size={20}  title={`Private Chat with ${participantNames}`}/>
                                                             {mentionCounts[chatKey] > 0 && <span className="badge">{mentionCounts[chatKey]}</span>}
+                                                            <b>{participantNames}</b>
                                                         </Nav.Link>
                                                     </Nav.Item>
                                                 );
@@ -294,6 +275,29 @@ function ChatRoomContent() {
                                     </Col>
 
                                     <Col md={11} xs={12}>
+                                        <Card className={`whiteboard`}>
+                                            <Card.Body>
+                                                <Card.Title>Whiteboard</Card.Title>
+                                                {
+                                                    chat_details && (
+                                                        participant_id === chat_details.ts_therapist ? (
+                                                            <Form className={`whiteboard_form`} onSubmit={(e) => { e.preventDefault(); updateWhiteboard(); }}>
+                                                                <Form.Control
+                                                                    as="textarea"
+                                                                    value={whiteboardContent}
+                                                                    onChange={handleWhiteboardChange}
+                                                                    placeholder="Edit the whiteboard content..."
+                                                                />
+                                                                <Button type="submit" className="mt-2 whiteboard_btn" disabled={!whiteboardIsChanged}>Update Whiteboard</Button>
+                                                            </Form>
+                                                        ) : (
+                                                            <Card.Text>{whiteboardContent}</Card.Text>
+                                                        )
+                                                    )
+                                                }
+                                            </Card.Body>
+                                        </Card>
+
                                         <Tab.Content>
                                             <h3 className={'chat_title'}>Chatting with : {
                                                 selectedChat === "groupChat" ? "Group" : session_context.participantsLookUp[selectedChat] || selectedChat

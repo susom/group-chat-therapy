@@ -1,6 +1,6 @@
 {
   "index.css": {
-    "file": "assets/index-905c6553.css",
+    "file": "assets/index-4ce2e34c.css",
     "src": "index.css"
   },
   "index.html": {
@@ -43,9 +43,9 @@
       "assets/icon-search-99974394.svg"
     ],
     "css": [
-      "assets/index-905c6553.css"
+      "assets/index-4ce2e34c.css"
     ],
-    "file": "assets/index-b447d91f.js",
+    "file": "assets/index-5849f8e9.js",
     "isEntry": true,
     "src": "index.html"
   },
