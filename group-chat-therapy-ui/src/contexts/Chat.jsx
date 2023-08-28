@@ -43,6 +43,22 @@ export const ChatContextProvider = ({children}) => {
             setChatSessionID(session_context.data.selected_session["record_id"]);
             setParticipants(session_context.data.selected_session["ts_chat_room_participants"]);
             setParticipantID(session_context.data.current_user.record_id);
+
+            let cur_user_admin = `${session_context.data.current_user.admin}` === "1";
+            setIsAdmin(cur_user_admin);
+
+            const initialChats = {"groupChat": []};
+
+            if (cur_user_admin) {
+                session_context.data.selected_session.ts_chat_room_participants.forEach(userid => {
+                    initialChats[parseInt(userid)] = []; 
+                });
+            } else {
+                initialChats[parseInt(session_context.data.selected_session.ts_therapist)] = []; // Assuming therapist has an id.
+            }
+
+            setAllChats(initialChats);
+
             //LETS START THE POLLING
             setIsPollingActions(true);
         }
@@ -106,7 +122,6 @@ export const ChatContextProvider = ({children}) => {
                         // Only update the state if participant_lookup is different from the previous value
                         if (JSON.stringify(session_context.participantsLookUp) !== JSON.stringify(participant_lookup)) {
                             session_context.setParticipantsLookUp(participant_lookup);
-                            console.log("participantLookUp", participant_lookup);
                         }
                     }
                 }, (err) => {
@@ -133,8 +148,6 @@ export const ChatContextProvider = ({children}) => {
                 const participantValues = Object.values(participantsLookUp);
                 if (participantValues.includes(cleanMention)) {
                     containsMention = true;
-                    console.log("looking for some bold tags", cleanMention, participantsLookUp, participant_id, participantsLookUp[participant_id], cleanMention === participantsLookUp[participant_id], sanitize);
-
                     return (cleanMention === participantsLookUp[participant_id] && !sanitize) ?  `<b>${match}</b>` : match; // If sanitizing, return the match with '@', else return it with '<b>'
                 } else {
                     return sanitize ? cleanMention : match; // if sanitizing and it's not a valid participant, remove '@'
@@ -199,7 +212,11 @@ export const ChatContextProvider = ({children}) => {
         let foundMatch      = false;
 
         let newAllChats     = JSON.parse(JSON.stringify(allChats));
-        const allChatsKey   = action.recipients?.length > 0 ? action.recipients.sort().join("|") : "groupChat";
+        let allChatsKey     = "groupChat";
+
+        if(action.recipients?.length > 0){
+            allChatsKey = participantID === action.user ? action.recipients.pop() : action.user;
+        }
 
         switch(action.type) {
             case 'delete':
