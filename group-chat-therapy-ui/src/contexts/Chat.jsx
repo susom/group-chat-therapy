@@ -20,7 +20,7 @@ export const ChatContextProvider = ({children}) => {
     const [participants, setParticipants]                   = useState([]);
 
     //POLLING VARS
-    const [intervalLength, setIntervalLength]               = useState(10000); //default 3 seconds? depending on ping back can increase or throttle
+    const [intervalLength, setIntervalLength]               = useState(5000); //default 3 seconds? depending on ping back can increase or throttle
     const [getActionsIntervalID, setGetActionsIntervalID]   = useState(null); //polling interval id (to cancel it)
     const [isPollingPaused, setIsPollingPaused]             = useState(false); //if cancelling poll, set this flag to easily restart the poll
     const [isPollingActions, setIsPollingActions]           = useState(false); // to kick off polling one time
@@ -51,7 +51,7 @@ export const ChatContextProvider = ({children}) => {
 
             if (cur_user_admin) {
                 session_context.data.selected_session.ts_chat_room_participants.forEach(userid => {
-                    initialChats[parseInt(userid)] = []; 
+                    initialChats[parseInt(userid)] = [];
                 });
             } else {
                 initialChats[parseInt(session_context.data.selected_session.ts_therapist)] = []; // Assuming therapist has an id.
