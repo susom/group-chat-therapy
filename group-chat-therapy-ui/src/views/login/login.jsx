@@ -40,42 +40,7 @@ export default function Login() {
     const callback = (type, res) => {
         if (type === 'validateCode') { //User is inputting code from OTP
             res ? setError('') : setError('Invalid code entered')
-            //TODO FAKING FOR NOW TO TEST UI
-            /*
-                    {participant_id: "123xyz" , display_name : "Mr. Therapist", status : "online"},
-                    {participant_id: "abc456" , display_name : "Gilligan", status : "chat"},
-                    {participant_id: "def789" , display_name : "Wally", status : "online"},
-             */
-            const res_fake = {
-                chat_sessions : [{
-                    record_id : "TS01",
-                    ts_title : "Alcohol Intervention",
-                    ts_topic : "Group Session Chat for Dudes",
-                    date : "2023-07-21",
-                    ts_start : "2023-07-08 10:04:18",
-                    whiteboard : "",
-                    ts_authorized_participants :  ['2','3']
-                },
-                {
-                    record_id : "TS04",
-                    ts_title : "Depression 101",
-                    ts_topic : "Group Session for depression",
-                    date : "2023-07-21",
-                    ts_start : "2023-12-08 10:04:18",
-                    whiteboard : "",
-                    ts_authorized_participants :  ['2','3','4']
-                }],
-                assessments : [
-                    { participant_id : "abc456",
-                        required : [
-                            { assessment : "opt-in" , link : "https://redcap.stanford.edu/1", status : true },
-                            { assessment : "e-consent" , link : "https://redcap.stanford.edu/2", status : true },
-                            { assessment : "baseline survey" , link : "https://redcap.stanford.edu/3", status : false }
-                        ]
-                    }
-                ],
-                participantID : "abc456"
-            }
+
             session_context.setData(res);
             console.log('setting session_context', res)
             navigate(`/select`)
@@ -119,26 +84,8 @@ export default function Login() {
             //TODO TEMPORARY PLACEMENT FOR TESTING UI
             // callback("validateCode", true);
 
-
             jsmoModule.validateUserPhone(lastName, phone, callback, errorCallback)
-            // jsmoModule.addAction("Testing!")
-            // let testActions = [{
-            //     "type": "message",
-            //     "user": "P123",
-            //     "body": "<div>food</div>",
-            //     "recipients": [],
-            //     "replyquote": '123',
-            //     "callout": ["123xyc", "<b>P24</b>"],
-            // }]
-            //
-            // let testDeleteAction = [{
-            //     "type": "delete",
-            //     "target": "1370"
-            //
-            // }];
-            //
-            // jsmoModule.handleActions({maxID: 1370, actionQueue: testDeleteAction})
-            // navigate("/select");
+
         } else {
             setError('Something went wrong')
         }
@@ -181,7 +128,7 @@ export default function Login() {
 
                             {! showCode &&
                                 <>
-                                <InputGroup hasValidation className={`mb-3 ${showCode ? 'code-greyed' : 'code-showed'}`}>
+                                <InputGroup hasValidation className={`login_input mb-3 ${showCode ? 'code-greyed' : 'code-showed'}`}>
                                     <InputGroup.Text id="lastname">@</InputGroup.Text>
                                     <Form.Control
                                         onChange={e => setLastName(e?.target?.value)}
@@ -205,6 +152,7 @@ export default function Login() {
                                         disabled={showCode}
                                         placeholder="+1"
                                         onChange={phone => setPhone(phone)}
+                                        className={`login_input`}
                                     />
                                 </InputGroup>
                             </>

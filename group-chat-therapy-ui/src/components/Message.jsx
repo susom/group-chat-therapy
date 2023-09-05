@@ -1,18 +1,24 @@
 import React, {useState, useContext, useEffect, useRef} from "react";
 import Reaction from './Reaction.jsx';
 import ReactionPopup from './ReactionPopup.jsx';
-import { Plus, Trash} from 'react-bootstrap-icons';
+
+import { XSquare, Plus, Trash, ReplyFill } from 'react-bootstrap-icons';
 
 import {SessionContext} from "./../contexts/Session.jsx";
+import {ChatContext} from "./../contexts/Chat.jsx";
+import ReplyMessage from "./ReplyMessage.jsx";
 
-export default function Message({ message }) {
-    const session_context           = useContext(SessionContext);
-    const participantsLookUp        = session_context.participantsLookUp;
-    const participant_id            = session_context.participantID;
+export default function Message({ message, onReply, showReactions = true, showReply = true, isReply = false, onCloseReply, replyMessage, className = ""}) {
+    const session_context                           = useContext(SessionContext);
+    const chat_context                              = useContext(ChatContext);
+    const participantsLookUp                        = session_context.participantsLookUp;
+    const participant_id                            = session_context.data?.current_user?.record_id ;
+    const chat_session_id                           = session_context.data?.selected_session?.record_id;
+    const therapistID                               = session_context.data?.selected_session?.ts_therapist || null;
 
     const [reactions, setReactions]                 = useState(message.reactions || []);
     const [showReactionPopup, setShowReactionPopup] = useState(false);
-    const timeoutRef = useRef(null);
+    const timeoutRef                                = useRef(null);
 
     useEffect(() => {
         setReactions(message.reactions || []);
@@ -40,16 +46,17 @@ export default function Message({ message }) {
     const handleDelete = () => {
         const timestamp     = new Date().toISOString();
         const deleteAction  = {
-            "client_ts": timestamp,
             "type": "delete",
-            "target": message.id
+            "sessionID" : chat_session_id,
+            "target": message.id,
+            "client_ts": timestamp
         };
 
         // DELETE FROM LOCAL VIEW FOR NOW, RESOLVE ON PAYLOAD REFRESH OF NEW ACTIONS
-        session_context.removeMessage(message.id);
+        chat_context.removeMessage(message.id);
 
         //SEND THE ACTION TO THE actionQUEUE
-        session_context.sendAction(deleteAction);
+        chat_context.sendAction(deleteAction);
 
         console.log(`Message ${message.id} deleted.`);
     }
@@ -57,11 +64,12 @@ export default function Message({ message }) {
     const onReact = (reaction) => {
         const timestamp     = new Date().toISOString();
         const newReaction   = {
-            client_ts : timestamp,
             type : "reaction",
-            target : message.id,
-            user : participant_id,
+            sessionID : chat_session_id,
             icon : reaction,
+            user : participant_id,
+            target : message.id,
+            client_ts : timestamp
         };
 
         //ADD IT TO THE LOCAL VIEW FOR NOW, RESOLVE ON PAYLOAD REFRESH OF NEW ACTIONS
@@ -69,47 +77,79 @@ export default function Message({ message }) {
         setReactions(updatedLocalReactions); // update the local reactions state
 
         //SEND THE ACTION TO THE actionQUEUE
-        session_context.sendAction(newReaction);
-
-        console.log(`Reacted with ${reaction} on message ${message.id}`);
+        chat_context.sendAction(newReaction);
     }
 
-    const handleClick = () => {
+    const handleReply = (id) => {
+        console.log(`replying to message id ${id}`);
+        onReply(id);
+
+        // Set up the Fake UI
+    }
+
+    const handleReactionClick = () => {
         setShowReactionPopup(true);
         timeoutRef.current = setTimeout(() => {
             setShowReactionPopup(false);
         }, 3000);
     };
 
-    const handleMouseEnter = () => {
+    const handleReactionMouseEnter = () => {
         clearTimeout(timeoutRef.current);
     };
 
-    const handleMouseLeave = () => {
+    const handleReactionMouseLeave = () => {
         timeoutRef.current = setTimeout(() => {
             setShowReactionPopup(false);
         }, 3000);
     };
 
     return (
-        <dl className={`${message.type} ${participant_id === message.user ? 'self' : ''} ${message.isFake ? 'fake' : ''}`}>
-            <dt className={'participant'}>{participantsLookUp[message.user]}</dt>
-            <dd className={'message_body'}>{message.body}</dd>
+        <dl className={`${message.type} ${participant_id === message.user ? 'self' : ''} ${message.isFake ? 'fake' : ''} ${className} ${message.containsMention ? "callout" : ""} ${message.wasSeen ? "seen" : ""}`}>
+            <dt className={'participant'}>
+               {isReply ? `Replying to ${participantsLookUp[message.user]}` : participantsLookUp[message.user]}
+            </dt>
+
+            <dd className={`message_body`}>
+                {replyMessage && (
+                    <ReplyMessage
+                        message={replyMessage}
+                        onCloseReply={onCloseReply}
+                    />
+                )}
+                {message.containsMention ? (
+                    <div dangerouslySetInnerHTML={{ __html: message.body }}/>
+                ) : (
+                    <div>{message.body}</div>
+                )}
+            </dd>
             <dd className={'timestamp'}>{ message.isFake ? 'Sending...' : formatTime(message.timestamp) }</dd>
-            <dd className={'reactions'}>{reactions && reactions.filter(reaction => reaction.target === message.id).map(reaction => (
+            <dd className={'reactions'}>{reactions && reactions.filter(reaction => parseInt(reaction.target) === message.id).map(reaction => (
                 <Reaction reaction={reaction} key={reaction.id} displayOnly={true} />
             ))}</dd>
 
-            {participant_id !== message.user && (
-                <dd className={'add_reactions'} onClick={handleClick} onMouseOver={handleMouseEnter} onMouseOut={handleMouseLeave}>
-                    <Plus />
+            {showReactions && participant_id !== message.user && (
+                <dd className={'add_reactions'} onClick={handleReactionClick} onMouseOver={handleReactionMouseEnter} onMouseOut={handleReactionMouseLeave}>
+                    <Plus title={`React to Message`}/>
                     {showReactionPopup && <ReactionPopup onReact={onReact} />}
                 </dd>
             )}
 
-            {participant_id === message.user && ( // If the message is from the current participant, show the delete icon
+            {showReply && participant_id !== message.user && (
+                <dd className={`reply_quote`} onClick={() => handleReply(message.id)}>
+                    <ReplyFill title={`Reply to Message`}/>
+                </dd>
+            )}
+
+            {( participant_id === message.user || participant_id === therapistID )&& ( // If the message is from the current participant, show the delete icon
                 <dd className={'delete'} onClick={handleDelete}>
-                    <Trash />
+                    <Trash title={`Delete Message`}/>
+                </dd>
+            )}
+
+            {isReply && (
+                <dd className={'close'} onClick={onCloseReply}>
+                    <XSquare size='25' title={"Cancel Reply to Message"} />
                 </dd>
             )}
         </dl>

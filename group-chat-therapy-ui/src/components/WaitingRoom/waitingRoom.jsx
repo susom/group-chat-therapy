@@ -28,18 +28,18 @@ export const WaitingRoom = () => {
 
         if (session_context?.data?.selected_session?.record_id) {
             jsmoModule.getParticipants(
-                {
-                    'participants': [
-                        ...session_context?.data?.selected_session?.ts_authorized_participants,
-                        ...session_context?.data?.selected_session?.ts_chat_room_participants
-                    ]
-                },
+                {'participants' : [
+                    ...session_context?.data?.selected_session?.ts_authorized_participants,
+                    ...session_context?.data?.selected_session?.ts_chat_room_participants
+                    ]},
+
                 (res) => {
                     if (res) {
                         let filtered = res?.data?.filter(e => parseInt(e.admin) !== 1) //remove admins from waiting room list
-                        setParticipantDetails(filtered)
-                        console.log('participants', filtered)
-                        setPageLoad(false)
+                        setParticipantDetails(filtered);
+
+                        setPageLoading(false);
+                        setPageLoad(false);
                     }
                 },
                 (err) => {

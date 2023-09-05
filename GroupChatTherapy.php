@@ -290,7 +290,9 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
                 "ts_authorized_participants",
                 "ts_chat_room_participants",
                 "ts_title",
-                "ts_topic"
+                "ts_therapist",
+                "ts_topic",
+                "ts_whiteboard"
             ),
             "events" => array("therapy_session_arm_1"),
         );
@@ -379,6 +381,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
 
             $json = json_decode(REDCap::getData($params), true);
 
+
             if (sizeof($json)) {
                 $data = current($json);
                 $participants_arr = !empty($data['ts_authorized_participants']) ? explode(",", $data['ts_authorized_participants']) : [];
@@ -386,6 +389,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
 
                 if ($payload['action'] === 'admit') {
                     $index = array_search($payload['participant_id'], $participants_arr);
+
                     if ($index !== false) {
                         $in_chat_arr[] = $participants_arr[$index]; //Append participant to in_chat and remove from participants array
                         unset($participants_arr[$index]);
@@ -393,6 +397,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
                 } else if ($payload['action'] === 'revoke') {
                     $index = array_search($payload['participant_id'], $in_chat_arr);
                     if ($index !== false) {
+
                         $participants_arr[] = $in_chat_arr[$index];
                         unset($in_chat_arr[$index]);
                     }
@@ -439,7 +444,9 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
     public function getWhiteboard($payload): array
     {
         try {
+
             if (empty($payload['record_id']))
+
                 throw new Exception('No Record ID passed');
 
             $params = array(
@@ -470,10 +477,12 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
      * @param $payload
      * @return array
      */
+
     public function setWhiteboard($payload): array
     {
         try {
             if (empty($payload['ts_whiteboard']) || empty($payload['record_id']))
+
                 throw new Exception('Incorrect parameters passed to setWhiteboard');
 
             $saveData = array(
@@ -508,6 +517,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
     public function handleActions(array $payload): array
     {
         try {
+
             $max = intval(($payload['maxID'])) ?? 0;
             $session_id = $payload['sessionID'];
             $actionQueue = $payload['actionQueue'] ?? [];
@@ -515,10 +525,11 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
             if (empty($session_id))
                 throw new Exception('No session ID passed');
 
+
             $start = hrtime(true);
 
             if (count($actionQueue)) { //User has actions to process
-//                $this->addAction($actionQueue, $session_id);
+                $this->addAction($actionQueue, $session_id);
             }
 
             //If no event queue has been passed, simply return actions
@@ -558,7 +569,9 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
             $this->emDebug("Adding actions", $actions);
             foreach ($actions as $k => $v) {
                 $action = new Action($this);
+
                 $action->setValue('session_id', $session_id);
+
                 $action->setValue('message', json_encode($v));
                 $action->save();
                 $this->emDebug("Added action " . $action->getId());
