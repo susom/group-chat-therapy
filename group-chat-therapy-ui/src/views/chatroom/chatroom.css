@@ -420,7 +420,7 @@ button.send_message {
     min-height:150px;
 }
 
-.badge {
+.chat-badge {
     background-color: red;
     color: white;
     border-radius: 50%;

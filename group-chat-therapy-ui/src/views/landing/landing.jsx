@@ -60,7 +60,7 @@ export default function Landing() {
     }
 
     const renderAdmin = () => {
-        const sel = session_context?.data?.selected_session
+        const sel = session_context?.sessionCache?.selected_session
 
         return (
             <Container className='session-detail mt-3'>
@@ -105,7 +105,7 @@ export default function Landing() {
     // if (!session_context?.data?.participantID) {
     //     return <Navigate to="/"/>
     // } else {
-        const isAdmin = session_context?.data?.current_user?.admin
+        const isAdmin = session_context?.sessionCache?.current_user?.admin
 
         return (
             <>

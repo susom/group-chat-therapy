@@ -13,7 +13,7 @@ import GlobalHeader from "../../components/global_header.jsx";
 import GlobalFooter from "../../components/global_footer.jsx";
 
 import './chatroom.css';
-import '../../assets/css/decanter.css';
+// import '../../assets/css/decanter.css';
 import { debounce } from 'lodash';
 
 export default function ChatRoom() {
@@ -251,7 +251,7 @@ function ChatRoomContent() {
                                             <Nav.Item>
                                                 <Nav.Link eventKey="groupChat" onClick={() => chat_context.resetMentions("groupChat")}>
                                                     <People  size={20} title={`Group Chat`}/>
-                                                    {mentionCounts["groupChat"] > 0 && <span className="badge">{mentionCounts["groupChat"]}</span>}
+                                                    {mentionCounts["groupChat"] > 0 && <span className="chat-badge">{mentionCounts["groupChat"]}</span>}
                                                     <b>Group</b>
                                                 </Nav.Link>
                                             </Nav.Item>
@@ -265,7 +265,7 @@ function ChatRoomContent() {
                                                     <Nav.Item key={index}>
                                                         <Nav.Link eventKey={chatKey} onClick={() => chat_context.resetMentions(chatKey)}>
                                                             <Person  size={20}  title={`Private Chat with ${participantNames}`}/>
-                                                            {mentionCounts[chatKey] > 0 && <span className="badge">{mentionCounts[chatKey]}</span>}
+                                                            {mentionCounts[chatKey] > 0 && <span className="chat-badge">{mentionCounts[chatKey]}</span>}
                                                             <b>{participantNames}</b>
                                                         </Nav.Link>
                                                     </Nav.Item>

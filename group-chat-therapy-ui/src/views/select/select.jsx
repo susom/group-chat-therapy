@@ -24,7 +24,7 @@ export default function Select(){
 
     useEffect(() => {
         jsmoModule.getUserSessions(
-            session_context?.data?.current_user,
+            session_context?.sessionCache?.current_user,
             (res) => {
                 if (res) {
                     setChatSessions(res)
@@ -50,9 +50,11 @@ export default function Select(){
     const jumpTo = (e) => {
         let index = chatSessions.findIndex(session=> session.record_id === e.target.value)
         if(index !== -1 ){ //Pass props from selected session to landing
-            let copy = session_context.data
+            let copy = session_context?.sessionCache
+            console.log(copy)
             copy['selected_session'] = chatSessions[index]
             session_context.setData(copy)
+            session_context?.setSessionCache(copy)
             navigate("/landing")
         }
 

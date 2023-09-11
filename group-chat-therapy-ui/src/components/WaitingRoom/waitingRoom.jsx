@@ -13,7 +13,7 @@ import {SessionContext} from "../../contexts/Session.jsx";
 
 export const WaitingRoom = () => {
     const session_context = useContext(SessionContext);
-    const {selected_session} = session_context?.data
+    const {selected_session} = session_context?.sessionCache
     const [participantDetails, setParticipantDetails] = useState([])
     const [selectedSession, setSelectedSession] = useState({})
     const [loading, setLoading] = useState(false)
@@ -24,13 +24,13 @@ export const WaitingRoom = () => {
         jsmoModule = ExternalModules.Stanford.GroupChatTherapy
 
     useEffect(() => {
-        setSelectedSession(session_context?.data?.selected_session)
+        setSelectedSession(session_context?.sessionCache?.selected_session)
 
-        if (session_context?.data?.selected_session?.record_id) {
+        if (session_context?.sessionCache?.selected_session?.record_id) {
             jsmoModule.getParticipants(
                 {'participants' : [
-                    ...session_context?.data?.selected_session?.ts_authorized_participants,
-                    ...session_context?.data?.selected_session?.ts_chat_room_participants
+                    ...session_context?.sessionCache?.selected_session?.ts_authorized_participants,
+                    ...session_context?.sessionCache?.selected_session?.ts_chat_room_participants
                     ]},
 
                 (res) => {
@@ -38,7 +38,6 @@ export const WaitingRoom = () => {
                         let filtered = res?.data?.filter(e => parseInt(e.admin) !== 1) //remove admins from waiting room list
                         setParticipantDetails(filtered);
 
-                        setPageLoading(false);
                         setPageLoad(false);
                     }
                 },
@@ -56,9 +55,9 @@ export const WaitingRoom = () => {
             payload,
             (res) => {
                 if (res) {
-                    let copy = session_context?.data
+                    let copy = session_context?.sessionCache
                     copy['selected_session'] = res?.data
-                    session_context.setData(copy)
+                    session_context.setSessionCache(copy)
                     setSelectedSession(copy['selected_session'])
                     setLoading(false)
                 }
@@ -74,7 +73,7 @@ export const WaitingRoom = () => {
     const handleParticipants = (e) => {
         const {value: participant_id} = e.target
         const type = e.target.getAttribute('data-type')
-        const {selected_session} = session_context?.data
+        const {selected_session} = session_context?.sessionCache
         setLoading(e.target.getAttribute('data-index')) //Set loading for singular button
         sendAjax({'record_id': selected_session?.record_id, 'action': type, 'participant_id': participant_id})
     }

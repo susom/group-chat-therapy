@@ -10,11 +10,13 @@ import {SessionContext} from "../../contexts/Session.jsx";
 
 export const NavHeader = () => {
     const session_context = useContext(SessionContext);
-    const currentUser = session_context?.data?.current_user
+    const currentUser = session_context?.sessionCache?.current_user
     const navigate = useNavigate()
 
     const logout = () => {
     //         Remove local storage
+        console.log('logging out...')
+        session_context.removeItem()
         navigate('/', {replace: true})
     }
 
