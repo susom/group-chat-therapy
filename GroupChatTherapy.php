@@ -94,7 +94,8 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
      * @param string $therapy_session_id
      * @return array
      */
-    public function fetchSurveyUrls(string $therapy_session_id): array{
+    public function fetchSurveyUrls(string $therapy_session_id): array
+    {
         $params = array(
             "return_format" => "json",
             "fields" => array("ts_pre_survey_list"),
@@ -103,10 +104,10 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
         );
 
         $json = json_decode(REDCap::getData($params), true);
-        if(count($json)){
+        if (count($json)) {
             $trimmed = preg_replace('/\s+/', '', trim(current($json)['ts_pre_survey_list']));
             return explode(',', $trimmed);
-        }else{
+        } else {
             return [];
         }
 
@@ -127,8 +128,8 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
         $instances = $rForm->getAllInstances($participant_id);
 
         $selected_instance = -1;
-        foreach($instances as $k => $instance) //Find index of instance corresponding to current therapy session
-            if($instance['assessment_ts_id'] === $therapy_session_id) {
+        foreach ($instances as $k => $instance) //Find index of instance corresponding to current therapy session
+            if ($instance['assessment_ts_id'] === $therapy_session_id) {
                 $selected_instance = intval($k);
                 break;
             }
@@ -137,8 +138,8 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
          * User does not have event with given therapy session
          * This may occur when user ID is added to TS textbox without creating a new event
          */
-        if($selected_instance === -1)
-            throw new Exception("You have been added to a Therapy session without a repeating event ".$therapy_session_id.", please contact your administrator");
+        if ($selected_instance === -1)
+            throw new Exception("You have been added to a Therapy session without a repeating event " . $therapy_session_id . ", please contact your administrator");
 
         return $selected_instance;
     }
@@ -162,7 +163,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
             $fields = [];
 
             // Iterate through surveys, gathering URL and complete key
-            foreach($expl as $instrument){
+            foreach ($expl as $instrument) {
                 $required_survey_urls[strtolower($instrument)] = ['url' => REDCap::getSurveyLink($payload['participant_id'], strtolower($instrument), $event_id)];
                 $fields[] = $instrument . "_complete";
             }
@@ -171,18 +172,18 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
             $ts_survey_instance = $this->findSurveyInstance($payload['participant_id'], $payload['therapy_session_id'], $event_id);
 
             // Get subsequent data
-            if(count($fields)) {
+            if (count($fields)) {
                 $params = [
-                    "project_id"    => $this->getProjectId(),
-                    "records"       => $payload['participant_id'],
-                    "events"        => $event_id,
-                    "fields"         => $fields
+                    "project_id" => $this->getProjectId(),
+                    "records" => $payload['participant_id'],
+                    "events" => $event_id,
+                    "fields" => $fields
                 ];
                 $record_data = REDCap::getData($params);
                 $rei_parent = $record_data[$payload['participant_id']]["repeat_instances"][$event_id][''][$ts_survey_instance];
 
                 // Format data
-                foreach($rei_parent as $k => $v){
+                foreach ($rei_parent as $k => $v) {
                     $survey = str_replace('_complete', '', $k);
                     $required_survey_urls[$survey]['complete'] = $v;
                 }
@@ -192,7 +193,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
             }
             return [];
 
-        }catch (\Exception $e) {
+        } catch (\Exception $e) {
             $msg = $e->getMessage();
             \REDCap::logEvent("Error: $msg");
             $this->emError("Error: $msg");
@@ -205,7 +206,9 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
             return ["result" => $ret];
         }
     }
-    public function checkUserCompletion($payload){
+
+    public function checkUserCompletion($payload)
+    {
         try {
             if (empty($payload['participant_ids']) || empty($payload['therapy_session_id']))
                 throw new Exception('Incorrect payload passed');
@@ -215,7 +218,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
 //            }
 
 
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             $msg = $e->getMessage();
             \REDCap::logEvent("Error: $msg");
             $this->emError("Error: $msg");
