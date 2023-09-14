@@ -6,11 +6,12 @@ import ListGroup from "react-bootstrap/ListGroup";
 import Badge from "react-bootstrap/Badge";
 import Card from "react-bootstrap/Card";
 import Button from "react-bootstrap/Button";
-import Navbar from "react-bootstrap/Navbar";
 import Spinner from "react-bootstrap/Spinner";
 
 import {NavHeader} from "../../components/NavHeader/navheader.jsx";
 import {WaitingRoom} from "../../components/WaitingRoom/waitingRoom.jsx";
+import SurveyList from '../../components/SurveyList/surveylist.jsx';
+
 import {SessionContext} from "../../contexts/Session.jsx";
 import './landing.css';
 
@@ -85,7 +86,8 @@ export default function Landing() {
                 <Card>
                 <Card.Header>Surveys</Card.Header>
                 <Card.Body className="d-flex flex-column">
-                    {renderList()}
+                    {/*{renderList()}*/}
+                    <SurveyList />
                     <Alert className="mt-auto" variant="info">
                         <div className="d-flex align-items-center">
                             <span>Waiting for Admin to enter chat    </span>
