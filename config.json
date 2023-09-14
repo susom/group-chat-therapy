@@ -44,7 +44,8 @@
         "setWhiteboard",
         "getWhiteboard",
         "getUserSessions",
-        "getUserSurveys"
+        "getUserSurveys",
+        "checkUserCompletion"
     ],
 
     "no-auth-ajax-actions": [

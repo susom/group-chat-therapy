@@ -330,6 +330,18 @@
                     }
                 })
         },
+        checkUserCompletion: (payload, callback, errorCallback) => {
+            module.ajax('checkUserCompletion', payload)
+                .then(res => {
+                    if(res?.result){
+                        let response = JSON.parse(res?.result)
+                        if('error' in response)
+                            errorCallback(response)
+                        else
+                            callback(response)
+                    }
+                })
+        },
         /**
          * Validates Last name, phone to determine user participation in study & send OTP
          * @param lastName

@@ -37,6 +37,59 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
     }
 
     /**
+     * Helper method for inserting the JSMO JS into a page along with any preload data
+     * @param $data
+     * @param $init_method
+     * @return void
+     */
+    public function injectJSMO($data = null, $init_method = null)
+    {
+        echo $this->initializeJavascriptModuleObject();
+        $cmds = [
+            "const module = " . $this->getJavascriptModuleObjectName()
+        ];
+        if (!empty($data)) $cmds[] = "module.data = " . json_encode($data);
+        if (!empty($init_method)) $cmds[] = "module.afterRender(module." . $init_method . ")";
+        ?>
+        <script src="<?= $this->getUrl("assets/jsmo.js", true) ?>"></script>
+        <script>
+            $(function () { <?php echo implode(";\n", $cmds) ?> })
+        </script>
+        <?php
+    }
+
+
+    /**
+     * @return array
+     * Scans dist directory for frontend build files for dynamic injection
+     */
+    public function generateAssetFiles(): array
+    {
+        $cwd = $this->getModulePath();
+        $dir_files = scandir($cwd . self::BUILD_FILE_DIR);
+
+        if (!$dir_files)
+            return [];
+
+        // Remove extraneous dir values
+        foreach ($dir_files as $key => $file) {
+            if ($file === '.' || $file === '..') {
+                unset($dir_files[$key]);
+            } else { //Generate url and script html
+                $url = $this->getUrl(self::BUILD_FILE_DIR . '/' . $file);
+                $html = '';
+                if (str_contains($url, 'js?'))
+                    $html = "<script type='module' crossorigin src='{$url}'></script>";
+                elseif (str_contains($url, '.css?'))
+                    $html = "<link rel='stylesheet' href='{$url}'>";
+                $dir_files[$key] = $html;
+            }
+        }
+
+        return $dir_files;
+    }
+
+    /**
      * Returns survey URLs for a given therapy session
      * @param string $therapy_session_id
      * @return array
@@ -59,11 +112,16 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
 
     }
 
+
     /**
-     * @return string
+     * @param string $participant_id
+     * @param string $therapy_session_id
+     * @param string $event_id
+     * @return int
      * @throws Exception
      */
-    public function findSurveyInstance(string $participant_id, string $therapy_session_id, string $event_id){
+    public function findSurveyInstance(string $participant_id, string $therapy_session_id, string $event_id): int
+    {
         $rForm = new RepeatingForms('assessment_details', $event_id, $this->getProjectId());
         $rForm->loadData($participant_id);
         $instances = $rForm->getAllInstances($participant_id);
@@ -71,7 +129,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
         $selected_instance = -1;
         foreach($instances as $k => $instance) //Find index of instance corresponding to current therapy session
             if($instance['assessment_ts_id'] === $therapy_session_id) {
-                $selected_instance = $k;
+                $selected_instance = intval($k);
                 break;
             }
 
@@ -85,6 +143,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
         return $selected_instance;
     }
 
+
     /**
      * @param $payload
      * @return array
@@ -93,7 +152,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
     {
         try {
             if (empty($payload['participant_id']) || empty($payload['therapy_session_id']))
-                throw new Exception('No record_id passed');
+                throw new Exception('Incorrect payload passed');
 
             // Grab all survey urls for a given therapy session
             $expl = $this->fetchSurveyUrls($payload['therapy_session_id']);
@@ -146,59 +205,28 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
             return ["result" => $ret];
         }
     }
+    public function checkUserCompletion($payload){
+        try {
+            if (empty($payload['participant_ids']) || empty($payload['therapy_session_id']))
+                throw new Exception('Incorrect payload passed');
+
+//            foreach($payload['participant_ids'] as $participant) {
+//
+//            }
 
 
-    /**
-     * Helper method for inserting the JSMO JS into a page along with any preload data
-     * @param $data
-     * @param $init_method
-     * @return void
-     */
-    public function injectJSMO($data = null, $init_method = null)
-    {
-//        $this->getUserSurveys();
-        echo $this->initializeJavascriptModuleObject();
-        $cmds = [
-            "const module = " . $this->getJavascriptModuleObjectName()
-        ];
-        if (!empty($data)) $cmds[] = "module.data = " . json_encode($data);
-        if (!empty($init_method)) $cmds[] = "module.afterRender(module." . $init_method . ")";
-        ?>
-        <script src="<?= $this->getUrl("assets/jsmo.js", true) ?>"></script>
-        <script>
-            $(function () { <?php echo implode(";\n", $cmds) ?> })
-        </script>
-        <?php
-    }
+        } catch(\Exception $e) {
+            $msg = $e->getMessage();
+            \REDCap::logEvent("Error: $msg");
+            $this->emError("Error: $msg");
+            $ret = json_encode(array(
+                'error' => array(
+                    'msg' => $msg,
+                ),
+            ));
 
-    /**
-     * @return array
-     * Scans dist directory for frontend build files for dynamic injection
-     */
-    public function generateAssetFiles(): array
-    {
-        $cwd = $this->getModulePath();
-        $dir_files = scandir($cwd . self::BUILD_FILE_DIR);
-
-        if (!$dir_files)
-            return [];
-
-        // Remove extraneous dir values
-        foreach ($dir_files as $key => $file) {
-            if ($file === '.' || $file === '..') {
-                unset($dir_files[$key]);
-            } else { //Generate url and script html
-                $url = $this->getUrl(self::BUILD_FILE_DIR . '/' . $file);
-                $html = '';
-                if (str_contains($url, 'js?'))
-                    $html = "<script type='module' crossorigin src='{$url}'></script>";
-                elseif (str_contains($url, '.css?'))
-                    $html = "<link rel='stylesheet' href='{$url}'>";
-                $dir_files[$key] = $html;
-            }
+            return ["result" => $ret];
         }
-
-        return $dir_files;
     }
 
     /**
@@ -792,6 +820,8 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
                 return $this->updateParticipants($sanitized);
             case "getUserSessions":
                 return $this->getUserSessions($payload);
+            case "checkUserCompletion":
+                return $this->checkUserCompletion($payload);
 //            case "addAction":
 //                $this->addAction($payload);
 //                break;
@@ -809,7 +839,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
         }
 
         // Return is left as php object, is converted to json automatically
-        return $result;
+//        return $result;
     }
 
 
