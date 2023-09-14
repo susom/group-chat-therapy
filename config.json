@@ -43,7 +43,8 @@
         "updateParticipants",
         "setWhiteboard",
         "getWhiteboard",
-        "getUserSessions"
+        "getUserSessions",
+        "getUserSurveys"
     ],
 
     "no-auth-ajax-actions": [

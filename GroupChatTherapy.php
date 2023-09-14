@@ -6,6 +6,7 @@ include_once "emLoggerTrait.php";
 require_once "classes/UserSession.php";
 require_once "classes/Action.php";
 require_once "classes/Sanitizer.php";
+require_once "classes/RepeatingForms.php";
 require_once "vendor/autoload.php";
 
 use App\User;
@@ -36,6 +37,118 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
     }
 
     /**
+     * Returns survey URLs for a given therapy session
+     * @param string $therapy_session_id
+     * @return array
+     */
+    public function fetchSurveyUrls(string $therapy_session_id): array{
+        $params = array(
+            "return_format" => "json",
+            "fields" => array("ts_pre_survey_list"),
+            "redcap_event_name" => "therapy_session_arm_1",
+            "records" => array($therapy_session_id)
+        );
+
+        $json = json_decode(REDCap::getData($params), true);
+        if(count($json)){
+            $trimmed = preg_replace('/\s+/', '', trim(current($json)['ts_pre_survey_list']));
+            return explode(',', $trimmed);
+        }else{
+            return [];
+        }
+
+    }
+
+    /**
+     * @return string
+     * @throws Exception
+     */
+    public function findSurveyInstance(string $participant_id, string $therapy_session_id, string $event_id){
+        $rForm = new RepeatingForms('assessment_details', $event_id, $this->getProjectId());
+        $rForm->loadData($participant_id);
+        $instances = $rForm->getAllInstances($participant_id);
+
+        $selected_instance = -1;
+        foreach($instances as $k => $instance) //Find index of instance corresponding to current therapy session
+            if($instance['assessment_ts_id'] === $therapy_session_id) {
+                $selected_instance = $k;
+                break;
+            }
+
+        /**
+         * User does not have event with given therapy session
+         * This may occur when user ID is added to TS textbox without creating a new event
+         */
+        if($selected_instance === -1)
+            throw new Exception("You have been added to a Therapy session without a repeating event ".$therapy_session_id.", please contact your administrator");
+
+        return $selected_instance;
+    }
+
+    /**
+     * @param $payload
+     * @return array
+     */
+    public function getUserSurveys($payload): array
+    {
+        try {
+            if (empty($payload['participant_id']) || empty($payload['therapy_session_id']))
+                throw new Exception('No record_id passed');
+
+            // Grab all survey urls for a given therapy session
+            $expl = $this->fetchSurveyUrls($payload['therapy_session_id']);
+            $event_id = REDCap::getEventIdFromUniqueEvent('assessments_arm_2');
+
+            $required_survey_urls = [];
+            $fields = [];
+
+            // Iterate through surveys, gathering URL and complete key
+            foreach($expl as $instrument){
+                $required_survey_urls[strtolower($instrument)] = ['url' => REDCap::getSurveyLink($payload['participant_id'], strtolower($instrument), $event_id)];
+                $fields[] = $instrument . "_complete";
+            }
+
+            // Get survey instance (index) of corresponding therapy session
+            $ts_survey_instance = $this->findSurveyInstance($payload['participant_id'], $payload['therapy_session_id'], $event_id);
+
+            // Get subsequent data
+            if(count($fields)) {
+                $params = [
+                    "project_id"    => $this->getProjectId(),
+                    "records"       => $payload['participant_id'],
+                    "events"        => $event_id,
+                    "fields"         => $fields
+                ];
+                $record_data = REDCap::getData($params);
+                $rei_parent = $record_data[$payload['participant_id']]["repeat_instances"][$event_id][''][$ts_survey_instance];
+
+                // Format data
+                foreach($rei_parent as $k => $v){
+                    $survey = str_replace('_complete', '', $k);
+                    $required_survey_urls[$survey]['complete'] = $v;
+                }
+
+                $return_o["result"] = json_encode($required_survey_urls); //Necessary result key for returning via JSMO
+                return $return_o;
+            }
+            return [];
+
+        }catch (\Exception $e) {
+            $msg = $e->getMessage();
+            \REDCap::logEvent("Error: $msg");
+            $this->emError("Error: $msg");
+            $ret = json_encode(array(
+                'error' => array(
+                    'msg' => $msg,
+                ),
+            ));
+
+            return ["result" => $ret];
+        }
+    }
+
+
+    /**
      * Helper method for inserting the JSMO JS into a page along with any preload data
      * @param $data
      * @param $init_method
@@ -43,7 +156,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
      */
     public function injectJSMO($data = null, $init_method = null)
     {
-
+//        $this->getUserSurveys();
         echo $this->initializeJavascriptModuleObject();
         $cmds = [
             "const module = " . $this->getJavascriptModuleObjectName()
@@ -243,8 +356,11 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
                     if (!empty($record['participant_otp_code_ts'])) { //Check if OTP code has been generated recently
                         $timeDifference = strtotime("now") - strtotime($record['participant_otp_code_ts']);
                         if ($timeDifference < 3600) { //60 minute interval to login before having to retry
-//                            $returnPayload['chat_sessions'] = $this->getUserSessions($record);
+                            //Deleting code from return payload
+                            unset($record['participant_otp_code']);
+                            unset($record['participant_otp_code_ts']);
                             $returnPayload['current_user'] = $record;
+
                             $return_o["result"] = json_encode($returnPayload); //Necessary result key for returning via JSMO
                             return $return_o;
 
@@ -620,6 +736,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
         ];
     }
 
+
     /**
      * This is the primary ajax handler for JSMO calls
      * @param $action
@@ -684,6 +801,8 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
                 return $this->validateCode($payload);
             case "handleActions":
                 return $this->handleActions($sanitized);
+            case 'getUserSurveys':
+                return $this->getUserSurveys($sanitized);
             default:
                 // Action not defined
                 throw new Exception ("Action $action is not defined");
