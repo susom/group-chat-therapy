@@ -6,21 +6,19 @@ import Button from "react-bootstrap/Button";
 import Badge from "react-bootstrap/Badge";
 import Accordion from "react-bootstrap/Accordion";
 import Spinner from "react-bootstrap/Spinner";
+import Alert from "react-bootstrap/Alert";
 
 import './waitingRoom.css';
 
 import {SessionContext} from "../../contexts/Session.jsx";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faArrowsRotate} from "@fortawesome/free-solid-svg-icons";
 
-export const WaitingRoom = () => {
+export const WaitingRoom = ({participantCompletion}) => {
     const session_context = useContext(SessionContext);
     const {selected_session} = session_context?.sessionCache
     const [participantDetails, setParticipantDetails] = useState([])
     const [selectedSession, setSelectedSession] = useState({})
     const [loading, setLoading] = useState(false)
     const [pageLoad, setPageLoad] = useState(true)
-    const [participantCompletion, setParticipantCompletion] = useState([])
     let jsmoModule;
     if (import.meta?.env?.MODE !== 'development')
         jsmoModule = ExternalModules.Stanford.GroupChatTherapy
@@ -69,19 +67,6 @@ export const WaitingRoom = () => {
                 setLoading(false)
             }
         )
-
-    }
-
-
-    const pollUser = () => {
-        jsmoModule.checkUserCompletion(
-            {
-                'participant_ids': selected_session?.ts_authorized_participants,
-                'therapy_session_id': selected_session?.record_id
-            },
-            (res) => setParticipantCompletion(res),
-            (err) => console.log(err)
-        )
     }
 
     const handleParticipants = (e) => {
@@ -92,8 +77,6 @@ export const WaitingRoom = () => {
         sendAjax({'record_id': selected_session?.record_id, 'action': type, 'participant_id': participant_id})
     }
 
-
-
     const generateStacks = (type) => {
         let arr = type === 'waitingRoom' ? selectedSession?.ts_authorized_participants : selectedSession?.ts_chat_room_participants
         if(pageLoad){ //render placeholders if page load
@@ -103,6 +86,13 @@ export const WaitingRoom = () => {
                 </div>
             )
         } else {
+            if(!arr.length) {
+                return (
+                    <Alert variant="info">
+                        No current users
+                    </Alert>
+                )
+            }
             return arr?.map((e, i) => {
                 let detail = participantDetails?.find(el => el.record_id === e)
                 if (detail) {
@@ -121,11 +111,13 @@ export const WaitingRoom = () => {
                                 type === 'waitingRoom' ?
                                     <Button data-type="admit" data-index={i} onClick={handleParticipants}
                                             value={detail?.record_id}
+                                            size="sm"
                                             disabled={loading} variant="outline-success">{parseInt(loading) === i ?
                                         <Spinner className="spinner-button" size="sm"></Spinner> : "Admit"}</Button>
                                     :
                                     <Button data-type="revoke" data-index={i} onClick={handleParticipants}
                                             value={detail?.record_id}
+                                            size="sm"
                                             disabled={loading} variant="outline-danger">{parseInt(loading) === i ?
                                         <Spinner className="spinner-button" size="sm"></Spinner> : "Revoke"}</Button>
                             }
@@ -137,7 +129,6 @@ export const WaitingRoom = () => {
     }
 
     return (
-        <>
         <Tab.Container defaultActiveKey="online">
             <Accordion className="mb-3 chat-room-detail">
                 <Accordion.Item eventKey="0">
@@ -184,15 +175,6 @@ export const WaitingRoom = () => {
                 </Tab.Pane>
 
             </Tab.Content>
-
         </Tab.Container>
-        <Button
-            variant="outline-secondary"
-            className="float-right"
-            onClick={pollUser}
-        >
-            <FontAwesomeIcon icon={faArrowsRotate} />
-        </Button>
-    </>
     )
 }
