@@ -207,16 +207,28 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
         }
     }
 
-    public function checkUserCompletion($payload)
+    /**
+     * @param $payload
+     * @return array
+     */
+    public function checkUserCompletion($payload): array
     {
         try {
             if (empty($payload['participant_ids']) || empty($payload['therapy_session_id']))
                 throw new Exception('Incorrect payload passed');
-
-//            foreach($payload['participant_ids'] as $participant) {
-//
-//            }
-
+            $complete_ids = [];
+            foreach($payload['participant_ids'] as $participant){
+                $surveyCompletionList = $this->getUserSurveys(array('participant_id'=> $participant, 'therapy_session_id' => $payload['therapy_session_id']));
+                $surveyCompletionList = json_decode($surveyCompletionList["result"], true);
+                foreach($surveyCompletionList as $survey)
+                    if($survey['complete'] === '2') { //complete
+                        $complete_ids[$participant] = true;
+                    }else {
+                        $complete_ids[$participant] = false;
+                        break;
+                    }
+            }
+            return ["result" => json_encode($complete_ids)];
 
         } catch (\Exception $e) {
             $msg = $e->getMessage();
