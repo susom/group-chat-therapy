@@ -10,6 +10,8 @@ import Spinner from "react-bootstrap/Spinner";
 import './waitingRoom.css';
 
 import {SessionContext} from "../../contexts/Session.jsx";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faArrowsRotate} from "@fortawesome/free-solid-svg-icons";
 
 export const WaitingRoom = () => {
     const session_context = useContext(SessionContext);
@@ -18,7 +20,7 @@ export const WaitingRoom = () => {
     const [selectedSession, setSelectedSession] = useState({})
     const [loading, setLoading] = useState(false)
     const [pageLoad, setPageLoad] = useState(true)
-
+    const [participantCompletion, setParticipantCompletion] = useState([])
     let jsmoModule;
     if (import.meta?.env?.MODE !== 'development')
         jsmoModule = ExternalModules.Stanford.GroupChatTherapy
@@ -70,6 +72,18 @@ export const WaitingRoom = () => {
 
     }
 
+
+    const pollUser = () => {
+        jsmoModule.checkUserCompletion(
+            {
+                'participant_ids': selected_session?.ts_authorized_participants,
+                'therapy_session_id': selected_session?.record_id
+            },
+            (res) => setParticipantCompletion(res),
+            (err) => console.log(err)
+        )
+    }
+
     const handleParticipants = (e) => {
         const {value: participant_id} = e.target
         const type = e.target.getAttribute('data-type')
@@ -77,6 +91,7 @@ export const WaitingRoom = () => {
         setLoading(e.target.getAttribute('data-index')) //Set loading for singular button
         sendAjax({'record_id': selected_session?.record_id, 'action': type, 'participant_id': participant_id})
     }
+
 
 
     const generateStacks = (type) => {
@@ -90,25 +105,39 @@ export const WaitingRoom = () => {
         } else {
             return arr?.map((e, i) => {
                 let detail = participantDetails?.find(el => el.record_id === e)
-                if (detail)
+                if (detail) {
+                    let b;
+                    if (detail?.record_id in participantCompletion){
+                        if(participantCompletion[detail?.record_id] === true)
+                            b = <Badge bg="success">Finished</Badge>
+                        else
+                            b = <Badge bg="danger">Incomplete</Badge>
+                    }
                     return (
                         <Stack key={i} direction="horizontal" gap={3}>
                             <div className="me-auto">{detail?.participant_first_name}</div>
+                            {b}
                             {
                                 type === 'waitingRoom' ?
-                                    <Button data-type="admit" data-index={i} onClick={handleParticipants} value={detail?.record_id}
-                                            disabled={loading} variant="outline-success">{parseInt(loading) === i ? <Spinner className="spinner-button" size="sm" ></Spinner> : "Admit"}</Button>
+                                    <Button data-type="admit" data-index={i} onClick={handleParticipants}
+                                            value={detail?.record_id}
+                                            disabled={loading} variant="outline-success">{parseInt(loading) === i ?
+                                        <Spinner className="spinner-button" size="sm"></Spinner> : "Admit"}</Button>
                                     :
-                                    <Button data-type="revoke" data-index={i} onClick={handleParticipants} value={detail?.record_id}
-                                            disabled={loading} variant="outline-danger">{parseInt(loading) === i ? <Spinner className="spinner-button" size="sm" ></Spinner> :  "Revoke"}</Button>
+                                    <Button data-type="revoke" data-index={i} onClick={handleParticipants}
+                                            value={detail?.record_id}
+                                            disabled={loading} variant="outline-danger">{parseInt(loading) === i ?
+                                        <Spinner className="spinner-button" size="sm"></Spinner> : "Revoke"}</Button>
                             }
                         </Stack>
                     )
+                }
             })
         }
     }
 
     return (
+        <>
         <Tab.Container defaultActiveKey="online">
             <Accordion className="mb-3 chat-room-detail">
                 <Accordion.Item eventKey="0">
@@ -132,13 +161,13 @@ export const WaitingRoom = () => {
             <Nav variant="tabs" className="mb-3 admin-container" justify>
                 <Nav.Item>
                     <Nav.Link eventKey="online">
-                        <div>Waiting Room <Badge pill
+                        <div>Waiting <Badge pill
                                                  bg="danger">{selected_session?.ts_authorized_participants?.length ? selected_session?.ts_authorized_participants?.length : 0}</Badge>
                         </div>
                     </Nav.Link>
                 </Nav.Item>
                 <Nav.Item>
-                    <Nav.Link eventKey="chatroom">Chat Room <Badge pill
+                    <Nav.Link eventKey="chatroom">Chat <Badge pill
                                                                    bg="success">{selected_session?.ts_chat_room_participants?.length ? selected_session?.ts_chat_room_participants?.length : 0}</Badge></Nav.Link>
                 </Nav.Item>
             </Nav>
@@ -153,7 +182,17 @@ export const WaitingRoom = () => {
                         { generateStacks('chatRoom')}
                     </Stack>
                 </Tab.Pane>
+
             </Tab.Content>
+
         </Tab.Container>
+        <Button
+            variant="outline-secondary"
+            className="float-right"
+            onClick={pollUser}
+        >
+            <FontAwesomeIcon icon={faArrowsRotate} />
+        </Button>
+    </>
     )
 }
