@@ -39,22 +39,22 @@ export const ChatContextProvider = ({children}) => {
 
     // INIT CHAT SESSION
     useEffect(() => {
-        if (!isPollingActions && session_context?.data?.selected_session) {
-            setChatSessionID(session_context.data.selected_session["record_id"]);
-            setParticipants(session_context.data.selected_session["ts_chat_room_participants"]);
-            setParticipantID(session_context.data.current_user.record_id);
+        if (!isPollingActions && session_context?.sessionCache?.selected_session) {
+            setChatSessionID(session_context?.sessionCache?.selected_session["record_id"]);
+            setParticipants(session_context?.sessionCache?.selected_session["ts_chat_room_participants"]);
+            setParticipantID(session_context.sessionCache.current_user.record_id);
 
-            let cur_user_admin = `${session_context.data.current_user.admin}` === "1";
+            let cur_user_admin = `${session_context.sessionCache.current_user.admin}` === "1";
             setIsAdmin(cur_user_admin);
 
             const initialChats = {"groupChat": []};
 
             if (cur_user_admin) {
-                session_context.data.selected_session.ts_chat_room_participants.forEach(userid => {
+                session_context?.sessionCache?.selected_session.ts_chat_room_participants.forEach(userid => {
                     initialChats[parseInt(userid)] = [];
                 });
             } else {
-                initialChats[parseInt(session_context.data.selected_session.ts_therapist)] = []; // Assuming therapist has an id.
+                initialChats[parseInt(session_context?.sessionCache?.selected_session.ts_therapist)] = []; // Assuming therapist has an id.
             }
 
             setAllChats(initialChats);
@@ -312,9 +312,9 @@ export const ChatContextProvider = ({children}) => {
                 break;
 
             case 'whiteboard':
-                if (session_context?.data) {
+                if (session_context?.sessionCache) {
                     // Create a shallow copy of data
-                    const copyof = { ...session_context.data };
+                    const copyof = { ...session_context.sessionCache };
 
                     // Create a copy of selected_session
                     copyof.selected_session = {
@@ -322,7 +322,7 @@ export const ChatContextProvider = ({children}) => {
                         ts_whiteboard: action.body
                     };
 
-                    session_context.setData(copyof);
+                    session_context.setSessionCache(copyof);
                 }
 
                 updatedActionsArray = actionsArray.filter(prevAction => prevAction.type !== 'whiteboard');
