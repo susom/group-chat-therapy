@@ -33,7 +33,7 @@ function ChatRoomContent() {
     const participant_id                                = participant_details?.record_id;
     const isAdmin                                       = participant_details?.admin === "1";
 
-    const chat_details                                  = session_context?.data?.selected_session || {};
+    const chat_details                                  = session_context?.sessionCache?.selected_session || {};
     const chat_session_id                               = chat_details?.record_id || null;
     const date_string                                   = chat_details?.ts_start ? chat_details?.ts_start : "";
 
@@ -56,7 +56,7 @@ function ChatRoomContent() {
 
 
     useEffect(() => {
-        const selectedSession = session_context?.data?.selected_session;
+        const selectedSession = session_context?.sessionCache?.selected_session
         if (selectedSession?.record_id) {
             const payload = {
                 'participants': [
@@ -67,7 +67,7 @@ function ChatRoomContent() {
             };
             chat_context.callAjax(payload, "getParticipants");
         }
-    }, [session_context?.data?.selected_session?.record_id]);
+    }, [session_context.sessionCache]);
 
 
     const mentionCounts = useMemo(() => {
@@ -83,8 +83,8 @@ function ChatRoomContent() {
     }, [date_string]);
 
     useEffect(() => {
-        setWhiteboardContent(session_context.data.selected_session.ts_whiteboard);
-    }, [session_context.data.selected_session.ts_whiteboard]);
+        setWhiteboardContent(session_context?.sessionCache?.selected_session.ts_whiteboard);
+    }, [session_context?.sessionCache?.selected_session.ts_whiteboard]);
 
     useEffect(() => {
         setAllChats({ ...chatContextAllChats });
