@@ -139,7 +139,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
          * This may occur when user ID is added to TS textbox without creating a new event
          */
         if ($selected_instance === -1)
-            throw new Exception("You have been added to a Therapy session without a repeating event " . $therapy_session_id . ", please contact your administrator");
+            throw new Exception("User id $participant_id has been added to a Therapy session without a repeating event " . $therapy_session_id . ", please contact your administrator");
 
         return $selected_instance;
     }
@@ -220,6 +220,9 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
             foreach($payload['participant_ids'] as $participant){
                 $surveyCompletionList = $this->getUserSurveys(array('participant_id'=> $participant, 'therapy_session_id' => $payload['therapy_session_id']));
                 $surveyCompletionList = json_decode($surveyCompletionList["result"], true);
+                if(array_key_exists('error',$surveyCompletionList))
+                    throw new Exception($surveyCompletionList['error']['msg']);
+
                 foreach($surveyCompletionList as $survey)
                     if($survey['complete'] === '2') { //complete
                         $complete_ids[$participant] = true;
