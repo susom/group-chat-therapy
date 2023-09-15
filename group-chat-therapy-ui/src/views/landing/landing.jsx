@@ -1,4 +1,4 @@
-import React, {useContext, useEffect} from "react";
+import React, {useContext, useState} from "react";
 import {Link, Navigate, useNavigate, useLocation} from "react-router-dom";
 import Container from 'react-bootstrap/Container';
 import Alert from 'react-bootstrap/Alert';
@@ -12,12 +12,21 @@ import {NavHeader} from "../../components/NavHeader/navheader.jsx";
 import {WaitingRoom} from "../../components/WaitingRoom/waitingRoom.jsx";
 import SurveyList from '../../components/SurveyList/surveylist.jsx';
 
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faArrowsRotate} from "@fortawesome/free-solid-svg-icons";
+
 import {SessionContext} from "../../contexts/Session.jsx";
 import './landing.css';
 
 export default function Landing() {
     const session_context   = useContext(SessionContext);
     const navigate = useNavigate()
+    const [participantCompletion, setParticipantCompletion] = useState([])
+
+    let jsmoModule;
+    if (import.meta?.env?.MODE !== 'development')
+        jsmoModule = ExternalModules.Stanford.GroupChatTherapy
+    console.log(session_context)
 
     const renderList = () => {
         return (
@@ -60,16 +69,37 @@ export default function Landing() {
         navigate("/chat")
     }
 
+    const pollUser = () => {
+        const sel = session_context?.sessionCache?.selected_session
+        jsmoModule.checkUserCompletion(
+            {
+                'participant_ids': sel?.ts_authorized_participants,
+                'therapy_session_id': sel?.record_id
+            },
+            (res) => setParticipantCompletion(res),
+            (err) => console.log('error', err)
+        )
+    }
+
     const renderAdmin = () => {
         const sel = session_context?.sessionCache?.selected_session
 
         return (
             <Container className='session-detail mt-3'>
                 <Card>
-                    <Card.Header><strong>{sel?.ts_title}</strong> - #{sel?.record_id}</Card.Header>
+                    <Card.Header><strong>{sel?.ts_title}</strong> - #{sel?.record_id}
+                        <Button
+                            variant="outline-secondary"
+                            className="float-end"
+                            size="sm"
+                            onClick={pollUser}
+                        >
+                            <FontAwesomeIcon icon={faArrowsRotate} />
+                        </Button>
+                    </Card.Header>
                     <Card.Body>
                         <WaitingRoom
-                            session = {sel}
+                            participantCompletion={participantCompletion}
                         />
                     </Card.Body>
                     <Card.Footer>
