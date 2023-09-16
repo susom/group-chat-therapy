@@ -336,7 +336,7 @@
                     if(res?.result){
                         let response = JSON.parse(res?.result)
                         if('error' in response)
-                            errorCallback(response)
+                            errorCallback(response.error?.msg)
                         else
                             callback(response)
                     }
