@@ -23,6 +23,7 @@ export default function Landing() {
     const navigate = useNavigate()
     const [participantCompletion, setParticipantCompletion] = useState([])
     const [error, setError] = useState('')
+    const [showError, setShowError] = useState(false)
 
     let jsmoModule;
     if (import.meta?.env?.MODE !== 'development')
@@ -78,13 +79,25 @@ export default function Landing() {
                 'therapy_session_id': sel?.record_id
             },
             (res) => setParticipantCompletion(res),
-            (err) => setError(err)
+            (err) => {
+                setError(err)
+                setShowError(true)
+            }
         )
+    }
+    const renderError = () => {
+        const click = () => setShowError(false)
+        if(showError){
+            return (
+                <Alert dismissible className='landing-error' variant="danger" onClose={click}>
+                    <Alert.Heading as="h6">Error:</Alert.Heading>{error}
+                </Alert>
+            )
+        }
     }
 
     const renderAdmin = () => {
         const sel = session_context?.sessionCache?.selected_session
-        console.log(error)
         return (
             <Container className='session-detail mt-3'>
                 <Card>
@@ -99,7 +112,7 @@ export default function Landing() {
                         </Button>
                     </Card.Header>
                     <Card.Body>
-                        {error.length ? <Alert className='landing-error' variant="danger"><Alert.Heading as="h6">Error:</Alert.Heading>{error}</Alert> : ''}
+                        {renderError()}
                         <WaitingRoom
                             participantCompletion={participantCompletion}
                         />
