@@ -22,6 +22,7 @@ export default function Landing() {
     const session_context   = useContext(SessionContext);
     const navigate = useNavigate()
     const [participantCompletion, setParticipantCompletion] = useState([])
+    const [error, setError] = useState('')
 
     let jsmoModule;
     if (import.meta?.env?.MODE !== 'development')
@@ -77,13 +78,13 @@ export default function Landing() {
                 'therapy_session_id': sel?.record_id
             },
             (res) => setParticipantCompletion(res),
-            (err) => console.log('error', err)
+            (err) => setError(err)
         )
     }
 
     const renderAdmin = () => {
         const sel = session_context?.sessionCache?.selected_session
-
+        console.log(error)
         return (
             <Container className='session-detail mt-3'>
                 <Card>
@@ -98,6 +99,7 @@ export default function Landing() {
                         </Button>
                     </Card.Header>
                     <Card.Body>
+                        {error.length ? <Alert className='landing-error' variant="danger"><Alert.Heading as="h6">Error:</Alert.Heading>{error}</Alert> : ''}
                         <WaitingRoom
                             participantCompletion={participantCompletion}
                         />

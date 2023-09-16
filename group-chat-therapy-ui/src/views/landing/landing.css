@@ -43,3 +43,8 @@ body {
     height: 1.5rem;
     width: 1.5rem;
 }
+
+
+.landing-error {
+    font-size: 13px;
+}
