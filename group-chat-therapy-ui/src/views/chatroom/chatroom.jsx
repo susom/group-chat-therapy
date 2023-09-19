@@ -207,14 +207,14 @@ function ChatRoomContent() {
 
             <Container className={"chat_room"}>
                 {chat_details ? ( <Row className={"chat_details"}>
-                        <Col xs={3} className={`chat_date order-last order-md-first`}>
+                        <Col md={2} xs={5} className={`chat_date order-last order-md-first`}>
                             <div className="su-date-stacked ">
                                 <span className="su-date-stacked__month">{dateComps.month}</span>
                                 <span className="su-date-stacked__day">{dateComps.day}</span>
                                 <span className="su-date-stacked__year">{dateComps.year}</span>
                             </div>
                         </Col>
-                        <Col xs={9}>
+                        <Col md={10} xs={7}>
                             <ul>
                                 <li>
                                     <h2>{chat_details.ts_title}</h2>

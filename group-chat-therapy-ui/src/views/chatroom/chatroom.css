@@ -22,6 +22,54 @@
 
 }
 
+.su-brand-bar{
+    background-color: rgba(140, 21, 21, 1);
+    padding:5px;
+}
+
+.su-brand-bar__logo:active,
+.su-brand-bar__logo:visited,
+.su-brand-bar__logo{
+    font-family: Stanford, "Source Serif Pro", Georgia, Times, "Times New Roman", serif;
+    font-weight: 400;
+    color:#fff;
+    text-decoration:none;
+    display:inline-block;
+}
+
+.su-global-footer{
+    background: black;
+    color: #fff;
+    overflow: hidden;
+    padding: 20px 0;
+}
+
+.su-global-footer__content,
+.su-global-footer__brand{
+    text-align:center;
+}
+
+.su-global-footer__copyright{
+    font-size:77%;
+}
+
+.su-global-footer__brand a:visited,
+.su-global-footer__brand a:active,
+.su-global-footer__brand a{
+    display: inline-block;
+    color: #fff;
+    text-decoration: none;
+    font-size: 200%;
+    line-height: 100%;
+    font-family: Stanford,"Source Serif Pro",Georgia,Times,Times New Roman,serif;
+    text-align: center;
+}
+
+.su-global-footer__brand i {
+    font-style:normal;
+    font-size:65%;
+}
+
 .chat_window {
     border:2px solid #ccc;
     border-radius:5px;
@@ -311,18 +359,23 @@
 }
 
 
-
-.chat_details .chat_date {
-    float:left;
-    width:135px;
-    margin-right:30px;
-    margin-left:initial;
-}
-
 .chat_details .chat_date .su-date-stacked{
     width:135px;
+    background: black;
+    color: #fff;
+
     max-width:initial;
     padding:10px 20px;
+}
+
+.chat_details .chat_date .su-date-stacked span {
+    display:block;
+    text-align:center;
+}
+
+.su-date-stacked__day {
+    font-size: 250%;
+    line-height: 110%;
 }
 
 .chat_details h2 {
@@ -403,7 +456,11 @@
 }
 
 button.send_message {
-    padding:1rem;
+    background-color: #8c1515;
+    border: none;
+    padding: 8px;
+    width: 100%;
+    min-width: 40px;
 }
 
 .whiteboard_form textarea{
@@ -475,5 +532,17 @@ button.whiteboard_btn {
     .chat_tab .nav-link{
         margin-right:20px;
         margin-bottom:initial;
+    }
+}
+
+/* Your normal styles for mobile-first design here */
+
+/* Media Query for screens greater than 768px */
+@media screen and (min-width: 769px) {
+
+    .su-global-footer{
+        position:fixed;
+        bottom:0;
+        width:100%;
     }
 }
