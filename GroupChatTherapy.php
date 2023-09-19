@@ -164,8 +164,11 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
 
             // Iterate through surveys, gathering URL and complete key
             foreach ($expl as $instrument) {
-                $required_survey_urls[strtolower($instrument)] = ['url' => REDCap::getSurveyLink($payload['participant_id'], strtolower($instrument), $event_id)];
-                $fields[] = $instrument . "_complete";
+                $url = REDCap::getSurveyLink($payload['participant_id'], strtolower($instrument), $event_id);
+                if(isset($url)) { //If the survey actually exists
+                    $required_survey_urls[strtolower($instrument)] = ['url' => $url];
+                    $fields[] = $instrument . "_complete";
+                }
             }
 
             // Get survey instance (index) of corresponding therapy session
