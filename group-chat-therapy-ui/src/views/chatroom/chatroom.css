@@ -473,9 +473,9 @@ button.send_message {
     float:right;
 }
 
-.whiteboard .card-body{
-    min-height:150px;
-}
+/*.whiteboard .card-body{*/
+/*    min-height:150px;*/
+/*}*/
 
 .chat-badge {
     background-color: red;

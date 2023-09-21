@@ -15,6 +15,8 @@ import GlobalFooter from "../../components/global_footer.jsx";
 import './chatroom.css';
 // import '../../assets/css/decanter.css';
 import { debounce } from 'lodash';
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faFloppyDisk} from "@fortawesome/free-solid-svg-icons";
 
 export default function ChatRoom() {
     return (
@@ -55,6 +57,12 @@ function ChatRoomContent() {
     const [replyTo, setReplyTo]                         = useState(null);
 
 
+    const [isMobile, setMobile] = useState(window.innerWidth < 640);
+
+    const updateMedia = () => {
+        setMobile(window.innerWidth < 640);
+    };
+
     useEffect(() => {
         const selectedSession = session_context?.sessionCache?.selected_session
         if (selectedSession?.record_id) {
@@ -77,6 +85,11 @@ function ChatRoomContent() {
     // useEffect(() => {
     //     setMentionCounts({ ...chatContextMentionCounts });
     // }, [chatContextMentionCounts]);
+
+    useEffect(() => {
+        window.addEventListener("resize", updateMedia);
+        return () => window.removeEventListener("resize", updateMedia);
+    });
 
     const dateComps = useMemo(() => {
         return dateComponents(date_string);
@@ -199,8 +212,8 @@ function ChatRoomContent() {
 
         return `${hours}:${minutes} ${amOrPm}`;
     }
-
-
+    console.log(isMobile)
+    console.log(window.innerWidth)
     return (
         <div id={`main`}>
             <GlobalHeader/>
@@ -276,8 +289,13 @@ function ChatRoomContent() {
 
                                     <Col md={11} xs={12}>
                                         <Card className={`whiteboard`}>
+                                            <Card.Header>Whiteboard
+                                                {isMobile &&
+                                                    <Button className="float-end" variant="success" type="submit" disabled={!whiteboardIsChanged}><FontAwesomeIcon icon={faFloppyDisk} /></Button>
+                                                }
+
+                                            </Card.Header>
                                             <Card.Body>
-                                                <Card.Title>Whiteboard</Card.Title>
                                                 {
                                                     chat_details && (
                                                         participant_id === chat_details.ts_therapist ? (
@@ -288,7 +306,10 @@ function ChatRoomContent() {
                                                                     onChange={handleWhiteboardChange}
                                                                     placeholder="Edit the whiteboard content..."
                                                                 />
-                                                                <Button type="submit" className="mt-2 whiteboard_btn" disabled={!whiteboardIsChanged}>Update Whiteboard</Button>
+                                                                {!isMobile &&
+                                                                    <Button type="submit" variant="success" className="mt-2 whiteboard_btn" disabled={!whiteboardIsChanged}>Update Whiteboard</Button>
+                                                                }
+
                                                             </Form>
                                                         ) : (
                                                             <Card.Text>{whiteboardContent}</Card.Text>
