@@ -3,7 +3,7 @@ import {Badge, Button, Table} from 'react-bootstrap';
 import './surveylist.css';
 import {SessionContext} from "../../contexts/Session.jsx";
 
-export default function SurveyList() {
+export default function SurveyList({completed= false}) {
     const [surveys, setSurveys] = useState({})
     const session_context = useContext(SessionContext);
 
@@ -20,15 +20,27 @@ export default function SurveyList() {
     }
 
     useEffect(() => {
-        jsmoModule.getUserSurveys(
-            {
-                'participant_id': session_context?.sessionCache?.current_user?.record_id,
-                'therapy_session_id': session_context?.sessionCache?.selected_session?.record_id
-            },
-            callback,
-            errorCallback
-        )
-    }, []);
+        if(completed) {
+            jsmoModule.getCompletedUserSurveys(
+                {
+                    'participant_id': session_context?.sessionCache?.current_user?.record_id,
+                    'therapy_session_id': session_context?.sessionCache?.selected_session?.record_id
+                },
+                callback,
+                errorCallback
+            )
+        } else {
+            jsmoModule.getUserSurveys(
+                {
+                    'participant_id': session_context?.sessionCache?.current_user?.record_id,
+                    'therapy_session_id': session_context?.sessionCache?.selected_session?.record_id
+                },
+                callback,
+                errorCallback
+            )
+        }
+
+    }, [completed]);
 
     const generateStack = (key, value) => {
         const badgeComplete = <Badge bg="success">Done</Badge>
