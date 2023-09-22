@@ -245,11 +245,11 @@ function ChatRoomContent() {
                 <Row className={"chat_ui"}>
                     <Col>
                         <Container fluid>
-                            <Row>
-                                <Col md={{ span: 11, offset: 1 }} xs={12} className={"whiteboard"}>
+                            {/*<Row>*/}
+                            {/*    <Col md={{ span: 11, offset: 1 }} xs={12} className={"whiteboard"}>*/}
 
-                                </Col>
-                            </Row>
+                            {/*    </Col>*/}
+                            {/*</Row>*/}
                             <Row>
                                 <Tab.Container
                                     activeKey={selectedChat}
@@ -320,9 +320,10 @@ function ChatRoomContent() {
                                         </Card>
 
                                         <Tab.Content>
-                                            <h3 className={'chat_title'}>Chatting with : {
-                                                selectedChat === "groupChat" ? "Group" : session_context.participantsLookUp[selectedChat] || selectedChat
-                                            }</h3>
+                                            <h4 className={'chat_title d-inline '}>Chatting with :
+                                                {selectedChat === "groupChat" ? "Group" : session_context.participantsLookUp[selectedChat] || selectedChat}
+                                            </h4>
+                                            {/*<Button variant="danger" className="float-end">End</Button>*/}
                                             <Tab.Pane eventKey="groupChat">
                                                 <MessagesDisplay messages={allChats['groupChat']} replyTo={replyTo} setReplyTo={setReplyTo} />
                                             </Tab.Pane>
