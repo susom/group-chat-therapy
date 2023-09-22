@@ -144,6 +144,27 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
         return $selected_instance;
     }
 
+    /**
+     * @param $payload
+     * @return array
+     */
+    public function getCompletedUserSurveys($payload): array
+    {
+        try {
+            return [];
+        } catch (\Exception $e) {
+            $msg = $e->getMessage();
+            \REDCap::logEvent("Error: $msg");
+            $this->emError("Error: $msg");
+            $ret = json_encode(array(
+                'error' => array(
+                    'msg' => $msg,
+                ),
+            ));
+
+            return ["result" => $ret];
+        }
+    }
 
     /**
      * @param $payload
