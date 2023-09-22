@@ -12,6 +12,7 @@ import Landing from './views/landing/landing.jsx'
 import Error from './views/error/error.jsx'
 import Login from './views/login/login.jsx'
 import Select from './views/select/select.jsx'
+import Completed from "./views/completed/completed.jsx"
 
 const router = createHashRouter([
     {
@@ -27,6 +28,11 @@ const router = createHashRouter([
     {
         path: "/chat",
         element: <ChatRoom />,
+        errorElement: <Error/>
+    },
+    {
+        path: "/completed",
+        element: <Completed />,
         errorElement: <Error/>
     },
     {
