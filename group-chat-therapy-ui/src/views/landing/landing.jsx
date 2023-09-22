@@ -19,7 +19,7 @@ import {SessionContext} from "../../contexts/Session.jsx";
 import './landing.css';
 
 export default function Landing() {
-    const session_context   = useContext(SessionContext);
+    const session_context = useContext(SessionContext);
     const navigate = useNavigate()
     const [participantCompletion, setParticipantCompletion] = useState([])
     const [error, setError] = useState('')
@@ -28,44 +28,6 @@ export default function Landing() {
     let jsmoModule;
     if (import.meta?.env?.MODE !== 'development')
         jsmoModule = ExternalModules.Stanford.GroupChatTherapy
-    console.log(session_context)
-
-    const renderList = () => {
-        return (
-            <ListGroup as="ol" className="my-2 survey-list">
-                <ListGroup.Item
-                    action
-                    as="li"
-                    className="my-2"
-                >
-                    <div>
-                        <div className="fw-bold">
-                            <Badge className="float-end" bg="danger" pill>
-                                Not complete
-                            </Badge>
-                        </div>
-                        Mental health questionnaire
-                    </div>
-
-                </ListGroup.Item>
-                <ListGroup.Item
-                    action
-                    as="li"
-                    disabled
-                >
-                    <div>
-                        <div className="fw-bold">
-                            <Badge className="float-end" bg="success" pill>
-                                Complete
-                            </Badge>
-                        </div>
-                        Physical health questionnaire
-                    </div>
-                </ListGroup.Item>
-
-            </ListGroup>
-        )
-    }
 
     const enterChat = () => {
         navigate("/chat")
@@ -87,7 +49,7 @@ export default function Landing() {
     }
     const renderError = () => {
         const click = () => setShowError(false)
-        if(showError){
+        if (showError) {
             return (
                 <Alert dismissible className='landing-error' variant="danger" onClose={click}>
                     <Alert.Heading as="h6">Error:</Alert.Heading>{error}
@@ -108,7 +70,7 @@ export default function Landing() {
                             size="sm"
                             onClick={pollUser}
                         >
-                            <FontAwesomeIcon icon={faArrowsRotate} />
+                            <FontAwesomeIcon icon={faArrowsRotate}/>
                         </Button>
                     </Card.Header>
                     <Card.Body>
@@ -129,20 +91,20 @@ export default function Landing() {
         return (
             <Container fluid className='session-detail mt-3'>
                 <Card>
-                <Card.Header>Surveys</Card.Header>
-                <Card.Body className="d-flex flex-column">
-                    {/*{renderList()}*/}
-                    <SurveyList />
-                    <Alert className="mt-auto" variant="info">
-                        <div className="d-flex align-items-center">
-                            <span>Waiting for Admin to enter chat    </span>
-                            <Spinner className="info-spinner ms-auto" animation="border" variant="info"/>
-                        </div>
-                    </Alert>
-                </Card.Body>
-                <Card.Footer>
-                    <Button className="float-end" onClick={enterChat}>Enter Chat</Button>
-                </Card.Footer>
+                    <Card.Header>Surveys</Card.Header>
+                    <Card.Body className="d-flex flex-column">
+                        {/*{renderList()}*/}
+                        <SurveyList/>
+                        <Alert className="mt-auto" variant="info">
+                            <div className="d-flex align-items-center">
+                                <span>Waiting for Admin to enter chat    </span>
+                                <Spinner className="info-spinner ms-auto" animation="border" variant="info"/>
+                            </div>
+                        </Alert>
+                    </Card.Body>
+                    <Card.Footer>
+                        <Button className="float-end" onClick={enterChat}>Enter Chat</Button>
+                    </Card.Footer>
                 </Card>
             </Container>
         )
@@ -152,13 +114,13 @@ export default function Landing() {
     // if (!session_context?.data?.participantID) {
     //     return <Navigate to="/"/>
     // } else {
-        const isAdmin = session_context?.sessionCache?.current_user?.admin
+    const isAdmin = session_context?.sessionCache?.current_user?.admin
 
-        return (
-            <>
-               <NavHeader/>
-                {isAdmin === "1" ? renderAdmin() : renderParticipant()}
-            </>
-        )
+    return (
+        <>
+            <NavHeader/>
+            {isAdmin === "1" ? renderAdmin() : renderParticipant()}
+        </>
+    )
     // }
 }
