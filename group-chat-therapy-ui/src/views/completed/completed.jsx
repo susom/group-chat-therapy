@@ -23,7 +23,9 @@ export default function Completed() {
             <div>
                 Thank you for completing the chat session!
             </div>
-            <SurveyList/>
+            <SurveyList
+                completed={true}
+            />
         </>
     )
 }
