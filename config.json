@@ -44,7 +44,6 @@
         "setWhiteboard",
         "getWhiteboard",
         "getUserSessions",
-        "getCompletedUserSurveys",
         "getUserSurveys",
         "checkUserCompletion"
     ],
