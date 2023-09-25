@@ -92,20 +92,22 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
     /**
      * Returns survey URLs for a given therapy session
      * @param string $therapy_session_id
+     * @param bool $complete
      * @return array
      */
-    public function fetchSurveyUrls(string $therapy_session_id): array
+    public function fetchSurveyUrls(string $therapy_session_id, bool $complete = false): array
     {
+        $index = $complete ? "ts_post_survey_list" : "ts_pre_survey_list";
         $params = array(
             "return_format" => "json",
-            "fields" => array("ts_pre_survey_list"),
+            "fields" => array($index),
             "redcap_event_name" => "therapy_session_arm_1",
             "records" => array($therapy_session_id)
         );
 
         $json = json_decode(REDCap::getData($params), true);
         if (count($json)) {
-            $trimmed = preg_replace('/\s+/', '', trim(current($json)['ts_pre_survey_list']));
+            $trimmed = preg_replace('/\s+/', '', trim(current($json)[$index]));
             return explode(',', $trimmed);
         } else {
             return [];
@@ -148,28 +150,6 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
      * @param $payload
      * @return array
      */
-    public function getCompletedUserSurveys($payload): array
-    {
-        try {
-            return [];
-        } catch (\Exception $e) {
-            $msg = $e->getMessage();
-            \REDCap::logEvent("Error: $msg");
-            $this->emError("Error: $msg");
-            $ret = json_encode(array(
-                'error' => array(
-                    'msg' => $msg,
-                ),
-            ));
-
-            return ["result" => $ret];
-        }
-    }
-
-    /**
-     * @param $payload
-     * @return array
-     */
     public function getUserSurveys($payload): array
     {
         try {
@@ -177,7 +157,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
                 throw new Exception('Incorrect payload passed');
 
             // Grab all survey urls for a given therapy session
-            $expl = $this->fetchSurveyUrls($payload['therapy_session_id']);
+            $expl = $this->fetchSurveyUrls($payload['therapy_session_id'], $payload['completed']);
             $event_id = REDCap::getEventIdFromUniqueEvent('assessments_arm_2');
 
             $required_survey_urls = [];
