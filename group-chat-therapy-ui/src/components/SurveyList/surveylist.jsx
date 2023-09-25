@@ -21,10 +21,11 @@ export default function SurveyList({completed= false}) {
 
     useEffect(() => {
         if(completed) {
-            jsmoModule.getCompletedUserSurveys(
+            jsmoModule.getUserSurveys(
                 {
                     'participant_id': session_context?.sessionCache?.current_user?.record_id,
-                    'therapy_session_id': session_context?.sessionCache?.selected_session?.record_id
+                    'therapy_session_id': session_context?.sessionCache?.selected_session?.record_id,
+                    'completed': true
                 },
                 callback,
                 errorCallback
@@ -33,7 +34,8 @@ export default function SurveyList({completed= false}) {
             jsmoModule.getUserSurveys(
                 {
                     'participant_id': session_context?.sessionCache?.current_user?.record_id,
-                    'therapy_session_id': session_context?.sessionCache?.selected_session?.record_id
+                    'therapy_session_id': session_context?.sessionCache?.selected_session?.record_id,
+                    'completed': false
                 },
                 callback,
                 errorCallback
