@@ -168,7 +168,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
                 $url = REDCap::getSurveyLink($payload['participant_id'], strtolower($instrument), $event_id);
                 if(isset($url)) { //If the survey actually exists
                     $required_survey_urls[strtolower($instrument)] = ['url' => $url];
-                    $fields[] = $instrument . "_complete";
+                    $fields[] = strtolower($instrument) . "_complete";
                 }
             }
 
