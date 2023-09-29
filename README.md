@@ -10,3 +10,8 @@ External module that allows patients to communicate with physicians in a chat ro
 - This project requires extensive setup to work properly, please follow all of the instructions closely.
 
 
+### Arm 1 - Therapy sessions
+Therapy sessions will house all the information pertaining to a given chat room session.
+These will need to be created beforehand manually similar to the following example:
+
+- Participant's record ID's should be placed in the `Authorized Particpants` field in a comma delimited list
