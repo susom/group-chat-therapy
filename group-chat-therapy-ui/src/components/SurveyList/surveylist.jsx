@@ -3,7 +3,7 @@ import {Badge, Button, Table} from 'react-bootstrap';
 import './surveylist.css';
 import {SessionContext} from "../../contexts/Session.jsx";
 
-export default function SurveyList({completed= false}) {
+export default function SurveyList({completed= false, setSurveysComplete}) {
     const [surveys, setSurveys] = useState({})
     const session_context = useContext(SessionContext);
 
@@ -20,28 +20,15 @@ export default function SurveyList({completed= false}) {
     }
 
     useEffect(() => {
-        if(completed) {
-            jsmoModule.getUserSurveys(
-                {
-                    'participant_id': session_context?.sessionCache?.current_user?.record_id,
-                    'therapy_session_id': session_context?.sessionCache?.selected_session?.record_id,
-                    'completed': true
-                },
-                callback,
-                errorCallback
-            )
-        } else {
-            jsmoModule.getUserSurveys(
-                {
-                    'participant_id': session_context?.sessionCache?.current_user?.record_id,
-                    'therapy_session_id': session_context?.sessionCache?.selected_session?.record_id,
-                    'completed': false
-                },
-                callback,
-                errorCallback
-            )
-        }
-
+        jsmoModule.getUserSurveys(
+            {
+                'participant_id': session_context?.sessionCache?.current_user?.record_id,
+                'therapy_session_id': session_context?.sessionCache?.selected_session?.record_id,
+                'completed': completed
+            },
+            callback,
+            errorCallback
+        )
     }, [completed]);
 
     const generateStack = (key, value) => {
@@ -58,20 +45,20 @@ export default function SurveyList({completed= false}) {
 
     const renderSurveys = () => {
         let svObj = []
+        let surveysComplete = 0
 
-        for (const [key, value] of Object.entries(surveys))
-            svObj.push(generateStack(key, value))
+        for (const [key, value] of Object.entries(surveys)) {
+            if(value.complete === '2')
+                surveysComplete+=1
+
+            svObj.push(generateStack(key, value)) //keep track of if all are completed
+        }
+
+        if(surveysComplete === Object.entries(surveys).length && Object.entries(surveys).length !== 0) { //If all are finished, set parent ui
+            setSurveysComplete(true)
+        }
 
         return svObj
-    }
-
-    const checkCompletion = () => {
-        let counter = 0
-        for (const [key, value] of Object.entries(surveys))
-            if (value?.complete === '2')
-                counter += 1
-
-        return counter === Object.entries(surveys).length
     }
 
     return (
@@ -88,9 +75,6 @@ export default function SurveyList({completed= false}) {
                 {Object.keys(surveys) && renderSurveys()}
                 </tbody>
             </Table>
-            {/*<Stack gap={1}>*/}
-            {/*    {Object.keys(surveys).length && renderSurveys()}*/}
-            {/*</Stack>*/}
         </div>
     )
 }
