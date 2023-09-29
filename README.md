@@ -7,3 +7,6 @@ External module that allows patients to communicate with physicians in a chat ro
 
 
 # Project setup
+- This project requires extensive setup to work properly, please follow all of the instructions closely.
+
+
