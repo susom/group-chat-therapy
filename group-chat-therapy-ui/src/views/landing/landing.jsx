@@ -24,6 +24,7 @@ export default function Landing() {
     const [participantCompletion, setParticipantCompletion] = useState([])
     const [error, setError] = useState('')
     const [showError, setShowError] = useState(false)
+    const [surveysComplete, setSurveysComplete] = useState(false)
 
     let jsmoModule;
     if (import.meta?.env?.MODE !== 'development')
@@ -47,6 +48,27 @@ export default function Landing() {
             }
         )
     }
+
+    const checkEntry = () => {
+
+        let clone = session_context.sessionCache
+
+        jsmoModule.getUserSessions(
+            session_context?.sessionCache?.current_user,
+            (res) => {
+                if (res) {
+                    let selectedSession = res.filter(e=>e?.record_id === session_context?.sessionCache?.selected_session?.record_id)
+                    if(selectedSession)
+                        clone['selected_session'] = selectedSession[0]
+                    // session_context?.setSessionCache(clone)
+                }
+            },
+            (err) => {
+                console.log(err)
+            }
+        )
+    }
+
     const renderError = () => {
         const click = () => setShowError(false)
         if (showError) {
@@ -93,8 +115,10 @@ export default function Landing() {
                 <Card>
                     <Card.Header>Surveys</Card.Header>
                     <Card.Body className="d-flex flex-column">
-                        {/*{renderList()}*/}
-                        <SurveyList/>
+                        <Button onClick={checkEntry}>CLICK</Button>
+                        <SurveyList
+                            setSurveysComplete={setSurveysComplete}
+                        />
                         <Alert className="mt-auto" variant="info">
                             <div className="d-flex align-items-center">
                                 <span>Waiting for Admin to enter chat    </span>
@@ -103,7 +127,11 @@ export default function Landing() {
                         </Alert>
                     </Card.Body>
                     <Card.Footer>
-                        <Button className="float-end" onClick={enterChat}>Enter Chat</Button>
+                        <Button
+                            className="float-end"
+                            onClick={enterChat}
+                            disabled={!surveysComplete}
+                        >Enter Chat</Button>
                     </Card.Footer>
                 </Card>
             </Container>
