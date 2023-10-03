@@ -28,7 +28,7 @@ export default function Landing() {
     const [userAdmitted, setUserAdmitted] = useState(false)
     const timerIdRef = useRef(null);
     const [isPollingEnabled, setIsPollingEnabled] = useState(true);
-    const isAdmin = session_context?.sessionCache?.current_user?.admin
+    const isAdmin = session_context?.sessionCache?.current_user?.admin === "1"
 
     let jsmoModule;
     if (import.meta?.env?.MODE !== 'development')
@@ -40,9 +40,9 @@ export default function Landing() {
 
     useEffect(() => {
         if(isPollingEnabled){
-            isAdmin ? startPolling(checkEntry) : startPolling(checkSurveyStatus)
-        }else{
-            isAdmin ? stopPolling(checkEntry) : stopPolling(checkSurveyStatus)
+            isAdmin ?  startPolling(checkSurveyStatus) : startPolling(checkEntry)
+        } else {
+            stopPolling()
         }
 
         return () => { //Cancel on unmount
@@ -63,17 +63,19 @@ export default function Landing() {
      */
     const checkSurveyStatus = () => {
         const sel = session_context?.sessionCache?.selected_session
-        jsmoModule.checkUserCompletion(
-            {
-                'participant_ids': sel?.ts_authorized_participants,
-                'therapy_session_id': sel?.record_id
-            },
-            (res) => setParticipantCompletion(res),
-            (err) => {
-                setError(err)
-                setShowError(true)
-            }
-        )
+        if(sel?.ts_authorized_participants.length){
+            jsmoModule.checkUserCompletion(
+                {
+                    'participant_ids': sel?.ts_authorized_participants,
+                    'therapy_session_id': sel?.record_id
+                },
+                (res) => setParticipantCompletion(res),
+                (err) => {
+                    setError(err)
+                    setShowError(true)
+                }
+            )
+        }
     }
 
     /**
@@ -153,13 +155,11 @@ export default function Landing() {
         const cache = session_context?.sessionCache
         let userId = cache?.current_user?.record_id
         let admitted = cache.selected_session?.ts_chat_room_participants?.includes(userId)
-
         return (
             <Container fluid className='session-detail mt-3'>
                 <Card>
                     <Card.Header>Surveys</Card.Header>
                     <Card.Body className="d-flex flex-column">
-                        <Button onClick={checkEntry}>CLICK</Button>
                         <SurveyList
                             setSurveysComplete={setSurveysComplete}
                         />
@@ -188,7 +188,7 @@ export default function Landing() {
     return (
         <>
             <NavHeader/>
-            {isAdmin === "1" ? renderAdmin() : renderParticipant()}
+            {isAdmin ? renderAdmin() : renderParticipant()}
         </>
     )
     // }
