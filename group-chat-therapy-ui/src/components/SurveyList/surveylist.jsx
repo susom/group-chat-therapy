@@ -54,7 +54,7 @@ export default function SurveyList({completed= false, setSurveysComplete}) {
             svObj.push(generateStack(key, value)) //keep track of if all are completed
         }
 
-        if(surveysComplete === Object.entries(surveys).length && Object.entries(surveys).length !== 0) { //If all are finished, set parent ui
+        if(setSurveysComplete && surveysComplete === Object.entries(surveys).length && Object.entries(surveys).length !== 0) { //If all are finished, set parent ui
             setSurveysComplete(true)
         }
 
