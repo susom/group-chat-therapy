@@ -24,7 +24,7 @@ export const NavHeader = () => {
         <>
             <Navbar bg="light" className="bg-body-tertiary main-nav">
                 <Container>
-                    <Navbar.Brand>{currentUser?.admin ? "Admin" : "Participant"}</Navbar.Brand>
+                    <Navbar.Brand>{currentUser?.admin === "1" ? "Admin" : "Participant"}</Navbar.Brand>
                     <Navbar.Toggle />
                     <Navbar.Collapse className="justify-content-end">
                         <NavDropdown title={`Signed in as: ${currentUser?.participant_first_name}`}>
