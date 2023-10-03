@@ -676,6 +676,43 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
     }
 
     /**
+     * Shifts participants from in_chat_session to finished
+     * @param string $session_id
+     * @return void
+     */
+    public function endChatSession(string $session_id): void
+    {
+        $params = array(
+            "return_format" => "json",
+            "records" => array($session_id),
+            "fields" => array(
+                "ts_status",
+                "ts_start",
+                "ts_start_2",
+                "ts_authorized_participants",
+                "ts_chat_room_participants",
+                "ts_finished_participants",
+            ),
+            "events" => array("therapy_session_arm_1")
+        );
+
+        $json = json_decode(REDCap::getData($params), true);
+        $chat_room_participants = current($json)['ts_chat_room_participants'];
+
+        if($chat_room_participants){
+            $saveData = array(
+                array(
+                    "record_id" => $session_id,
+                    "ts_finished_participants" => $chat_room_participants,
+                    "ts_chat_room_participants" => "",
+                    "redcap_event_name" => "therapy_session_arm_1"
+                )
+            );
+            REDCap::saveData('json', json_encode($saveData), 'overwrite');
+        }
+    }
+
+    /**
      * Polling function will call this endpoint.
      * @param array $payload
      * @return array
@@ -687,12 +724,15 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
             $max = intval(($payload['maxID'])) ?? 0;
             $session_id = $payload['sessionID'];
             $actionQueue = $payload['actionQueue'] ?? [];
+            $endChatSession = $payload['endChatSession'];
 
             if (empty($session_id))
                 throw new Exception('No session ID passed');
 
-
             $start = hrtime(true);
+            if($endChatSession){ //If attempting to end the session, process participants
+                $this->endChatSession($endChatSession);
+            }
 
             if (count($actionQueue)) { //User has actions to process
                 $this->addAction($actionQueue, $session_id);
