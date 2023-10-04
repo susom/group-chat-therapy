@@ -1,5 +1,5 @@
 import React, {useState, useMemo, useContext, useEffect} from "react";
-import {Link} from "react-router-dom";
+import {Link, useNavigate} from 'react-router-dom';
 
 import { Container, Row, Col, Tab, Nav, Form, Button, Card } from 'react-bootstrap';
 import { PeopleFill, Send, People, Person } from 'react-bootstrap-icons';
@@ -30,10 +30,13 @@ function ChatRoomContent() {
     const session_context                               = useContext(SessionContext);
     const chat_context                                  = useContext(ChatContext);
 
+    const navigate                                      = useNavigate()
+
     // CHAT SESSION DETAILS
     const participant_details                           = session_context?.data?.current_user || {};
     const participant_id                                = participant_details?.record_id;
     const isAdmin                                       = participant_details?.admin === "1";
+    const isSessionActive                               = chat_context?.isSessionActive || false;
 
     const chat_details                                  = session_context?.sessionCache?.selected_session || {};
     const chat_session_id                               = chat_details?.record_id || null;
@@ -191,6 +194,32 @@ function ChatRoomContent() {
         }
     };
 
+    function endChatSession() {
+        if(isAdmin){
+            let timestamp   = new Date().toISOString();
+
+            // send a notice to everyone that chat is ended.
+            const end_notice = {
+                "type"      : 'notice',
+                "sessionID" : chat_session_id,
+                "user"      : participant_id,
+                "body"      : "The Admin has closed this Chat Session",
+                "client_ts" : timestamp
+            };
+
+            // send signal to back end to end chat session for all
+            const endSessionAction  = {
+                "type"          : "endChatSession",
+                "sessionID"     : chat_session_id,
+                "recipients"    : 'groupChat',
+                "client_ts"     : timestamp
+            };
+
+            //SEND THE ACTIONs TO THE actionQUEUE
+            chat_context.sendAction([end_notice, endSessionAction]);
+        }
+    }
+
     function dateComponents(dateStr) {
         const dateObj = new Date(dateStr);
 
@@ -212,22 +241,21 @@ function ChatRoomContent() {
 
         return `${hours}:${minutes} ${amOrPm}`;
     }
-    console.log(isMobile)
-    console.log(window.innerWidth)
+
     return (
         <div id={`main`}>
             <GlobalHeader/>
 
             <Container className={"chat_room"}>
                 {chat_details ? ( <Row className={"chat_details"}>
-                        <Col md={2} xs={5} className={`chat_date order-last order-md-first`}>
+                        <Col md={2} xs={6} className={`chat_date order-2 order-md-1`}>
                             <div className="su-date-stacked ">
                                 <span className="su-date-stacked__month">{dateComps.month}</span>
                                 <span className="su-date-stacked__day">{dateComps.day}</span>
                                 <span className="su-date-stacked__year">{dateComps.year}</span>
                             </div>
                         </Col>
-                        <Col md={10} xs={7}>
+                        <Col md={8} xs={6} className={`order-1 order-md-2`}>
                             <ul>
                                 <li>
                                     <h2>{chat_details.ts_title}</h2>
@@ -236,6 +264,11 @@ function ChatRoomContent() {
                                 <li><b>Session Schedule : </b>  {formatTime(chat_details.ts_start)} - {formatTime(chat_details.ts_start_2)}</li>
                                 <li><b>Therapist : </b> {session_context.participantsLookUp[chat_details.ts_therapist]}</li>
                             </ul>
+                        </Col>
+                        <Col md={2} xs={12} className={`endSession order-3`}>
+                            {isAdmin &&
+                                <Button variant="danger" className={`btn-sm`} type="submit" onClick={endChatSession}>End Session</Button>
+                            }
                         </Col>
                     </Row>
                 ) : (
@@ -290,7 +323,7 @@ function ChatRoomContent() {
                                     <Col md={11} xs={12}>
                                         <Card className={`whiteboard`}>
                                             <Card.Header>Whiteboard
-                                                {isMobile &&
+                                                {(isMobile && isAdmin) &&
                                                     <Button className="float-end" variant="success" type="submit" disabled={!whiteboardIsChanged}><FontAwesomeIcon icon={faFloppyDisk} /></Button>
                                                 }
 
@@ -320,10 +353,12 @@ function ChatRoomContent() {
                                         </Card>
 
                                         <Tab.Content>
-                                            <h4 className={'chat_title d-inline '}>Chatting with :
+                                            <h4 className={'chat_title'}>Chatting with :
                                                 {selectedChat === "groupChat" ? "Group" : session_context.participantsLookUp[selectedChat] || selectedChat}
                                             </h4>
-                                            {/*<Button variant="danger" className="float-end">End</Button>*/}
+
+
+
                                             <Tab.Pane eventKey="groupChat">
                                                 <MessagesDisplay messages={allChats['groupChat']} replyTo={replyTo} setReplyTo={setReplyTo} />
                                             </Tab.Pane>
@@ -338,23 +373,30 @@ function ChatRoomContent() {
                                                 );
                                             })}
                                         </Tab.Content>
-                                        <Form onSubmit={handleSubmit}>
-                                            <Row className="align-items-center">
-                                                <Col xs="10">
-                                                    <Form.Control
-                                                        as="input"
-                                                        value={message}
-                                                        onKeyDown={handleKeyDown}
-                                                        onChange={handleInputChange}
-                                                        onFocus={() => chat_context.resetMentions(selectedChat)}
-                                                        className={`chat_input`}
-                                                    />
-                                                </Col>
-                                                <Col xs="2">
-                                                    <Button variant="primary" type="submit" className="w-100 send_message" onClick={() => chat_context.resetMentions(selectedChat)}><Send size={20}  title={`Send Message`}/></Button>
-                                                </Col>
-                                            </Row>
-                                        </Form>
+
+                                        { isSessionActive ?
+                                            (<Form onSubmit={handleSubmit}>
+                                                <Row className="align-items-center">
+                                                    <Col xs="10">
+                                                        <Form.Control
+                                                            as="input"
+                                                            value={message}
+                                                            onKeyDown={handleKeyDown}
+                                                            onChange={handleInputChange}
+                                                            onFocus={() => chat_context.resetMentions(selectedChat)}
+                                                            className={`chat_input`}
+                                                        />
+                                                    </Col>
+                                                    <Col xs="2">
+                                                        <Button variant="primary" type="submit" className="w-100 send_message" onClick={() => chat_context.resetMentions(selectedChat)}><Send size={20}  title={`Send Message`}/></Button>
+                                                    </Col>
+                                                </Row>
+                                            </Form>)
+                                            :
+                                            (
+                                                <Button variant={'info'} onClick={() => navigate(`/completed`)}>Go to Post Chat Room</Button>
+                                            )
+                                        }
                                     </Col>
                                 </Tab.Container>
                             </Row>

@@ -25,6 +25,7 @@ export const ChatContextProvider = ({children}) => {
     const [isPollingPaused, setIsPollingPaused]             = useState(false); //if cancelling poll, set this flag to easily restart the poll
     const [isPollingActions, setIsPollingActions]           = useState(false); // to kick off polling one time
     const [sendActionQueue, setSendActionQueue]             = useState([]); // keep queue of actions to post during each poll
+    const [isSessionActive, setIsSessionActive]             = useState(true);
 
     const [newActions,setNewActions]                        = useState(null);
 
@@ -182,24 +183,27 @@ export const ChatContextProvider = ({children}) => {
         setAllChats(updatedChats);
     };
 
-    const sendAction = async (new_action) => {
-        // Create a copy of the new action
-        // then delete these added fake properties for temporary display
-        let actionCopy = { ...new_action };
+    const sendAction = async (new_actions) => {
+        // If new_actions is not an array, make it an array
+        if (!Array.isArray(new_actions)) {
+            new_actions = [new_actions];
+        }
 
+        // Process actions to remove temporary properties
+        const processedActions = new_actions.map(action => {
+            let actionCopy = { ...action };
+            delete actionCopy.id;
+            delete actionCopy.isFake;
+            return actionCopy;
+        });
 
-        delete actionCopy.id;
-        delete actionCopy.isFake;
-
-        // Add the new action to the queue
-        const newQueue = [...sendActionQueue, actionCopy];
+        // Add the new actions to the queue
+        const newQueue = [...sendActionQueue, ...processedActions];
         setSendActionQueue(newQueue);
-
-        console.log("actionCopy", actionCopy, newQueue);
 
         // Save the new queue to local storage
         localStorage.setItem('sendActionQueue', JSON.stringify(newQueue));
-    }
+    };
 
     const clearActionQueue = () => {
         setSendActionQueue([]);
@@ -328,6 +332,20 @@ export const ChatContextProvider = ({children}) => {
                 updatedActionsArray = actionsArray.filter(prevAction => prevAction.type !== 'whiteboard');
                 break;
 
+            case 'endChatSession':
+                console.log("hi there is an endChatSession, so do a few things, clean session, end polling, deactivate interactivty, present button");
+                //clean up session
+
+
+                //if not admin,  stop polling
+                if(!isAdmin){
+                    setIsPollingPaused(true);
+                }
+
+                //deactivate session
+                setIsSessionActive(false);
+                break;
+
             default:
                 // ADD THIS ACTION TO THE ARRAY
                 updatedActionsArray = [...actionsArray, action];
@@ -399,7 +417,7 @@ export const ChatContextProvider = ({children}) => {
 
         //EVERY fetchActions SHOULD POST participant_id, maxID and current sendActionQueue
         // console.log("callAjax", {sessionID : chatSessionID, maxID : previous_max_id, actionQueue : cur_actionQueue});
-        callAjax({sessionID : chatSessionID, maxID : previous_max_id, actionQueue : cur_actionQueue},"handleActions");
+        callAjax({sessionID : chatSessionID, maxID : previous_max_id, actionQueue : cur_actionQueue, endChatSession: false},"handleActions");
     }
 
     //REMOVE MESSAGE FROM UI (AND LOCAL CACHE OF MESSAGE ITEMS)
@@ -444,7 +462,8 @@ export const ChatContextProvider = ({children}) => {
             isMentioned,
             mentionCounts,
             callAjax,
-            resetMentions
+            resetMentions,
+            isSessionActive
         }}>
             {children}
         </ChatContext.Provider>

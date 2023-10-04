@@ -11,7 +11,7 @@ export const SessionContextProvider = ({children}) => {
     const [data, setData]                                   = useState(); //raw INITIAL data
     const [participantsLookUp, setParticipantsLookUp]       = useState({}); //map participant_id to display name
     const [participants, setParticipants]                   = useState([]);
-    const [sessionCache, setSessionCache, {removeItem}] = useLocalStorageState('current_session', { defaultValue : []})
+    const [sessionCache, setSessionCache, {removeItem}]     = useLocalStorageState('current_session', { defaultValue : []})
 
     return (
         <SessionContext.Provider value={{

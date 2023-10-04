@@ -11,6 +11,9 @@ import ReplyMessage from "./ReplyMessage.jsx";
 export default function Message({ message, onReply, showReactions = true, showReply = true, isReply = false, onCloseReply, replyMessage, className = ""}) {
     const session_context                           = useContext(SessionContext);
     const chat_context                              = useContext(ChatContext);
+
+    const isSessionActive                           = chat_context?.isSessionActive || false;
+
     const participantsLookUp                        = session_context.participantsLookUp;
     const participant_id                            = session_context.data?.current_user?.record_id ;
     const chat_session_id                           = session_context.data?.selected_session?.record_id;
@@ -128,20 +131,20 @@ export default function Message({ message, onReply, showReactions = true, showRe
                 <Reaction reaction={reaction} key={reaction.id} displayOnly={true} />
             ))}</dd>
 
-            {showReactions && participant_id !== message.user && (
+            {showReactions && participant_id !== message.user && isSessionActive && (
                 <dd className={'add_reactions'} onClick={handleReactionClick} onMouseOver={handleReactionMouseEnter} onMouseOut={handleReactionMouseLeave}>
                     <Plus title={`React to Message`}/>
                     {showReactionPopup && <ReactionPopup onReact={onReact} />}
                 </dd>
             )}
 
-            {showReply && participant_id !== message.user && (
+            {showReply && participant_id !== message.user && isSessionActive && (
                 <dd className={`reply_quote`} onClick={() => handleReply(message.id)}>
                     <ReplyFill title={`Reply to Message`}/>
                 </dd>
             )}
 
-            {( participant_id === message.user || participant_id === therapistID )&& ( // If the message is from the current participant, show the delete icon
+            {( participant_id === message.user || participant_id === therapistID ) && isSessionActive && ( // If the message is from the current participant, show the delete icon
                 <dd className={'delete'} onClick={handleDelete}>
                     <Trash title={`Delete Message`}/>
                 </dd>

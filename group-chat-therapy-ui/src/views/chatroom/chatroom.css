@@ -106,6 +106,11 @@
     clear:both;
 }
 
+.chat_window .notice {
+    border-radius: 15px;
+    padding-top: 10px;
+}
+
 .tab-pane {
     position:relative;
 }
@@ -145,6 +150,7 @@
     cursor:pointer;
 }
 
+.chat_window .notice .reply_quote,
 .chat_window .message_body .quoted_message .close,
 .quoted_message .delete,
 .quoted_message .reactions,
@@ -473,9 +479,20 @@ button.send_message {
     float:right;
 }
 
-/*.whiteboard .card-body{*/
-/*    min-height:150px;*/
-/*}*/
+
+.chat_date{
+    text-align:right;
+}
+
+.endSession {
+    text-align:right;
+}
+
+.endSession .btn{
+    padding: 0px 5px;
+    margin-right:18px;
+}
+
 
 .chat-badge {
     background-color: red;
@@ -500,6 +517,7 @@ button.whiteboard_btn {
 }
 
 .chat_title {
+    position:relative;
     color:#279989
 }
 
@@ -535,6 +553,8 @@ button.whiteboard_btn {
     }
 }
 
+
+
 /* Your normal styles for mobile-first design here */
 
 /* Media Query for screens greater than 768px */
@@ -545,4 +565,166 @@ button.whiteboard_btn {
         bottom:0;
         width:100%;
     }
+}
+
+
+
+
+
+/* LETS TRY A NEW COLOR PALLETTE */
+.su-brand-bar{
+    background-color: #8C1515;
+}
+
+.su-global-footer{
+    background: #2E2D29;
+    color: #FFFFFF;
+}
+
+.su-global-footer__brand a:visited,
+.su-global-footer__brand a:active,
+.su-global-footer__brand a{
+    color: #FFFFFF;
+}
+
+.chat_window {
+    border: 2px solid #7F7776;
+    background: #DAD7CB;
+}
+
+.chat_window .notice,
+.chat_window .message {
+    background: #E9EBF1;
+}
+
+.tab-pane > .reply_message{
+    border: 1px solid #5D4B3C;
+    background: #8F993E;
+    border-left: 10px solid #6FA287;
+}
+
+.tab-pane > .reply_message .message.quoted_message{
+    border: none;
+    background: #DAD7CB;
+    color: #7F7776;
+}
+
+.chat_window .message_body .reply_message{
+    border: 1px solid #5D4B3C;
+    border-left: 10px solid #6FA287;
+    background: #DAD7CB;
+}
+
+.chat_window .message_body .reply_message .quoted_message{
+    background: #DAD7CB;
+    color: #7F7776;
+}
+
+.chat_window .message_body .reply_message .quoted_message dt {
+    color: #7F7776;
+}
+
+.chat_window .message_body .reply_message  .quoted_message .message_body {
+    color: #8F993E;
+}
+
+.chat_window .message.self.fake{
+    background: #8F993E;
+    color: #7F7776;
+}
+
+.chat_window .message.self.fake .delete,
+.chat_window .message.self.fake .timestamp,
+.chat_window .message.self.fake dt{
+    color: #7F7776;
+}
+
+.chat_window .notice {
+    color: #7F7776;
+}
+
+.chat_window .message .timestamp {
+    color: #7F7776;
+}
+
+.chat_window .message.self {
+    background: #175E54;
+    color: #FFFFFF;
+}
+
+.chat_window .message.self dt {
+    color: #7F7776;
+}
+
+.chat_window .message.self .delete{
+    color: #7F7776;
+}
+
+.chat_window .message .heart {
+    color: #E04F39;
+}
+
+.chat_window .message .angry {
+    color: #E98300;
+}
+
+.chat_window .message .smile {
+    color: #4298B5;
+}
+
+.chat_window .message .sad {
+    color: #007C92;
+}
+
+.chat_window .message .reply_quote,
+.chat_window .message .add_reactions {
+    background: #E9EBF1;
+}
+
+.chat_window .message .add_reactions .reaction-popup {
+    background: #E9EBF1;
+}
+
+.chat_window .message.callout.seen .message_body b{
+    color: #007C92;
+}
+.chat_window .message.callout .message_body b {
+    color: #279989;
+}
+
+.chat_details .chat_date .su-date-stacked{
+    background: #2E2D29;
+    color: #FFFFFF;
+    display:inline-block;
+}
+
+
+.whiteboard {
+    background: #FFFFFF;
+}
+
+.chat_tab .nav-link{
+    color: #7F7776;
+    border: 1px solid #8C1515;
+}
+
+.chat_tab .nav-link b{
+    color: #2E2D29;
+}
+
+.chat_tab.nav-pills .nav-link.active {
+    background: #4298B5;
+}
+
+button.send_message {
+    background-color: #8C1515;
+}
+
+.chat-badge {
+    background-color: #E98300;
+    color: #FFFFFF;
+}
+
+.chat_title {
+    color: #279989;
 }
