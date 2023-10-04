@@ -95,7 +95,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
      * @param bool $complete
      * @return array
      */
-    public function fetchSurveyUrls(string $therapy_session_id, bool $complete = false): array
+    public function fetchSurveyUrls(string $therapy_session_id, bool|null $complete = false): array
     {
         $index = $complete ? "ts_post_survey_list" : "ts_pre_survey_list";
         $params = array(
