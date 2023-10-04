@@ -59,7 +59,6 @@ function ChatRoomContent() {
     const [currentWord, setCurrentWord]                 = useState('');
     const [replyTo, setReplyTo]                         = useState(null);
 
-
     const [isMobile, setMobile] = useState(window.innerWidth < 640);
 
     const updateMedia = () => {
@@ -394,7 +393,19 @@ function ChatRoomContent() {
                                             </Form>)
                                             :
                                             (
-                                                <Button variant={'info'} onClick={() => navigate(`/completed`)}>Go to Post Chat Room</Button>
+                                                <div style={{textAlign:"right"}}>
+                                                    {isAdmin ? (
+                                                        <Button variant={'danger'} onClick={() => {
+                                                            navigate(`/select`);
+                                                        }}>
+                                                            Return to Chat Select Room
+                                                        </Button>
+                                                    ) : (
+                                                        <Button variant={'info'} onClick={() => navigate(`/completed`)}>
+                                                            Go to Post Chat Room
+                                                        </Button>
+                                                    )}
+                                                </div>
                                             )
                                         }
                                     </Col>
