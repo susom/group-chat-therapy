@@ -36,7 +36,7 @@ function ChatRoomContent() {
     const participant_details                           = session_context?.data?.current_user || {};
     const participant_id                                = participant_details?.record_id;
     const isAdmin                                       = participant_details?.admin === "1";
-    const isSessionActive                               = chat_context?.isSessionActive || false;
+    const isSessionActive                               = chat_context?.isSessionActive;
 
     const chat_details                                  = session_context?.sessionCache?.selected_session || {};
     const chat_session_id                               = chat_details?.record_id || null;

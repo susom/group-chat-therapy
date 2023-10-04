@@ -565,6 +565,10 @@ button.whiteboard_btn {
         bottom:0;
         width:100%;
     }
+
+    .chat_room{
+        padding-bottom:100px;
+    }
 }
 
 
