@@ -495,15 +495,24 @@ button.send_message {
 
 
 .chat-badge {
-    background-color: red;
-    color: white;
     border-radius: 50%;
     padding: 2px 5px;
     font-size: 0.7em;
     position: absolute;
-    top: 0px;
-    left: 25px;
+    top: 20px;
+    left: 32px;
 }
+
+
+.chat-badge.new-message-badge {
+    background-color: #8c1515;
+    top: 0;
+    left: -5px;
+    color:#fff;
+    min-width:20px;
+    min-height:20px;
+}
+
 
 .participant_info .card,
 .whiteboard .card {
@@ -725,8 +734,7 @@ button.send_message {
 }
 
 .chat-badge {
-    background-color: #E98300;
-    color: #FFFFFF;
+    color: #333;
 }
 
 .chat_title {

@@ -45,9 +45,10 @@ function ChatRoomContent() {
     //CHAT VARS CACHE
     const chatContextAllChats                           = chat_context.allChats;
     const [allChats, setAllChats]                       = useState({ ...chatContextAllChats });
-    const [selectedChat, setSelectedChat]               = useState('groupChat');
     const chatContextMentionCounts                      = chat_context.mentionCounts;
-    // const [mentionCounts, setMentionCounts]             = useState({ ...chatContextMentionCounts });
+    const selectedChat                                  = chat_context.selectedChat;
+    const setSelectedChat                               = chat_context.setSelectedChat;
+
 
     const [whiteboardContent, setWhiteboardContent]     = useState(chat_details?.ts_whiteboard !== "" ? chat_details?.ts_whiteboard : "Nothing here yet.");
     const [whiteboardIsChanged, setWhiteboardIsChanged] = useState(false);
@@ -83,10 +84,6 @@ function ChatRoomContent() {
     const mentionCounts = useMemo(() => {
         return { ...chatContextMentionCounts };
     }, [chatContextMentionCounts]);
-
-    // useEffect(() => {
-    //     setMentionCounts({ ...chatContextMentionCounts });
-    // }, [chatContextMentionCounts]);
 
     useEffect(() => {
         window.addEventListener("resize", updateMedia);
@@ -193,6 +190,20 @@ function ChatRoomContent() {
         }
     };
 
+    function handleChatClick(chatKey) {
+        // Reset mentions
+        chat_context.resetMentions(chatKey);
+
+        // Reset the new message count for this chat
+        const updatedMessageCounts = { ...chat_context.newMessageCounts, [chatKey]: 0 };
+        chat_context.setNewMessageCounts(updatedMessageCounts);
+
+        // If there are other things to do when a chat is clicked (like making it the active chat view, etc.), handle them here
+    }
+
+
+
+
     function endChatSession() {
         if(isAdmin){
             let timestamp   = new Date().toISOString();
@@ -296,7 +307,8 @@ function ChatRoomContent() {
                                             <Nav.Item>
                                                 <Nav.Link eventKey="groupChat" onClick={() => chat_context.resetMentions("groupChat")}>
                                                     <People  size={20} title={`Group Chat`}/>
-                                                    {mentionCounts["groupChat"] > 0 && <span className="chat-badge">{mentionCounts["groupChat"]}</span>}
+                                                    {mentionCounts["groupChat"] > 0 && <span className="chat-badge">@{mentionCounts["groupChat"]}</span>}
+                                                    {chat_context.newMessageCounts["groupChat"] > 0 && <span className="chat-badge new-message-badge">{chat_context.newMessageCounts["groupChat"]}</span>}
                                                     <b>Group</b>
                                                 </Nav.Link>
                                             </Nav.Item>
@@ -308,9 +320,10 @@ function ChatRoomContent() {
                                                 const participantNames  = participantIDs.map(id => session_context.participantsLookUp[id]).join(', ');
                                                 return (
                                                     <Nav.Item key={index}>
-                                                        <Nav.Link eventKey={chatKey} onClick={() => chat_context.resetMentions(chatKey)}>
+                                                        <Nav.Link eventKey={chatKey} onClick={() => handleChatClick(chatKey)}>
                                                             <Person  size={20}  title={`Private Chat with ${participantNames}`}/>
-                                                            {mentionCounts[chatKey] > 0 && <span className="chat-badge">{mentionCounts[chatKey]}</span>}
+                                                            {mentionCounts[chatKey] > 0 && <span className="chat-badge">@{mentionCounts[chatKey]}</span>}
+                                                            {chat_context.newMessageCounts[chatKey] > 0 && <span className="chat-badge new-message-badge">{chat_context.newMessageCounts[chatKey]}</span>}
                                                             <b>{participantNames}</b>
                                                         </Nav.Link>
                                                     </Nav.Item>

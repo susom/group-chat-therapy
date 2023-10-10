@@ -20,7 +20,7 @@ export const ChatContextProvider = ({children}) => {
     const [participants, setParticipants]                   = useState([]);
 
     //POLLING VARS
-    const [intervalLength, setIntervalLength]               = useState(5000); //default 3 seconds? depending on ping back can increase or throttle
+    const [intervalLength, setIntervalLength]               = useState(3000); //default 3 seconds? depending on ping back can increase or throttle
     const [getActionsIntervalID, setGetActionsIntervalID]   = useState(null); //polling interval id (to cancel it)
     const [isPollingPaused, setIsPollingPaused]             = useState(false); //if cancelling poll, set this flag to easily restart the poll
     const [isPollingActions, setIsPollingActions]           = useState(false); // to kick off polling one time
@@ -36,6 +36,9 @@ export const ChatContextProvider = ({children}) => {
     //PROCESSED DATA - FOR UI CONSUMPTION
     const [allChats, setAllChats]                           = useState({"groupChat" : []}); //same as group chat but direct
     const [mentionCounts, setMentionCounts]                 = useState({});
+    const [newMessageCounts, setNewMessageCounts]           = useState({});
+
+    const [selectedChat, setSelectedChat]                   = useState('groupChat');
 
 
     // INIT CHAT SESSION
@@ -272,8 +275,19 @@ export const ChatContextProvider = ({children}) => {
                     containsMention: containsMention
                 });
 
+                // Increment the newMessageCounts if not currently viewing this chat
+                if (allChatsKey !== selectedChat) {
+                    const updatedMessageCounts = {
+                        ...newMessageCounts,
+                        [allChatsKey]: (newMessageCounts[allChatsKey] || 0) + 1
+                    };
+                    setNewMessageCounts(updatedMessageCounts);
+                }
+
                 updatedActionsArray = [...actionsArray, action];
                 break;
+
+
 
             case 'message_read':
                 for (const chatKey in newAllChats) {
@@ -463,7 +477,11 @@ export const ChatContextProvider = ({children}) => {
             mentionCounts,
             callAjax,
             resetMentions,
-            isSessionActive
+            isSessionActive,
+            setNewMessageCounts,
+            newMessageCounts,
+            selectedChat,
+            setSelectedChat
         }}>
             {children}
         </ChatContext.Provider>
