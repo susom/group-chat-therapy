@@ -50,4 +50,8 @@ Arm two contains two events, Participant and Assessments
   - This field is a linking field used to indicate which repeating set of events (assessment groups) correspond to a given therapy session
   - For each therapy session a user is listed as a participant in, whether `In Chat Room` or `Authorized Participants`
 a corresponding `Particpant detail` instrument must be completed with the matching therapy session record id
+- Each new assessment should be added as an instrument to the assessment event
+- Each therapy session a participant attends will be represented as a repeating event
 
+- The following image shows a basic configuation example:
+  ![Assessments config example](./group-chat-therapy-ui/public/assessment_config_example.png)
