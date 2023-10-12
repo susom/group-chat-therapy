@@ -25,10 +25,10 @@ export default function Landing() {
     const [error, setError] = useState('')
     const [showError, setShowError] = useState(false)
     const [surveysComplete, setSurveysComplete] = useState(false)
-    const [userAdmitted, setUserAdmitted] = useState(false)
     const timerIdRef = useRef(null);
     const [isPollingEnabled, setIsPollingEnabled] = useState(true);
     const isAdmin = session_context?.sessionCache?.current_user?.admin === "1"
+    const [refreshed, setRefreshed] = useState(false) //Set to prevent cached users from instantly joining room
 
     let jsmoModule;
     if (import.meta?.env?.MODE !== 'development')
@@ -91,6 +91,7 @@ export default function Landing() {
                     if(selectedSession)
                         clone['selected_session'] = selectedSession[0]
                     session_context?.setSessionCache(clone)
+                    setRefreshed(true)
                 }
             },
             (err) => {
@@ -116,7 +117,7 @@ export default function Landing() {
         return (
             <Container className='session-detail mt-3'>
                 <Card>
-                    <Card.Header><strong>{sel?.ts_title}</strong> - #{sel?.record_id}
+                    <Card.Header><strong>{sel?.ts_title}</strong> - ({sel?.record_id})
                         <Button
                             variant="outline-secondary"
                             className="float-end"
@@ -155,16 +156,17 @@ export default function Landing() {
         const cache = session_context?.sessionCache
         let userId = cache?.current_user?.record_id
         let admitted = cache.selected_session?.ts_chat_room_participants?.includes(userId)
+
         return (
             <Container fluid className='session-detail mt-3'>
                 <Card>
-                    <Card.Header>Surveys</Card.Header>
+                    <Card.Header>Required surveys for <strong>{cache.selected_session?.ts_title}</strong> ({cache.selected_session?.record_id})</Card.Header>
                     <Card.Body className="d-flex flex-column">
                         <SurveyList
                             setSurveysComplete={setSurveysComplete}
                         />
                         {
-                            !surveysComplete || !admitted ? renderAlert() : ''
+                            !surveysComplete || !admitted || !refreshed ? renderAlert() : enterChat()
                         }
 
                     </Card.Body>
@@ -172,7 +174,7 @@ export default function Landing() {
                         <Button
                             className="float-end"
                             onClick={enterChat}
-                            disabled={!surveysComplete || !admitted}
+                            disabled={!surveysComplete || !admitted || !refreshed}
                         >Enter Chat</Button>
                     </Card.Footer>
                 </Card>
