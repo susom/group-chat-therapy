@@ -365,12 +365,6 @@ function ChatRoomContent() {
                                         </Card>
 
                                         <Tab.Content>
-                                            <h4 className={'chat_title'}>Chatting with :
-                                                {selectedChat === "groupChat" ? "Group" : session_context.participantsLookUp[selectedChat] || selectedChat}
-                                            </h4>
-
-
-
                                             <Tab.Pane eventKey="groupChat">
                                                 <MessagesDisplay messages={allChats['groupChat']} replyTo={replyTo} setReplyTo={setReplyTo} />
                                             </Tab.Pane>

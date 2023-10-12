@@ -96,7 +96,7 @@
     list-style:none;
     border-radius:3px 8px 5px 15px;
     padding:5px 10px;
-    margin-bottom:45px;
+    margin-bottom:30px;
     background:#E9EBF1;
     float:left;
     width:auto;
@@ -104,6 +104,10 @@
     max-width:80%;
     position:relative;
     clear:both;
+}
+
+.chat_window .message.has_reactions{
+    margin-bottom:45px;
 }
 
 .chat_window .notice {
@@ -222,6 +226,31 @@
     display:none;
 }
 
+/* Make the dt a flex container */
+dt.participant {
+    display: flex;
+    align-items: center; /* Optional: to vertically align the items if they have different heights */
+}
+
+/* Default order: delete first, display name second */
+dt.participant  .delete {
+    order: 1;
+}
+
+dt.participant  .display_name {
+    order: 2;
+}
+
+/* For right-delete: display name first, delete second */
+.self dt.participant .display_name {
+    order: 1;
+}
+
+.self dt.participant .delete {
+    order: 2;
+}
+
+
 .chat_window .notice dd {
     display:inline-block;
     margin-right:5px;
@@ -237,14 +266,15 @@
 .chat_window .message .timestamp {
     font-size: 77%;
     color: #333;
-    position: absolute;
-    bottom: -10px;
-    right: -60px;
+    display: block;
+    text-align: right;
+    margin-top:3px;
 }
 
 .chat_window .message .message_body {
     margin-bottom:0;
-    font-size: 92%;
+    font-size: 85%;
+    line-height:108%;
 }
 
 .chat_window .message.self {
@@ -256,7 +286,7 @@
 
 .chat_window .message.self dt {
     color:#333;
-    top:-22px; left:initial;
+    top:-18px; left:initial;
     right:0;
 }
 
@@ -265,9 +295,7 @@
 }
 
 .chat_window .message.self .timestamp {
-    bottom: -10px;
-    right: initial;
-    left:-60px;
+
 }
 
 .chat_window .message .reactions {
@@ -307,11 +335,10 @@
 .chat_window .message .delete{
     line-height: 90%;
     text-align: center;
-    position: absolute;
-    width: 18px;
-    height: 18px;
-    top: 0;
-    right:-75px;
+
+    width: 20px;
+    height: 12px;
+
 
     cursor: pointer;
     font-weight: bold;
@@ -329,27 +356,34 @@
     position: absolute;
     width: 18px;
     height: 18px;
-    right: -25px;
-    top: 0;
+    right: -22px;
+    top: 0px;
     border-radius: 50px;
     background: #efefef;
     cursor: pointer;
     font-weight: bold;
 }
 
-.chat_window .message .reply_quote{
-    right:-50px;
+.chat_window .message .add_reactions{
+    right: initial;
+    top: initial;
+    bottom: -30px;
+    left: 10px;
 }
+
 
 .chat_window .message .add_reactions .reaction-popup {
     width: 120px;
     position: absolute;
     border-radius: 10px;
     background: #efefef;
-    top: -7px;
-    left: 20px;
     z-index:999;
+    top:-2px;
+    left:20px;
 }
+
+
+
 
 .chat_window .message .add_reactions .reaction-popup > * {
     margin:5px;
@@ -455,6 +489,10 @@
 
 .chat_tab.nav-pills .nav-link.active {
     background:#32312D;
+}
+
+.chat_tab.nav-pills .nav-link.active b{
+    color:#6497B3;
 }
 
 .chat_tab nav-pills .nav-link.active svg {

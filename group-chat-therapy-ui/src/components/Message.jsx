@@ -107,10 +107,18 @@ export default function Message({ message, onReply, showReactions = true, showRe
         }, 3000);
     };
 
+    const filteredReactions = reactions && reactions.filter(reaction => parseInt(reaction.target) === message.id);
+
     return (
-        <dl className={`${message.type} ${participant_id === message.user ? 'self' : ''} ${message.isFake ? 'fake' : ''} ${className} ${message.containsMention ? "callout" : ""} ${message.wasSeen ? "seen" : ""}`}>
+        <dl className={`${message.type} ${participant_id === message.user ? 'self' : ''} ${message.isFake ? 'fake' : ''} ${className} ${message.containsMention ? "callout" : ""} ${message.wasSeen ? "seen" : ""} ${filteredReactions && filteredReactions.length > 0 ? 'has_reactions' : ''}`}>
             <dt className={'participant'}>
-               {isReply ? `Replying to ${participantsLookUp[message.user]}` : participantsLookUp[message.user]}
+                <span className={`display_name`}>{isReply ? `Replying to ${participantsLookUp[message.user]}` : participantsLookUp[message.user]}</span>
+
+                {( participant_id === message.user || participant_id === therapistID ) && isSessionActive && ( // If the message is from the current participant, show the delete icon
+                    <span className={'delete'} onClick={handleDelete}>
+                        <Trash title={`Delete Message`}/>
+                    </span>
+                )}
             </dt>
 
             <dd className={`message_body`}>
@@ -125,8 +133,9 @@ export default function Message({ message, onReply, showReactions = true, showRe
                 ) : (
                     <div>{message.body}</div>
                 )}
+
+                <span className={'timestamp'}>{ message.isFake ? 'Sending...' : formatTime(message.timestamp) }</span>
             </dd>
-            <dd className={'timestamp'}>{ message.isFake ? 'Sending...' : formatTime(message.timestamp) }</dd>
             <dd className={'reactions'}>{reactions && reactions.filter(reaction => parseInt(reaction.target) === message.id).map(reaction => (
                 <Reaction reaction={reaction} key={reaction.id} displayOnly={true} />
             ))}</dd>
@@ -144,11 +153,7 @@ export default function Message({ message, onReply, showReactions = true, showRe
                 </dd>
             )}
 
-            {( participant_id === message.user || participant_id === therapistID ) && isSessionActive && ( // If the message is from the current participant, show the delete icon
-                <dd className={'delete'} onClick={handleDelete}>
-                    <Trash title={`Delete Message`}/>
-                </dd>
-            )}
+
 
             {isReply && (
                 <dd className={'close'} onClick={onCloseReply}>
