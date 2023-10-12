@@ -100,7 +100,7 @@
     background:#E9EBF1;
     float:left;
     width:auto;
-    min-width:30%;
+    min-width:50%;
     max-width:80%;
     position:relative;
     clear:both;
@@ -241,6 +241,15 @@ dt.participant  .display_name {
     order: 2;
 }
 
+dt.participant .reply_quote {
+    order: 3;
+
+    margin: 0 5px;
+    border-radius: 50px;
+    padding: 2px;
+    background: #E9EBF1;
+}
+
 /* For right-delete: display name first, delete second */
 .self dt.participant .display_name {
     order: 1;
@@ -249,6 +258,8 @@ dt.participant  .display_name {
 .self dt.participant .delete {
     order: 2;
 }
+
+
 
 
 .chat_window .notice dd {
@@ -260,7 +271,7 @@ dt.participant  .display_name {
 .chat_window .message dt {
     font-size:77%;
     position:absolute;
-    top:-22px; left:0;
+    top:-18px; left:0;
 }
 
 .chat_window .message .timestamp {
@@ -349,7 +360,7 @@ dt.participant  .display_name {
     left: -25px;
 }
 
-.chat_window .message .reply_quote,
+
 .chat_window .message .add_reactions {
     line-height: 90%;
     text-align: center;
@@ -365,23 +376,23 @@ dt.participant  .display_name {
 }
 
 .chat_window .message .add_reactions{
-    right: initial;
-    top: initial;
-    bottom: -30px;
-    left: 10px;
+
 }
 
-
 .chat_window .message .add_reactions .reaction-popup {
-    width: 120px;
+    width: 24px;
+    height: auto;
     position: absolute;
     border-radius: 10px;
     background: #efefef;
-    z-index:999;
-    top:-2px;
-    left:20px;
+    z-index: 999;
+    top: -2px;
+    left: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0px; /* Optional: Add some space between SVGs */
 }
-
 
 
 
@@ -438,8 +449,18 @@ dt.participant  .display_name {
 .whiteboard {
     background:#fff;
     border-radius:5px;
-    margin-bottom:20px;
+    margin-bottom:15px;
 }
+
+.whiteboard .card-body,
+.whiteboard .card-header{
+    padding: 5px 10px;
+}
+
+.whiteboard_form{
+    margin-bottom:0;
+}
+
 
 .whiteboard .card-title {
     font-size:120%;
@@ -727,11 +748,7 @@ button.whiteboard_btn {
     color: #007C92;
 }
 
-.chat_window .message .reply_quote,
-.chat_window .message .add_reactions {
-    background: #E9EBF1;
-}
-
+.chat_window .message .add_reactions ,
 .chat_window .message .add_reactions .reaction-popup {
     background: #E9EBF1;
 }
