@@ -55,3 +55,5 @@ a corresponding `Particpant detail` instrument must be completed with the matchi
 
 - The following image shows a basic configuation example:
   ![Assessments config example](./group-chat-therapy-ui/public/assessment_config_example.png)
+- Note the TS2 and TS1 assessments here. Assessments can be in any order in the participants arm
+- In this case, TS2 and TS1 will have the record id `2` in the list of integers `ts_authorized_participants `
