@@ -371,10 +371,12 @@ function ChatRoomContent() {
                                             {Object.keys(allChats).map(chatKey => {
                                                 // Skip the group chat, as it's already been handled
                                                 if (chatKey === 'groupChat') return null;
+                                                if (chatKey !== selectedChat) return null; // Only render the active chat view
+
 
                                                 return (
                                                     <Tab.Pane eventKey={chatKey} key={chatKey}>
-                                                        <MessagesDisplay messages={allChats[chatKey]} replyTo={replyTo} setReplyTo={setReplyTo} />
+                                                        <MessagesDisplay key={chatKey} messages={allChats[chatKey]} replyTo={replyTo} setReplyTo={setReplyTo} />
                                                     </Tab.Pane>
                                                 );
                                             })}

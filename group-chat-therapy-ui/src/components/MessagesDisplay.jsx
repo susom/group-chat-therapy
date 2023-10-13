@@ -22,7 +22,12 @@ export default function MessagesDisplay({messages, replyTo, setReplyTo}) {
     }
 
     const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+        const messageContainer = messagesEndRef.current?.parentNode; // This should be .chat_window_inner
+        const scrollableContainer = messageContainer?.parentNode; // This should be .chat_window
+
+        if (scrollableContainer) {
+             scrollableContainer.scrollTop = scrollableContainer.scrollHeight;
+        }
     }
 
     useEffect(scrollToBottom, [messages]);
@@ -38,14 +43,16 @@ export default function MessagesDisplay({messages, replyTo, setReplyTo}) {
                             replyMessage = messages.find(m => m.id === parseInt(message.target));
                         }
                         return (
-                            <Message key={index}
-                                     message={message}
-                                     replyMessage={replyMessage}
-                                     onReply={handleReply}
-                            />
+                            <div key={index} ref={index === messages.length - 1 ? messagesEndRef : null}>
+                                <Message
+                                    message={message}
+                                    replyMessage={replyMessage}
+                                    onReply={handleReply}
+                                />
+                            </div>
                         )
                     })}
-                    <div className="clearfix"  ref={messagesEndRef} />
+                    <div className="clearfix"/>
                 </div>
             </div>
             {replyMessageId && (
