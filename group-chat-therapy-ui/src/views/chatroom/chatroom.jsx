@@ -33,7 +33,7 @@ function ChatRoomContent() {
     const navigate                                      = useNavigate()
 
     // CHAT SESSION DETAILS
-    const participant_details                           = session_context?.data?.current_user || {};
+    const participant_details                           = session_context?.sessionCache?.current_user || {};
     const participant_id                                = participant_details?.record_id;
     const isAdmin                                       = participant_details?.admin === "1";
     const isSessionActive                               = chat_context?.isSessionActive;
@@ -48,7 +48,6 @@ function ChatRoomContent() {
     const chatContextMentionCounts                      = chat_context.mentionCounts;
     const selectedChat                                  = chat_context.selectedChat;
     const setSelectedChat                               = chat_context.setSelectedChat;
-
 
     const [whiteboardContent, setWhiteboardContent]     = useState(chat_details?.ts_whiteboard !== "" ? chat_details?.ts_whiteboard : "Nothing here yet.");
     const [whiteboardIsChanged, setWhiteboardIsChanged] = useState(false);
