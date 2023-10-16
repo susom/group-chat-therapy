@@ -72,15 +72,14 @@ export const ChatContextProvider = ({children}) => {
     useEffect(() => {
         //SHOULD ONLY BE CALLED ONCE AFTER THE INITIAL USE EFFECT
         if (isPollingActions && !isPollingPaused) {
-            // const interval = setInterval(fetchActions, intervalLength);
-            const interval = setInterval(fetchActions, intervalLength);
-
-            //Use with isPollingPaused(true) to pause
-            setGetActionsIntervalID(interval);
-
-            return () => clearInterval(interval);
+            fetchActions();
         }
     }, [isPollingActions, isPollingPaused]);
+
+    //clean up polling on unmount
+    useEffect(() => {
+        return () => clearTimeout(getActionsIntervalID);
+    }, []);
 
 
     // KEEP TRACK OF MENTIONS COUNTS FOR CURRENT PARTICIPANT
@@ -432,6 +431,10 @@ export const ChatContextProvider = ({children}) => {
         //EVERY fetchActions SHOULD POST participant_id, maxID and current sendActionQueue
         // console.log("callAjax", {sessionID : chatSessionID, maxID : previous_max_id, actionQueue : cur_actionQueue});
         callAjax({sessionID : chatSessionID, maxID : previous_max_id, actionQueue : cur_actionQueue, endChatSession: false},"handleActions");
+
+        if (!isPollingPaused) {
+            setGetActionsIntervalID(setTimeout(fetchActions, intervalLength));
+        }
     }
 
     //REMOVE MESSAGE FROM UI (AND LOCAL CACHE OF MESSAGE ITEMS)

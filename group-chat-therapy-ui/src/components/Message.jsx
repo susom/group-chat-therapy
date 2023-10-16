@@ -15,9 +15,9 @@ export default function Message({ message, onReply, showReactions = true, showRe
     const isSessionActive                           = chat_context?.isSessionActive || false;
 
     const participantsLookUp                        = session_context.participantsLookUp;
-    const participant_id                            = session_context.data?.current_user?.record_id ;
-    const chat_session_id                           = session_context.data?.selected_session?.record_id;
-    const therapistID                               = session_context.data?.selected_session?.ts_therapist || null;
+    const participant_id                            = session_context?.sessionCache?.current_user?.record_id ;
+    const chat_session_id                           = session_context?.sessionCache?.selected_session?.record_id;
+    const therapistID                               = session_context?.sessionCache?.selected_session?.ts_therapist || null;
 
     const [reactions, setReactions]                 = useState(message.reactions || []);
     const [showReactionPopup, setShowReactionPopup] = useState(false);
@@ -119,6 +119,12 @@ export default function Message({ message, onReply, showReactions = true, showRe
                         <Trash title={`Delete Message`}/>
                     </span>
                 )}
+
+                {showReply && participant_id !== message.user && isSessionActive && (
+                    <span className={`reply_quote`} onClick={() => handleReply(message.id)}>
+                        <ReplyFill title={`Reply to Message`}/>
+                    </span>
+                )}
             </dt>
 
             <dd className={`message_body`}>
@@ -147,11 +153,7 @@ export default function Message({ message, onReply, showReactions = true, showRe
                 </dd>
             )}
 
-            {showReply && participant_id !== message.user && isSessionActive && (
-                <dd className={`reply_quote`} onClick={() => handleReply(message.id)}>
-                    <ReplyFill title={`Reply to Message`}/>
-                </dd>
-            )}
+
 
 
 
