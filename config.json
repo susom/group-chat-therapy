@@ -57,33 +57,15 @@
     "links": {
         "project": [
             {
-                "name": "TEST",
-                "icon": "fas fa-door-open",
-                "url": "pages/test.php",
-                "show-header-and-footer": false
-            },
-            {
-                "name": "Login Mockup",
-                "icon": "fas fa-door-open",
-                "url": "pages/loginMockup.php",
-                "show-header-and-footer": false
-            },
-            {
-                "name": "Home Mockup",
-                "icon": "fas fa-door-open",
-                "url": "pages/home.php",
-                "show-header-and-footer": false
-            },
-            {
-                "name": "Group Therapy",
+                "name": "Group Therapy Login",
                 "icon": "fas fa-door-open",
                 "url": "pages/root.php",
                 "show-header-and-footer": false
             },
             {
-                "name": "Chat Incomplete Surveys Mockup",
+                "name": "Setup Instructions",
                 "icon": "fas fa-door-open",
-                "url": "pages/chatIncomplete.php",
+                "url": "README.md",
                 "show-header-and-footer": false
             }
         ]
