@@ -23,7 +23,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
 {
     use emLoggerTrait;
 
-    const BUILD_FILE_DIR = 'group-chat-therapy-ui/dist/assets';
+    const BUILD_FILE_DIR = 'group-chat-therapy-ui/dist/assets/';
 
     public $UserSession;    // make private
 
@@ -67,11 +67,18 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
     {
         $this->emLog('inside generate asset files');
         $cwd = $this->getModulePath();
-        $this->emLog('files inside base dir');
+        $this->emLog("files inside base dir: $cwd");
         $this->emLog(scandir($cwd));
+        $this->emLog('files inside base dir + group chat');
+        $this->emLog(scandir($cwd . 'group-chat-therapy-ui'));
+        $this->emLog('files inside base dir + group chat');
+        $this->emLog(scandir($cwd . 'group-chat-therapy-ui/dist'));
+        $this->emLog(scandir($cwd . 'group-chat-therapy-ui/dist/assets'));
 
-        $dir_files = scandir($cwd . self::BUILD_FILE_DIR);
-        $this->emLog('Files inside full path');
+        $full_path = $cwd . self::BUILD_FILE_DIR;
+        $dir_files = scandir($full_path);
+
+        $this->emLog("Files inside full path $full_path");
         $this->emLog($dir_files);
 
         if (!$dir_files)
