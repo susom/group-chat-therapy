@@ -51,7 +51,6 @@ export default function Select(){
         let index = chatSessions.findIndex(session=> session.record_id === e.target.value)
         if(index !== -1 ){ //Pass props from selected session to landing
             let copy = session_context?.sessionCache
-            console.log(copy)
             copy['selected_session'] = chatSessions[index]
             session_context.setData(copy)
             session_context?.setSessionCache(copy)
@@ -61,7 +60,7 @@ export default function Select(){
     }
     const renderRows = () => {
         const items = chatSessions?.map((e,i) => (
-            <Accordion.Item className="mb-3" key={i} eventKey={i}>
+            <Accordion.Item key={i} eventKey={i} className={`${e.ts_status === '1' ? "Open" : "Closed"}`}>
                 <Accordion.Header className="accHeader">
                     <span>{`${e.ts_title}`}</span>
                     <span>{parseDate(e.ts_start)}</span>
@@ -76,7 +75,7 @@ export default function Select(){
                         <div className="ml-5">{e.ts_start}</div>
                     </div>
                     <div>
-                        <strong><div className="text-decoration-underline">Description</div></strong>
+                        <strong><div className="text-decoration-underline">Topic</div></strong>
                         {e.ts_topic}
                     </div>
                     <div className="d-block text-end">
@@ -85,6 +84,10 @@ export default function Select(){
                 </Accordion.Body>
             </Accordion.Item>
         ))
+        console.log(items)
+        items.sort((a)=> a.props.className === 'Open' ? -1 : 1)
+
+
 
         return (
             <Tab.Container defaultActiveKey="online">
