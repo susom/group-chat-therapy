@@ -33,7 +33,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
         // Other code to run when object is instantiated
 
         // Load the user session
-        $this->UserSession = UserSession::getInstance();
+//        $this->UserSession = UserSession::getInstance();
     }
 
     /**
@@ -67,9 +67,13 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
     {
         $this->emLog('inside generate asset files');
         $cwd = $this->getModulePath();
+        $this->emLog('files inside base dir');
+        $this->emLog(scandir($cwd));
+
         $dir_files = scandir($cwd . self::BUILD_FILE_DIR);
-        $this->emLog('cwd', $cwd);
-        $this->emLog('dir_files', $dir_files);
+        $this->emLog('Files inside full path');
+        $this->emLog($dir_files);
+
         if (!$dir_files)
             return [];
 
@@ -742,7 +746,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
             }
 
             //If no event queue has been passed, simply return actions
-            $ret = $this->getActions($max, $session_id);
+            $ret = $this->getActions($session_id, $max);
 
             $stop = hrtime(true);
             $ret['serverTime'] = ($stop - $start) / 1000000;
@@ -806,7 +810,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
      * @return array[]
      * @throws Exception
      */
-    public function getActions(int $max = 0, string $session_id): array
+    public function getActions(string $session_id, int $max = 0): array
     {
         $results = [];
         $project_id = $this->getProjectId();
@@ -908,10 +912,10 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
     }
 
 
-    public function isAuthenticated()
-    {
-        return ($this->UserSession->isAuthenticated());
-    }
+//    public function isAuthenticated()
+//    {
+//        return ($this->UserSession->isAuthenticated());
+//    }
 
 
 }
