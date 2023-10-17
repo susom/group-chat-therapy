@@ -65,9 +65,11 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
      */
     public function generateAssetFiles(): array
     {
+        $this->emLog('inside generate asset files');
         $cwd = $this->getModulePath();
         $dir_files = scandir($cwd . self::BUILD_FILE_DIR);
-
+        $this->emLog('cwd', $cwd);
+        $this->emLog('dir_files', $dir_files);
         if (!$dir_files)
             return [];
 
@@ -77,6 +79,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
                 unset($dir_files[$key]);
             } else { //Generate url and script html
                 $url = $this->getUrl(self::BUILD_FILE_DIR . '/' . $file);
+                $this->emLog($file, $url);
                 $html = '';
                 if (str_contains($url, 'js?'))
                     $html = "<script type='module' crossorigin src='{$url}'></script>";
@@ -85,7 +88,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
                 $dir_files[$key] = $html;
             }
         }
-
+        $this->emLog($dir_files);
         return $dir_files;
     }
 
