@@ -344,7 +344,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
         try {
 
             //Sanitize inputs
-            $last_name = $this->sanitizeInput($payload[0]);
+            $display_name = $this->sanitizeInput($payload[0]);
             $phone_number = $this->sanitizeInput($payload[1]);
             $phone_number_truncated = ltrim($phone_number, '1');
 
@@ -358,7 +358,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
             $json = json_decode($json);
             foreach ($json as $entry) {
                 $phoneParsed = $this->parsePhoneField($entry->participant_phone_number);
-                if (strtolower($entry->participant_display_name) === strtolower($last_name) && $phoneParsed === $phone_number_truncated) {
+                if (strtolower($entry->participant_display_name) === strtolower($display_name) && $phoneParsed === $phone_number_truncated) {
                     $this->generateOneTimePassword($entry->record_id, $phoneParsed);
                     return true;
                 }
@@ -711,6 +711,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
                     "record_id" => $session_id,
                     "ts_finished_participants" => $chat_room_participants,
                     "ts_chat_room_participants" => "",
+                    "ts_status" => "2",
                     "redcap_event_name" => "therapy_session_arm_1"
                 )
             );
@@ -737,7 +738,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
 
             $start = hrtime(true);
             if($endChatSession){ //If attempting to end the session, process participants
-                $this->endChatSession($endChatSession);
+                $this->endChatSession($session_id);
             }
 
             if (count($actionQueue)) { //User has actions to process
