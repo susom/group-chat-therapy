@@ -93,6 +93,7 @@ export const WaitingRoom = ({participantCompletion}) => {
                     </Alert>
                 )
             }
+
             return arr?.map((e, i) => {
                 let detail = participantDetails?.find(el => el.record_id === e)
                 if (detail) {
@@ -103,6 +104,7 @@ export const WaitingRoom = ({participantCompletion}) => {
                         else
                             b = <Badge bg="danger">Incomplete</Badge>
                     }
+
                     return (
                         <Stack key={i} direction="horizontal" gap={3}>
                             <div className="me-auto">{detail?.participant_first_name}</div>
