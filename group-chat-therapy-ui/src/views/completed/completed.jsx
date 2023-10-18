@@ -2,7 +2,7 @@ import React, {useContext, useState} from "react";
 import {Link, Navigate, useNavigate, useLocation} from "react-router-dom";
 import Card from "react-bootstrap/Card";
 import Alert from "react-bootstrap/Alert";
-
+import Button from "react-bootstrap/Button";
 import {NavHeader} from "../../components/NavHeader/navheader.jsx";
 import SurveyList from '../../components/SurveyList/surveylist.jsx';
 
@@ -19,6 +19,11 @@ export default function Completed() {
     if (import.meta?.env?.MODE !== 'development')
         jsmoModule = ExternalModules.Stanford.GroupChatTherapy
 
+    const admin = session_context?.sessionCache?.current_user?.admin === '1'
+
+    const navigateSelect = () => {
+        navigate("/select")
+    }
 
     return (
         <>
@@ -32,9 +37,12 @@ export default function Completed() {
                         <Alert variant="success">
                             Thank you for completing the chat session!
                         </Alert>
-                        <SurveyList
-                            completed={true}
-                        />
+                        {!admin &&
+                            <SurveyList
+                                completed={true}
+                            />
+                        }
+                        <Button variant="primary" onClick={navigateSelect}>Home</Button>
                     </Card.Body>
                 </Card>
             </Container>

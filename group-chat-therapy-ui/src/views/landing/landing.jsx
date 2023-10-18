@@ -156,7 +156,6 @@ export default function Landing() {
         const cache = session_context?.sessionCache
         let userId = cache?.current_user?.record_id
         let admitted = cache.selected_session?.ts_chat_room_participants?.includes(userId)
-
         return (
             <Container fluid className='session-detail mt-3'>
                 <Card>
