@@ -250,7 +250,6 @@ function ChatRoomContent() {
 
         return `${hours}:${minutes} ${amOrPm}`;
     }
-
     return (
         <div id={`main`}>
             <GlobalHeader/>
@@ -270,8 +269,8 @@ function ChatRoomContent() {
                                     <h2>{chat_details.ts_title}</h2>
                                     <p>{chat_details.ts_topic}</p>
                                 </li>
-                                <li><b>Session Schedule : </b>  {formatTime(chat_details.ts_start)} - {formatTime(chat_details.ts_start_2)}</li>
-                                <li><b>Therapist : </b> {session_context.participantsLookUp[chat_details.ts_therapist]}</li>
+                                <li><b>Session Start: </b>  {formatTime(chat_details.ts_start)}</li>
+                                <li><b>Therapist: </b> {session_context.participantsLookUp[chat_details.ts_therapist]}</li>
                             </ul>
                         </Col>
                         <Col md={2} xs={12} className={`endSession order-3`}>

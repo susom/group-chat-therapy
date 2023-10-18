@@ -84,10 +84,8 @@ export default function Select(){
                 </Accordion.Body>
             </Accordion.Item>
         ))
-        console.log(items)
+
         items.sort((a)=> a.props.className === 'Open' ? -1 : 1)
-
-
 
         return (
             <Tab.Container defaultActiveKey="online">
