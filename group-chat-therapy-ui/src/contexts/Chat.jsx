@@ -427,10 +427,10 @@ export const ChatContextProvider = ({children}) => {
         // INSIDE THE CLOSURE OF AN INTERVAL, LOCAL SCOPE DOESNT SEE STATE CHANGES, SO USE REF
         const previous_max_id   = maxIDRef.current;
         const cur_actionQueue   = sendActionQueueRef.current;
+        const endChatFlag       = cur_actionQueue.some(obj => obj.type === "endChatSession");
 
         //EVERY fetchActions SHOULD POST participant_id, maxID and current sendActionQueue
-        // console.log("callAjax", {sessionID : chatSessionID, maxID : previous_max_id, actionQueue : cur_actionQueue});
-        callAjax({sessionID : chatSessionID, maxID : previous_max_id, actionQueue : cur_actionQueue, endChatSession: false},"handleActions");
+        callAjax({sessionID : chatSessionID, maxID : previous_max_id, actionQueue : cur_actionQueue, endChatSession: endChatFlag},"handleActions");
 
         if (!isPollingPaused) {
             setGetActionsIntervalID(setTimeout(fetchActions, intervalLength));
