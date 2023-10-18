@@ -16,16 +16,13 @@ use Twilio\Exceptions\TwilioException;
 use Twilio\Rest\Client;
 use function PHPUnit\Framework\isEmpty;
 
-// use \Logging;
-
-
 class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
 {
     use emLoggerTrait;
 
     const BUILD_FILE_DIR = 'group-chat-therapy-ui/dist/assets/';
 
-    public $UserSession;    // make private
+//    public $UserSession;    // make private
 
     public function __construct()
     {
@@ -42,7 +39,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
      * @param $init_method
      * @return void
      */
-    public function injectJSMO($data = null, $init_method = null)
+    public function injectJSMO($data = null, $init_method = null): void
     {
         echo $this->initializeJavascriptModuleObject();
         $cmds = [
@@ -65,26 +62,15 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
      */
     public function generateAssetFiles(): array
     {
-        $this->emLog('inside generate asset files');
         $cwd = $this->getModulePath();
-        $this->emLog("files inside base dir: $cwd");
-        $this->emLog(scandir($cwd));
-        $this->emLog('files inside base dir + group chat');
-        $this->emLog(scandir($cwd . 'group-chat-therapy-ui'));
-        $this->emLog('files inside base dir + group chat');
-        $this->emLog(scandir($cwd . 'group-chat-therapy-ui/dist'));
-        $this->emLog(scandir($cwd . 'group-chat-therapy-ui/dist/assets'));
-
         $full_path = $cwd . self::BUILD_FILE_DIR;
         $dir_files = scandir($full_path);
 
-        $this->emLog("Files inside full path $full_path");
-        $this->emLog($dir_files);
-
-        if (!$dir_files)
+        if (!$dir_files){
+            $this->emError("No directory files found in $full_path");
             return [];
+        }
 
-        // Remove extraneous dir values
         foreach ($dir_files as $key => $file) {
             if ($file === '.' || $file === '..') {
                 unset($dir_files[$key]);
@@ -99,7 +85,6 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
                 $dir_files[$key] = $html;
             }
         }
-        $this->emLog($dir_files);
         return $dir_files;
     }
 
@@ -209,7 +194,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
                 $return_o["result"] = json_encode($required_survey_urls); //Necessary result key for returning via JSMO
                 return $return_o;
             }
-            return [];
+            return ["result" => json_encode(['no_surveys_required'=> 1])];
 
         } catch (\Exception $e) {
             $msg = $e->getMessage();
@@ -237,17 +222,24 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
             $complete_ids = [];
             foreach($payload['participant_ids'] as $participant){
                 $surveyCompletionList = $this->getUserSurveys(array('participant_id'=> $participant, 'therapy_session_id' => $payload['therapy_session_id']));
-                $surveyCompletionList = json_decode($surveyCompletionList["result"], true);
-                if(array_key_exists('error',$surveyCompletionList))
-                    throw new Exception($surveyCompletionList['error']['msg']);
-
-                foreach($surveyCompletionList as $survey)
-                    if($survey['complete'] === '2') { //complete
+//                if($surveyCompletionList)
+                if(count($surveyCompletionList)){
+                    $surveyCompletionList = json_decode($surveyCompletionList["result"], true);
+                    if(array_key_exists('no_surveys_required', $surveyCompletionList)) { //Ignore sessions that return no survey required
                         $complete_ids[$participant] = true;
-                    }else {
-                        $complete_ids[$participant] = false;
-                        break;
+                    } else {
+                        if(array_key_exists('error',$surveyCompletionList))
+                            throw new Exception($surveyCompletionList['error']['msg']);
+
+                        foreach($surveyCompletionList as $survey)
+                            if($survey['complete'] === '2') { //complete
+                                $complete_ids[$participant] = true;
+                            } else {
+                                $complete_ids[$participant] = false;
+                                break;
+                            }
                     }
+                }
             }
             return ["result" => json_encode($complete_ids)];
 
