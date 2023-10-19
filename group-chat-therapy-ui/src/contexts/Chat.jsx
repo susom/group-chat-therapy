@@ -346,14 +346,7 @@ export const ChatContextProvider = ({children}) => {
                 break;
 
             case 'endChatSession':
-                console.log("hi there is an endChatSession, so do a few things, clean session, end polling, deactivate interactivty, present button");
-                //clean up session
-
-
-                //if not admin,  stop polling
-                if(!isAdmin){
-                    setIsPollingPaused(true);
-                }
+                setIsPollingPaused(true);
 
                 //deactivate session
                 setIsSessionActive(false);
