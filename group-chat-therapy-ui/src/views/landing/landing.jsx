@@ -51,7 +51,7 @@ export default function Landing() {
     }, [isPollingEnabled]);
 
     const startPolling = (fx) => {
-        timerIdRef.current = setInterval(fx, 5000);
+        timerIdRef.current = setInterval(fx, 3500);
     };
 
     const stopPolling = () => {
@@ -71,8 +71,10 @@ export default function Landing() {
                 },
                 (res) => setParticipantCompletion(res),
                 (err) => {
+                    setIsPollingEnabled(false)
                     setError(err)
                     setShowError(true)
+                    console.log(err)
                 }
             )
         }
@@ -96,6 +98,8 @@ export default function Landing() {
             },
             (err) => {
                 setIsPollingEnabled(false)
+                setError(err)
+                setShowError(true)
                 console.log(err)
             }
         )
