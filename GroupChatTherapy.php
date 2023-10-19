@@ -705,18 +705,21 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
         $json = json_decode(REDCap::getData($params), true);
         $chat_room_participants = current($json)['ts_chat_room_participants'];
 
+        $actions = $this->getActions($session_id); //Grab log table with all actions
+        $stringify = json_encode($actions['data']);
+        $fields = array(
+            "record_id" => $session_id,
+            "ts_status" => "2",
+            "ts_json" => $stringify,
+            "redcap_event_name" => "therapy_session_arm_1"
+        );
+
         if($chat_room_participants){
-            $saveData = array(
-                array(
-                    "record_id" => $session_id,
-                    "ts_finished_participants" => $chat_room_participants,
-                    "ts_chat_room_participants" => "",
-                    "ts_status" => "2",
-                    "redcap_event_name" => "therapy_session_arm_1"
-                )
-            );
-            REDCap::saveData('json', json_encode($saveData), 'overwrite');
+            $fields["ts_finished_participants"] = $chat_room_participants;
+            $fields["ts_chat_room_participants"] = "";
         }
+
+        REDCap::saveData('json', json_encode(array($fields)), 'overwrite');
     }
 
     /**
