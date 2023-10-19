@@ -334,7 +334,7 @@ function ChatRoomContent() {
                                         <Card className={`whiteboard`}>
                                             <Card.Header>Whiteboard
                                                 {(isMobile && isAdmin) &&
-                                                    <Button className="float-end" variant="success" type="submit" disabled={!whiteboardIsChanged}><FontAwesomeIcon icon={faFloppyDisk} /></Button>
+                                                    <Button className="float-end" variant="success" onClick={updateWhiteboard} disabled={!whiteboardIsChanged}><FontAwesomeIcon icon={faFloppyDisk} /></Button>
                                                 }
 
                                             </Card.Header>
