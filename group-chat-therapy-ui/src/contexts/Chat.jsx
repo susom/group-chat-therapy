@@ -416,19 +416,28 @@ export const ChatContextProvider = ({children}) => {
         setMaxID(new_max_id);
     }, [newActions]);  // Run this effect when newActions changes
 
-    const fetchActions = async ()=> {
+    const isPollingPausedRef = useRef(isPollingPaused);
+
+    useEffect(() => {
+        isPollingPausedRef.current = isPollingPaused;
+    }, [isPollingPaused]);
+
+
+    const fetchActions = async () => {
         // INSIDE THE CLOSURE OF AN INTERVAL, LOCAL SCOPE DOESNT SEE STATE CHANGES, SO USE REF
         const previous_max_id   = maxIDRef.current;
         const cur_actionQueue   = sendActionQueueRef.current;
         const endChatFlag       = cur_actionQueue.some(obj => obj.type === "endChatSession");
 
         //EVERY fetchActions SHOULD POST participant_id, maxID and current sendActionQueue
-        callAjax({sessionID : chatSessionID, maxID : previous_max_id, actionQueue : cur_actionQueue, endChatSession: endChatFlag},"handleActions");
+        callAjax({sessionID : chatSessionID, maxID : previous_max_id, actionQueue : cur_actionQueue, endChatSession: endChatFlag}, "handleActions");
 
-        if (!isPollingPaused) {
+        if (!isPollingPausedRef.current) {
+            console.log("im still polling", isPollingPausedRef.current);
             setGetActionsIntervalID(setTimeout(fetchActions, intervalLength));
         }
     }
+
 
     //REMOVE MESSAGE FROM UI (AND LOCAL CACHE OF MESSAGE ITEMS)
     const removeMessage = (messageId) => {
