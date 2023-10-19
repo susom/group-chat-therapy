@@ -25,6 +25,10 @@ export default function Completed() {
         navigate("/select")
     }
 
+    if (!session_context?.sessionCache?.current_user?.record_id) {
+        return <Navigate to="/"/>
+    }
+
     return (
         <>
             <NavHeader/>

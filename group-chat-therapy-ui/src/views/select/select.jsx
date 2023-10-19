@@ -3,7 +3,7 @@ import React, {useContext, useEffect, useState} from "react";
 
 import Container from "react-bootstrap/Container";
 import {SessionContext} from "../../contexts/Session.jsx";
-import {useNavigate} from "react-router-dom";
+import {Navigate, useNavigate} from "react-router-dom";
 import Accordion from "react-bootstrap/Accordion";
 
 import Tab from "react-bootstrap/Tab";
@@ -94,6 +94,10 @@ export default function Select(){
                 </Accordion>
             </Tab.Container>
         )
+    }
+
+    if (!session_context?.sessionCache?.current_user?.record_id) {
+        return <Navigate to="/"/>
     }
 
     return (

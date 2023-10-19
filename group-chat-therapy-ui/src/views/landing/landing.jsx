@@ -182,15 +182,14 @@ export default function Landing() {
     }
 
 
-    // if (!session_context?.data?.participantID) {
-    //     return <Navigate to="/"/>
-    // } else {
-
-    return (
-        <>
-            <NavHeader/>
-            {isAdmin ? renderAdmin() : renderParticipant()}
-        </>
-    )
-    // }
+    if (!session_context?.sessionCache?.current_user?.record_id) {
+        return <Navigate to="/"/>
+    } else {
+        return (
+            <>
+                <NavHeader/>
+                {isAdmin ? renderAdmin() : renderParticipant()}
+            </>
+        )
+    }
 }

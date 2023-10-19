@@ -1,5 +1,5 @@
 import React, {useState, useMemo, useContext, useEffect} from "react";
-import {Link, useNavigate} from 'react-router-dom';
+import {Link, Navigate, useNavigate} from 'react-router-dom';
 
 import { Container, Row, Col, Tab, Nav, Form, Button, Card } from 'react-bootstrap';
 import { PeopleFill, Send, People, Person } from 'react-bootstrap-icons';
@@ -19,6 +19,11 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faFloppyDisk} from "@fortawesome/free-solid-svg-icons";
 
 export default function ChatRoom() {
+    let session_context  = useContext(SessionContext);
+    if (!session_context?.sessionCache?.current_user?.record_id) {
+        return <Navigate to="/"/>
+    }
+
     return (
         <ChatContextProvider>
             <ChatRoomContent />
@@ -250,6 +255,8 @@ function ChatRoomContent() {
 
         return `${hours}:${minutes} ${amOrPm}`;
     }
+
+
     return (
         <div id={`main`}>
             <GlobalHeader/>
