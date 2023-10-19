@@ -86,3 +86,19 @@ a corresponding **Particpant detail** instrument must be completed with the matc
 3. In the **Authorized Participants** field, list the participant id 9 in the comma delimited list
 
 ![TS2](./group-chat-therapy-ui/public/therapy_session_2.png)
+
+
+## Adding surveys to therapy sessions
+1. Navigate to the online designer and create a new instrument
+2. Enable the instrument as a survey
+3. Click on survey settings and set the **Redirect to URL** field to either:
+   - For redirecting back to the landing page (pre-chat surveys)
+     - https://redcap.stanford.edu/redcap_v13.10.4/ExternalModules/?prefix=group_therapy_sms&page=pages%2Froot&pid=29380#/landing
+   - For redirecting back to the completed page (post-chat surveys)
+     - https://redcap.stanford.edu/redcap_v13.10.4/ExternalModules/?prefix=group_therapy_sms&page=pages%2Froot&pid=29380#/completed
+
+![TS3](./group-chat-therapy-ui/public/therapy_session_3.png)
+
+4. Navigate back to project setup
+5. Click on **Designate instruments for my events**
+6. Under **Arm 2 - Participants**, check the box in the Assessments column corresponding to the newly created survey
