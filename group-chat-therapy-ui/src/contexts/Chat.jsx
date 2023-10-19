@@ -21,7 +21,7 @@ export const ChatContextProvider = ({children}) => {
 
     //POLLING VARS
     const [intervalLength, setIntervalLength]               = useState(2000); //default 3 seconds? depending on ping back can increase or throttle
-    const [getActionsIntervalID, setGetActionsIntervalID]   = useState(null); //polling interval id (to cancel it)
+
     const [isPollingPaused, setIsPollingPaused]             = useState(false); //if cancelling poll, set this flag to easily restart the poll
     const [isPollingActions, setIsPollingActions]           = useState(false); // to kick off polling one time
     const [sendActionQueue, setSendActionQueue]             = useState([]); // keep queue of actions to post during each poll
@@ -39,6 +39,7 @@ export const ChatContextProvider = ({children}) => {
     const [newMessageCounts, setNewMessageCounts]           = useState({});
 
     const [selectedChat, setSelectedChat]                   = useState('groupChat');
+    let timeoutRef = useRef();
 
 
     // INIT CHAT SESSION
@@ -74,13 +75,11 @@ export const ChatContextProvider = ({children}) => {
         if (isPollingActions && !isPollingPaused) {
             fetchActions();
         }
+        return () => {
+            clearTimeout(timeoutRef)
+        }
+
     }, [isPollingActions, isPollingPaused]);
-
-    //clean up polling on unmount
-    useEffect(() => {
-        return () => clearTimeout(getActionsIntervalID);
-    }, []);
-
 
     // KEEP TRACK OF MENTIONS COUNTS FOR CURRENT PARTICIPANT
     useEffect(() => {
@@ -433,8 +432,8 @@ export const ChatContextProvider = ({children}) => {
         callAjax({sessionID : chatSessionID, maxID : previous_max_id, actionQueue : cur_actionQueue, endChatSession: endChatFlag}, "handleActions");
 
         if (!isPollingPausedRef.current) {
-            console.log("im still polling", isPollingPausedRef.current);
-            setGetActionsIntervalID(setTimeout(fetchActions, intervalLength));
+            // console.log("im still polling", isPollingPausedRef.current);
+            timeoutRef = setTimeout(fetchActions, intervalLength);
         }
     }
 
@@ -470,7 +469,6 @@ export const ChatContextProvider = ({children}) => {
         <ChatContext.Provider value={{
             setData,
             data,
-            getActionsIntervalID,
             setIsPollingPaused,
             chatSessionID,
             participantID,
