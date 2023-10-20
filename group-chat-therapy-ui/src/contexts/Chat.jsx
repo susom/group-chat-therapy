@@ -20,7 +20,7 @@ export const ChatContextProvider = ({children}) => {
     const [participants, setParticipants]                   = useState([]);
 
     //POLLING VARS
-    const [intervalLength, setIntervalLength]               = useState(2000); //default 3 seconds? depending on ping back can increase or throttle
+    const [intervalLength, setIntervalLength]               = useState(1500); //default 3 seconds? depending on ping back can increase or throttle
 
     const [isPollingPaused, setIsPollingPaused]             = useState(false); //if cancelling poll, set this flag to easily restart the poll
     const [isPollingActions, setIsPollingActions]           = useState(false); // to kick off polling one time
@@ -178,7 +178,7 @@ export const ChatContextProvider = ({children}) => {
         };
 
         // Log the messages you've modified
-        console.log("Modified Messages", modifiedMessages);
+        // console.log("Modified Messages", modifiedMessages);
 
         // Update the allChats state
         setAllChats(updatedChats);
@@ -225,7 +225,7 @@ export const ChatContextProvider = ({children}) => {
 
         switch(action.type) {
             case 'delete':
-                console.log("delete", action);
+                // console.log("delete", action);
                 Object.keys(newAllChats).forEach(chatKey => {
                     newAllChats[chatKey] = newAllChats[chatKey].filter(
                         message => message.id !== parseInt(action.target)
@@ -379,7 +379,8 @@ export const ChatContextProvider = ({children}) => {
 
     // POST ACTIONS QUEUE AND FETCH LATEST ACTIONS
     useEffect(() => {
-        if (!newActions) return;
+        if (!newActions || newActions?.data.length === 0) return;
+
 
         const cur_actionsArr    = actionsRef.current;
         const cur_allChats      = allChatsRef.current;
@@ -391,7 +392,9 @@ export const ChatContextProvider = ({children}) => {
         const server_time       = newActions.serverTime;
 
         //actionQueue sent, now Empty it
-        clearActionQueue();
+        // if()
+        if(new_actions)
+            clearActionQueue();
 
         // If there are no new actions, skip processing
         if (!new_actions || new_actions.length === 0) {
