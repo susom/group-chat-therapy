@@ -543,6 +543,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
                     "ts_status",
                     "ts_start",
                     "ts_start_2",
+                    "ts_therapist",
                     "ts_authorized_participants",
                     "ts_chat_room_participants",
                     "ts_title",
