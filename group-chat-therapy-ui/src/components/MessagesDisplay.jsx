@@ -2,9 +2,10 @@ import React, { useEffect, useState, useRef } from "react";
 import Message from "./Message.jsx";
 import ReplyMessage from './ReplyMessage.jsx';
 
-export default function MessagesDisplay({messages, replyTo, setReplyTo}) {
-    const messagesEndRef = useRef(null);
+export default function MessagesDisplay({messages, replyTo, setReplyTo, pendingMessages}) {
+    const messagesEndRef    = useRef(null);
     const [replyMessageId, setReplyMessageId] = useState(null);
+    const allMessages       = [...(messages || []), ...(pendingMessages || [])];  // <-- Combine regular and pending messages
 
     useEffect(() => {
         if (replyTo === null) {
@@ -37,7 +38,7 @@ export default function MessagesDisplay({messages, replyTo, setReplyTo}) {
             <div className={'chat_window'}>
                 <div className={`chat_window_inner`}>
 
-                    {messages.map((message, index) => {
+                    {allMessages.map((message, index) => {
                         let replyMessage = null;
                         if (message.type === 'message') {
                             replyMessage = messages.find(m => m.id === parseInt(message.target));

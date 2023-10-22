@@ -9,7 +9,6 @@
 /.idea/*
 
 *node_modules
-dist/*
+*/dist/*
 #!dist/assets
-
 
