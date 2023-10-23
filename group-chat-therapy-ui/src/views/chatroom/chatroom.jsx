@@ -34,6 +34,7 @@ export default function ChatRoom() {
 function ChatRoomContent() {
     const session_context                               = useContext(SessionContext);
     const chat_context                                  = useContext(ChatContext);
+    const { pendingMessages }                           = useContext(ChatContext);
 
     const navigate                                      = useNavigate()
 
@@ -84,7 +85,6 @@ function ChatRoomContent() {
         }
     }, [session_context.sessionCache]);
 
-
     const mentionCounts = useMemo(() => {
         return { ...chatContextMentionCounts };
     }, [chatContextMentionCounts]);
@@ -106,7 +106,6 @@ function ChatRoomContent() {
         setAllChats({ ...chatContextAllChats });
     }, [chatContextAllChats]);
 
-
     const handleInputChange = e => {
         if (startMessageTime === null) {
             setStartMessageTime(Date.now());
@@ -114,7 +113,6 @@ function ChatRoomContent() {
 
         const value = e.target.value;
         setMessage(value);
-        console.log("resetMentions for selectedChat", selectedChat)
         chat_context.resetMentions(selectedChat);
     };
 
@@ -173,17 +171,9 @@ function ChatRoomContent() {
                 character_history : keystrokes
             };
 
-            // Add the message to the local chat history
-            setAllChats(prevChats => {
-                const currentChat = prevChats[selectedChat] ? [...prevChats[selectedChat]] : [];
-                return {
-                    ...prevChats,
-                    [selectedChat]: [...currentChat, newAction]
-                };
-            });
-
             //ADD ACTION TO QUEUE TO BE PICKED UP AT NEXT POLL
             chat_context.sendAction(newAction);
+            chat_context.addPendingMessage(newAction, selectedChat);
 
             // Reset states
             setMessage('');
@@ -204,9 +194,6 @@ function ChatRoomContent() {
 
         // If there are other things to do when a chat is clicked (like making it the active chat view, etc.), handle them here
     }
-
-
-
 
     function endChatSession() {
         if(isAdmin){
@@ -293,11 +280,6 @@ function ChatRoomContent() {
                 <Row className={"chat_ui"}>
                     <Col>
                         <Container fluid>
-                            {/*<Row>*/}
-                            {/*    <Col md={{ span: 11, offset: 1 }} xs={12} className={"whiteboard"}>*/}
-
-                            {/*    </Col>*/}
-                            {/*</Row>*/}
                             <Row>
                                 <Tab.Container
                                     activeKey={selectedChat}
@@ -310,7 +292,7 @@ function ChatRoomContent() {
                                     <Col md={1} xs={12}>
                                         <Nav variant="pills" className="flex-md-column flex-xs-row mt-2 chat_tab">
                                             <Nav.Item>
-                                                <Nav.Link eventKey="groupChat" onClick={() => chat_context.resetMentions("groupChat")}>
+                                                <Nav.Link eventKey="groupChat" onClick={() => handleChatClick("groupChat")}>
                                                     <People  size={20} title={`Group Chat`}/>
                                                     {mentionCounts["groupChat"] > 0 && <span className="chat-badge">@{mentionCounts["groupChat"]}</span>}
                                                     {chat_context.newMessageCounts["groupChat"] > 0 && <span className="chat-badge new-message-badge">{chat_context.newMessageCounts["groupChat"]}</span>}
@@ -371,8 +353,14 @@ function ChatRoomContent() {
 
                                         <Tab.Content>
                                             <Tab.Pane eventKey="groupChat">
-                                                <MessagesDisplay messages={allChats['groupChat']} replyTo={replyTo} setReplyTo={setReplyTo} />
+                                                <MessagesDisplay
+                                                    messages={allChats['groupChat']}
+                                                    replyTo={replyTo}
+                                                    setReplyTo={setReplyTo}
+                                                    pendingMessages={pendingMessages ? pendingMessages['groupChat'] : []}
+                                                />
                                             </Tab.Pane>
+
                                             {Object.keys(allChats).map(chatKey => {
                                                 // Skip the group chat, as it's already been handled
                                                 if (chatKey === 'groupChat') return null;
@@ -381,7 +369,13 @@ function ChatRoomContent() {
 
                                                 return (
                                                     <Tab.Pane eventKey={chatKey} key={chatKey}>
-                                                        <MessagesDisplay key={chatKey} messages={allChats[chatKey]} replyTo={replyTo} setReplyTo={setReplyTo} />
+                                                        <MessagesDisplay
+                                                            key={chatKey}
+                                                            messages={allChats[chatKey]}
+                                                            pendingMessages={pendingMessages ? pendingMessages[chatKey] : []}
+                                                            replyTo={replyTo}
+                                                            setReplyTo={setReplyTo}
+                                                        />
                                                     </Tab.Pane>
                                                 );
                                             })}
@@ -396,7 +390,7 @@ function ChatRoomContent() {
                                                             value={message}
                                                             onKeyDown={handleKeyDown}
                                                             onChange={handleInputChange}
-                                                            onFocus={() => chat_context.resetMentions(selectedChat)}
+                                                            onFocus={() => { chat_context.resetMentions(selectedChat)} }
                                                             className={`chat_input`}
                                                         />
                                                     </Col>

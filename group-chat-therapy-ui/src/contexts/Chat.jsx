@@ -35,6 +35,8 @@ export const ChatContextProvider = ({children}) => {
 
     //PROCESSED DATA - FOR UI CONSUMPTION
     const [allChats, setAllChats]                           = useState({"groupChat" : []}); //same as group chat but direct
+    const [pendingMessages, setPendingMessages]             = useState({});
+
     const [mentionCounts, setMentionCounts]                 = useState({});
     const [newMessageCounts, setNewMessageCounts]           = useState({});
 
@@ -223,6 +225,8 @@ export const ChatContextProvider = ({children}) => {
             allChatsKey = participantID === action.user ? action.recipients.pop() : action.user;
         }
 
+        let isNewMessage    = 0;
+
         switch(action.type) {
             case 'delete':
                 // console.log("delete", action);
@@ -273,14 +277,13 @@ export const ChatContextProvider = ({children}) => {
                     containsMention: containsMention
                 });
 
-                // Increment the newMessageCounts if not currently viewing this chat
-                if (allChatsKey !== selectedChat) {
-                    const updatedMessageCounts = {
-                        ...newMessageCounts,
-                        [allChatsKey]: (newMessageCounts[allChatsKey] || 0) + 1
-                    };
-                    setNewMessageCounts(updatedMessageCounts);
+                // Increment the newMessageCounts if:
+                // 1. Not currently viewing this chat, and
+                // 2. Message was not sent by the current user
+                if (allChatsKey !== selectedChat && action.user !== participantID) {
+                    isNewMessage = 1;
                 }
+
 
                 updatedActionsArray = [...actionsArray, action];
                 break;
@@ -359,7 +362,9 @@ export const ChatContextProvider = ({children}) => {
 
         return {
             actionsArray : updatedActionsArray,
-            allChats : newAllChats
+            allChats : newAllChats,
+            newMessageCount: isNewMessage,
+            chatKey : allChatsKey
         }
     };
 
@@ -395,6 +400,8 @@ export const ChatContextProvider = ({children}) => {
         // if()
         if(new_actions)
             clearActionQueue();
+            setPendingMessages({});
+
 
         // If there are no new actions, skip processing
         if (!new_actions || new_actions.length === 0) {
@@ -406,11 +413,24 @@ export const ChatContextProvider = ({children}) => {
         let updatedAllChats     = {...cur_allChats};
 
         // PROCESS EACH NEW ACTION
+        let totalNewMessages    = {};
         Object.values(new_actions).forEach(action => {
             let result          = processAction(action, updatedActions, updatedAllChats);
+
+            if (result.newMessageCount) {
+                totalNewMessages[result.chatKey] = (totalNewMessages[result.chatKey] || 0) + result.newMessageCount;
+            }
+
             updatedActions      = result.actionsArray;
             updatedAllChats     = result.allChats;
         });
+
+        //SET THe NEW MESSAGE COUNT
+        const updatedMessageCounts = {
+            ...newMessageCounts,
+            ...totalNewMessages
+        };
+        setNewMessageCounts(updatedMessageCounts);
 
         // SET THE STATE WITH UPDATED VALUES
         setActions(updatedActions);
@@ -468,6 +488,16 @@ export const ChatContextProvider = ({children}) => {
         }
     }
 
+    const addPendingMessage = (newAction, selectedChat) => {
+        setPendingMessages(prevPending => {
+            const currentPending = prevPending[selectedChat] ? [...prevPending[selectedChat]] : [];
+            return {
+                ...prevPending,
+                [selectedChat]: [...currentPending, newAction]
+            };
+        });
+    };
+
     return (
         <ChatContext.Provider value={{
             setData,
@@ -487,7 +517,9 @@ export const ChatContextProvider = ({children}) => {
             setNewMessageCounts,
             newMessageCounts,
             selectedChat,
-            setSelectedChat
+            setSelectedChat,
+            pendingMessages,
+            addPendingMessage
         }}>
             {children}
         </ChatContext.Provider>
