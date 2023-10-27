@@ -27,10 +27,6 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
     public function __construct()
     {
         parent::__construct();
-        // Other code to run when object is instantiated
-
-        // Load the user session
-//        $this->UserSession = UserSession::getInstance();
     }
 
     /**
@@ -55,7 +51,6 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
         <?php
     }
 
-
     /**
      * @return array
      * Scans dist directory for frontend build files for dynamic injection
@@ -66,7 +61,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
         $full_path = $cwd . self::BUILD_FILE_DIR;
         $dir_files = scandir($full_path);
 
-        if (!$dir_files){
+        if (!$dir_files) {
             $this->emError("No directory files found in $full_path");
             return [];
         }
@@ -168,7 +163,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
             // Iterate through surveys, gathering URL and complete key
             foreach ($expl as $instrument) {
                 $url = REDCap::getSurveyLink($payload['participant_id'], strtolower($instrument), $event_id, $ts_survey_instance);
-                if(isset($url)) { //If the survey actually exists
+                if (isset($url)) { //If the survey actually exists
                     $required_survey_urls[strtolower($instrument)] = ['url' => $url];
                     $fields[] = strtolower($instrument) . "_complete";
                 }
@@ -194,7 +189,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
                 $return_o["result"] = json_encode($required_survey_urls); //Necessary result key for returning via JSMO
                 return $return_o;
             }
-            return ["result" => json_encode(['no_surveys_required'=> 1])];
+            return ["result" => json_encode(['no_surveys_required' => 1])];
 
         } catch (\Exception $e) {
             $msg = $e->getMessage();
@@ -220,19 +215,19 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
             if (empty($payload['participant_ids']) || empty($payload['therapy_session_id']))
                 throw new Exception('Incorrect payload passed');
             $complete_ids = [];
-            foreach($payload['participant_ids'] as $participant){
-                $surveyCompletionList = $this->getUserSurveys(array('participant_id'=> $participant, 'therapy_session_id' => $payload['therapy_session_id']));
+            foreach ($payload['participant_ids'] as $participant) {
+                $surveyCompletionList = $this->getUserSurveys(array('participant_id' => $participant, 'therapy_session_id' => $payload['therapy_session_id']));
 //                if($surveyCompletionList)
-                if(count($surveyCompletionList)){
+                if (count($surveyCompletionList)) {
                     $surveyCompletionList = json_decode($surveyCompletionList["result"], true);
-                    if(array_key_exists('no_surveys_required', $surveyCompletionList)) { //Ignore sessions that return no survey required
+                    if (array_key_exists('no_surveys_required', $surveyCompletionList)) { //Ignore sessions that return no survey required
                         $complete_ids[$participant] = true;
                     } else {
-                        if(array_key_exists('error',$surveyCompletionList))
+                        if (array_key_exists('error', $surveyCompletionList))
                             throw new Exception($surveyCompletionList['error']['msg']);
 
-                        foreach($surveyCompletionList as $survey)
-                            if($survey['complete'] === '2') { //complete
+                        foreach ($surveyCompletionList as $survey)
+                            if ($survey['complete'] === '2') { //complete
                                 $complete_ids[$participant] = true;
                             } else {
                                 $complete_ids[$participant] = false;
@@ -715,7 +710,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
             "redcap_event_name" => "therapy_session_arm_1"
         );
 
-        if($chat_room_participants){
+        if ($chat_room_participants) {
             $fields["ts_finished_participants"] = $chat_room_participants;
             $fields["ts_chat_room_participants"] = "";
         }
@@ -741,7 +736,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
                 throw new Exception('No session ID passed');
 
             $start = hrtime(true);
-            if($endChatSession){ //If attempting to end the session, process participants
+            if ($endChatSession) { //If attempting to end the session, process participants
                 $this->endChatSession($session_id);
             }
 
