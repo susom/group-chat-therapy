@@ -18,6 +18,10 @@
 
     "enable-every-page-hooks-on-system-pages": false,
 
+    "permissions": [
+        "redcap_module_link_check_display"
+    ],
+
     "no-auth-pages": [
         "pages/mockup",
         "pages/home",
@@ -31,13 +35,17 @@
 
     "enable-ajax-logging": false,
 
-    "auth-ajax-actions": [
+
+    "no-auth-ajax-actions": [
+        "TestAction",
+        "getActions",
+        "addAction",
+        "validateUserPhone",
+        "validateCode",
         "TestAction",
         "getActions",
         "deleteActions",
         "addAction",
-        "validateUserPhone",
-        "validateCode",
         "handleActions",
         "getParticipants",
         "updateParticipants",
@@ -46,12 +54,6 @@
         "getUserSessions",
         "getUserSurveys",
         "checkUserCompletion"
-    ],
-
-    "no-auth-ajax-actions": [
-        "TestAction",
-        "getActions",
-        "addAction"
     ],
 
     "links": {
@@ -64,6 +66,12 @@
             },
             {
                 "name": "Setup Instructions",
+                "icon": "fas fa-door-open",
+                "url": "README.md",
+                "show-header-and-footer": false
+            },
+            {
+                "name": "Pull chat records",
                 "icon": "fas fa-door-open",
                 "url": "README.md",
                 "show-header-and-footer": false

@@ -29,6 +29,14 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
         parent::__construct();
     }
 
+
+    function redcap_module_link_check_display($project_id, $link){
+        if(isset($link) && array_key_exists('url', $link) && str_contains($link['url'], 'root')){
+            $link['url'] = $link['url'] . '&NOAUTH';
+        }
+        return $link;
+    }
+
     /**
      * Helper method for inserting the JSMO JS into a page along with any preload data
      * @param $data
