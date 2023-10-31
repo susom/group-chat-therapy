@@ -78,8 +78,9 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
             if ($file === '.' || $file === '..') {
                 unset($dir_files[$key]);
             } else { //Generate url and script html
-                $url = $this->getUrl(self::BUILD_FILE_DIR . '/' . $file);
+                $url = $this->getUrl(self::BUILD_FILE_DIR .  $file);
                 $this->emLog($file, $url);
+
                 $html = '';
                 if (str_contains($url, 'js?'))
                     $html = "<script type='module' crossorigin src='{$url}'></script>";
@@ -690,7 +691,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
      * @param string $session_id
      * @return void
      */
-    public function endChatSession(string $session_id): void
+    public function endChatSession(string $session_id, string $user_id, string $isAdmin): void
     {
         $params = array(
             "return_format" => "json",
@@ -709,7 +710,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
         $json = json_decode(REDCap::getData($params), true);
         $chat_room_participants = current($json)['ts_chat_room_participants'];
 
-        $actions = $this->getActions($session_id); //Grab log table with all actions
+        $actions = $this->getActions($session_id, $user_id, $isAdmin); //Grab log table with all actions
         $stringify = json_encode($actions['data']);
         $fields = array(
             "record_id" => $session_id,
@@ -737,15 +738,17 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
 
             $max = intval(($payload['maxID'])) ?? 0;
             $session_id = $payload['sessionID'];
+            $user_id = $payload['userID'];
             $actionQueue = $payload['actionQueue'] ?? [];
             $endChatSession = $payload['endChatSession'];
+            $isAdmin = $payload['isAdmin']; //Accepted from client to prevent more getData calls
 
-            if (empty($session_id))
-                throw new Exception('No session ID passed');
+            if (empty($session_id) || empty($user_id))
+                throw new Exception('Either session ID or User ID is null');
 
             $start = hrtime(true);
             if ($endChatSession) { //If attempting to end the session, process participants
-                $this->endChatSession($session_id);
+                $this->endChatSession($session_id, $user_id, $isAdmin);
             }
 
             if (count($actionQueue)) { //User has actions to process
@@ -753,7 +756,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
             }
 
             //If no event queue has been passed, simply return actions
-            $ret = $this->getActions($session_id, $max);
+            $ret = $this->getActions($session_id, $user_id, $isAdmin, $max);
 
             $stop = hrtime(true);
             $ret['serverTime'] = ($stop - $start) / 1000000;
@@ -791,7 +794,6 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
                 $action = new Action($this);
 
                 $action->setValue('session_id', $session_id);
-
                 $action->setValue('message', json_encode($v));
                 $action->save();
                 $this->emDebug("Added action " . $action->getId());
@@ -817,7 +819,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
      * @return array[]
      * @throws Exception
      */
-    public function getActions(string $session_id, int $max = 0): array
+    public function getActions(string $session_id, string $user_id, bool $isAdmin, int $max = 0): array
     {
         $results = [];
         $project_id = $this->getProjectId();
@@ -832,7 +834,12 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
                     continue;
                 }
             }
-            $results[$v->getId()] = $v->getAction();
+            if(!empty($action['recipients']) && !$isAdmin){ //There are direct messages in the payload that must be filtered
+                if($action['user'] !== $user_id) //If the sending user isn't the one requesting payload
+                    continue;
+            }
+
+            $results[$v->getId()] = $action;
         }
 
         return [
