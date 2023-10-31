@@ -452,7 +452,7 @@ export const ChatContextProvider = ({children}) => {
         const endChatFlag       = cur_actionQueue.some(obj => obj.type === "endChatSession");
 
         //EVERY fetchActions SHOULD POST participant_id, maxID and current sendActionQueue
-        callAjax({sessionID : chatSessionID, maxID : previous_max_id, actionQueue : cur_actionQueue, endChatSession: endChatFlag}, "handleActions");
+        callAjax({sessionID : chatSessionID, userID: participantID, isAdmin: isAdmin,  maxID : previous_max_id, actionQueue : cur_actionQueue, endChatSession: endChatFlag}, "handleActions");
 
         if (!isPollingPausedRef.current) {
             // console.log("im still polling", isPollingPausedRef.current);
