@@ -835,7 +835,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
                 }
             }
             //There are direct messages in the payload that must be filtered
-            if(!empty($action['recipients']) && !$isAdmin){
+            if(!empty($action['recipients']) && $action['recipients'] !== 'groupChat' && !$isAdmin){
                 if($action['user'] !== $user_id && $action['recipients'][0] !== $user_id) //Filter out messages not written by or intended for
                     continue;
             }
