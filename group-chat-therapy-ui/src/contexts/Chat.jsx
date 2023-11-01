@@ -20,7 +20,7 @@ export const ChatContextProvider = ({children}) => {
     const [participants, setParticipants]                   = useState([]);
 
     //POLLING VARS
-    const [intervalLength, setIntervalLength]               = useState(1500); //default 3 seconds? depending on ping back can increase or throttle
+    const [intervalLength, setIntervalLength]               = useState(2000); //default 3 seconds? depending on ping back can increase or throttle
 
     const [isPollingPaused, setIsPollingPaused]             = useState(false); //if cancelling poll, set this flag to easily restart the poll
     const [isPollingActions, setIsPollingActions]           = useState(false); // to kick off polling one time
