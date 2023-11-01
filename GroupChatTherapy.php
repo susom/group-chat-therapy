@@ -834,8 +834,9 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
                     continue;
                 }
             }
-            if(!empty($action['recipients']) && !$isAdmin){ //There are direct messages in the payload that must be filtered
-                if($action['user'] !== $user_id) //If the sending user isn't the one requesting payload
+            //There are direct messages in the payload that must be filtered
+            if(!empty($action['recipients']) && !$isAdmin){
+                if($action['user'] !== $user_id && $action['recipients'][0] !== $user_id) //Filter out messages not written by or intended for
                     continue;
             }
 
