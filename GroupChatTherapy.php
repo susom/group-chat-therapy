@@ -22,16 +22,14 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
 
     const BUILD_FILE_DIR = 'group-chat-therapy-ui/dist/assets/';
 
-//    public $UserSession;    // make private
-
     public function __construct()
     {
         parent::__construct();
     }
 
-
-    function redcap_module_link_check_display($project_id, $link){
-        if(isset($link) && array_key_exists('url', $link) && str_contains($link['url'], 'root')){
+    function redcap_module_link_check_display($project_id, $link)
+    {
+        if (isset($link) && array_key_exists('url', $link) && str_contains($link['url'], 'root')) {
             $link['url'] = $link['url'] . '&NOAUTH';
         }
         return $link;
@@ -78,7 +76,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
             if ($file === '.' || $file === '..') {
                 unset($dir_files[$key]);
             } else { //Generate url and script html
-                $url = $this->getUrl(self::BUILD_FILE_DIR .  $file);
+                $url = $this->getUrl(self::BUILD_FILE_DIR . $file);
                 $this->emLog($file, $url);
 
                 $html = '';
@@ -835,8 +833,8 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
                 }
             }
             //There are direct messages in the payload that must be filtered
-            if(!empty($action['recipients']) && $action['recipients'] !== 'groupChat' && !$isAdmin){
-                if($action['user'] !== $user_id && $action['recipients'][0] !== $user_id) //Filter out messages not written by or intended for
+            if (!empty($action['recipients']) && $action['recipients'] !== 'groupChat' && !$isAdmin) {
+                if ($action['user'] !== $user_id && $action['recipients'][0] !== $user_id) //Filter out messages not written by or intended for
                     continue;
             }
 
