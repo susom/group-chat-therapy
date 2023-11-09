@@ -1,4 +1,3 @@
-
 import React, {useContext, useEffect, useState} from "react";
 
 import Container from "react-bootstrap/Container";
@@ -13,7 +12,7 @@ import './select.css';
 
 import {NavHeader} from "../../components/NavHeader/navheader.jsx";
 
-export default function Select(){
+export default function Select() {
     const session_context = useContext(SessionContext);
     const navigate = useNavigate()
     const [chatSessions, setChatSessions] = useState([])
@@ -42,14 +41,14 @@ export default function Select(){
         let time = date;
         let split = time.split(" ");
 
-        if(split[0])
+        if (split[0])
             return split[0]
         return date
     }
 
     const jumpTo = (e) => {
-        let index = chatSessions.findIndex(session=> session.record_id === e.target.value)
-        if(index !== -1 ){ //Pass props from selected session to landing
+        let index = chatSessions.findIndex(session => session.record_id === e.target.value)
+        if (index !== -1) { //Pass props from selected session to landing
             let copy = session_context?.sessionCache
             copy['selected_session'] = chatSessions[index]
             session_context.setData(copy)
@@ -59,7 +58,7 @@ export default function Select(){
 
     }
     const renderRows = () => {
-        const items = chatSessions?.map((e,i) => (
+        const items = chatSessions?.map((e, i) => (
             <Accordion.Item key={i} eventKey={i} className={`${e.ts_status === '1' ? "Open" : "Closed"}`}>
                 <Accordion.Header className="accHeader">
                     <span>{`${e.ts_title}`}</span>
@@ -75,7 +74,9 @@ export default function Select(){
                         <div className="ml-5">{e.ts_start}</div>
                     </div>
                     <div>
-                        <strong><div className="text-decoration-underline">Topic</div></strong>
+                        <strong>
+                            <div className="text-decoration-underline">Topic</div>
+                        </strong>
                         {e.ts_topic}
                     </div>
                     <div className="d-block text-end">
@@ -85,7 +86,7 @@ export default function Select(){
             </Accordion.Item>
         ))
 
-        items.sort((a)=> a.props.className === 'Open' ? -1 : 1)
+        items.sort((a) => a.props.className === 'Open' ? -1 : 1)
 
         return (
             <Tab.Container defaultActiveKey="online">
@@ -102,7 +103,7 @@ export default function Select(){
 
     return (
         <>
-           <NavHeader/>
+            <NavHeader/>
             <div>
                 <Container className='session-detail mt-3'>
                     <Card>
