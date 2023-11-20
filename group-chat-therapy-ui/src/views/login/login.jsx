@@ -172,7 +172,6 @@ export default function Login() {
                             {error &&
                                 <Alert key='danger' variant='danger'>{error}</Alert>
                             }
-                            <h2 className="text-center">Login</h2>
                             <div className="text-center mb-5">
                                 <img src="https://storage.googleapis.com/group-chat-therapy/stanford-logo.svg"
                                      alt="logo-shield" className="logo-shield my-3"/>
@@ -229,7 +228,7 @@ export default function Login() {
                                     {getButtonState()}
                                 </Button>
                             </div>
-                            <p className="text-center"><i>Not registered? Contact <a href="#">here</a></i></p>
+                            <p className="text-center"><i>Not registered? Contact <a href="mailto:ilang@stanford.edu">here</a></i></p>
                         </Card>
                     </Col>
                 </Row>
