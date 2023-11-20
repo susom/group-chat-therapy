@@ -511,9 +511,20 @@ dt.participant .reply_quote {
     bottom: -20px;
 }
 
-.chat_tab {
-    padding-top:210px;
+/*.chat_tab {*/
+/*    padding-top:210px;*/
+/*}*/
+
+
+/* Media Query for screens greater than 768px */
+@media screen and (min-width: 450px) {
+
+    .chat_tab {
+        padding-top: 210px;
+    }
 }
+
+
 
 .chat_tab.nav-pills .nav-link.active {
     background:#32312D;
