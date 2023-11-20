@@ -316,7 +316,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
      */
     public function generateOneTimePassword($record, $phone_number): void
     {
-        $code = bin2hex(random_bytes(4));
+        $code = bin2hex(random_bytes(3));
         $saveData = array(
             array(
                 "record_id" => $record,
