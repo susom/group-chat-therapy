@@ -43,6 +43,8 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
      */
     public function injectJSMO($data = null, $init_method = null): void
     {
+        // Temporary Workaround for 14.3 bug not including External Module functions in window
+        require APP_PATH_DOCROOT . "ExternalModules/manager/templates/hooks/every_page_top.php";
         echo $this->initializeJavascriptModuleObject();
         $cmds = [
             "const module = " . $this->getJavascriptModuleObjectName()
