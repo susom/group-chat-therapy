@@ -331,7 +331,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
         $response = REDCap::saveData('json', json_encode($saveData), 'overwrite');
 
         if (empty($response['errors'])) {
-            $body = "Your Group Therapy verification code is: $code";
+            $body = "Your Moms Mood Matters Study verification code is: $code";
             $this->sendSMS($body, $phone_number);
         } else {
             throw new Exception('Save data failure');
