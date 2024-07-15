@@ -101,7 +101,7 @@
     float:left;
     width:auto;
     min-width:50%;
-    max-width:80%;
+    max-width:100%;
     position:relative;
     clear:both;
 }
