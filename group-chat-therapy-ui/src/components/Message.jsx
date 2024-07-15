@@ -109,10 +109,11 @@ export default function Message({ message, onReply, showReactions = true, showRe
     };
 
     const filteredReactions = reactions && reactions.filter(reaction => parseInt(reaction.target) === message.id);
-
+    const participantColor = chat_context.participantColorsMap[message.user];
+    
     return (
         <dl className={`${message.type} ${participant_id === message.user ? 'self' : ''} ${message.isFake ? 'fake' : ''} ${className} ${message.containsMention ? "callout" : ""} ${message.wasSeen ? "seen" : ""} ${filteredReactions && filteredReactions.length > 0 ? 'has_reactions' : ''}`}>
-            <dt className={'participant'}>
+            <dt className={'participant'} style={{ color: participantColor }}>
                 <span className={`display_name`}>{isReply ? `Replying to ${participantsLookUp[message.user]}` : participantsLookUp[message.user]}</span>
 
                 {( participant_id === message.user || participant_id === therapistID ) && isSessionActive && ( // If the message is from the current participant, show the delete icon

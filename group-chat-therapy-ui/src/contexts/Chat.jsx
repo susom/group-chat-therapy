@@ -43,6 +43,35 @@ export const ChatContextProvider = ({children}) => {
     const [selectedChat, setSelectedChat]                   = useState('groupChat');
     let timeoutRef = useRef();
 
+    const participantColors = [
+        "#FF5733", // Red
+        "#33FF57", // Green
+        "#3357FF", // Blue
+        "#FF33A8", // Pink
+        "#FF8C33", // Orange
+        "#8C33FF", // Purple
+        "#33FFF8", // Teal
+        "#FF3333", // Bright Red
+        "#33FF33", // Bright Green
+        "#3333FF"  // Bright Blue
+    ];
+
+    const [participantColorsMap, setParticipantColorsMap] = useState({});
+
+    useEffect(() => {
+        if (session_context?.sessionCache?.selected_session) {
+            const participants = session_context?.sessionCache?.selected_session["ts_chat_room_participants"];
+            console.log("setColors useeffect participants?", participants);
+
+            const colorsMap = {};
+            participants.forEach((participant, index) => {
+                colorsMap[participant] = participantColors[index % participantColors.length];
+            });
+
+            console.log("user effect colorsMap", colorsMap);
+            setParticipantColorsMap(colorsMap);
+        }
+    }, [session_context]);
 
     // INIT CHAT SESSION
     useEffect(() => {
@@ -519,7 +548,8 @@ export const ChatContextProvider = ({children}) => {
             selectedChat,
             setSelectedChat,
             pendingMessages,
-            addPendingMessage
+            addPendingMessage,
+            participantColorsMap
         }}>
             {children}
         </ChatContext.Provider>
