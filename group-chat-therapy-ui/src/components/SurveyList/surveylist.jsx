@@ -42,7 +42,7 @@ export default function SurveyList({completed= false, setSurveysComplete}) {
                 <tr>
                     <td>{key}</td>
                     <td>{value.complete === '2' ? badgeComplete : badgeIncomplete}</td>
-                    <td><Button variant="outline-primary" size="sm" href={value?.url}>Navigate</Button></td>
+                    <td><Button variant="outline-primary" size="sm" href={value?.url}>Survey</Button></td>
                 </tr>
             )
         } else {

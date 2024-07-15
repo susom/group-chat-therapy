@@ -7,6 +7,7 @@ import { XSquare, Plus, Trash, ReplyFill } from 'react-bootstrap-icons';
 import {SessionContext} from "./../contexts/Session.jsx";
 import {ChatContext} from "./../contexts/Chat.jsx";
 import ReplyMessage from "./ReplyMessage.jsx";
+import { decodeHTMLEntities } from './utils';
 
 export default function Message({ message, onReply, showReactions = true, showReply = true, isReply = false, onCloseReply, replyMessage, className = ""}) {
     const session_context                           = useContext(SessionContext);
@@ -127,6 +128,12 @@ export default function Message({ message, onReply, showReactions = true, showRe
                 )}
             </dt>
 
+            {isReply && (
+                <dd className={'close'} onClick={onCloseReply}>
+                    <XSquare size='25' title={"Cancel Reply to Message"} />
+                </dd>
+            )}
+
             <dd className={`message_body`}>
                 {replyMessage && (
                     <ReplyMessage
@@ -137,7 +144,7 @@ export default function Message({ message, onReply, showReactions = true, showRe
                 {message.containsMention ? (
                     <div dangerouslySetInnerHTML={{ __html: message.body }}/>
                 ) : (
-                    <div>{message.body}</div>
+                    <div>{decodeHTMLEntities(message.body)}</div>
                 )}
 
                 <span className={'timestamp'}>{ message.isFake ? 'Sending...' : formatTime(message.timestamp) }</span>
@@ -157,11 +164,7 @@ export default function Message({ message, onReply, showReactions = true, showRe
 
 
 
-            {isReply && (
-                <dd className={'close'} onClick={onCloseReply}>
-                    <XSquare size='25' title={"Cancel Reply to Message"} />
-                </dd>
-            )}
+
         </dl>
     );
 }

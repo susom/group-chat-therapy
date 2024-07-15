@@ -73,7 +73,7 @@
 .chat_window {
     border:2px solid #ccc;
     border-radius:5px;
-    margin:0  0 20px 0;
+    margin:0  0 10px 0;
     padding:20px;
     min-height:500px;
     max-height:500px;
@@ -118,41 +118,57 @@
 .tab-pane {
     position:relative;
 }
-.tab-pane > .reply_message{
-    position: absolute;
-    z-index: 100;
-    border: 1px solid black;
-    border-radius: 5px;
-    bottom: -15px;
-    left: 10px;
-    width: 80%;
-    background: #efefef;
-    border-left: 10px solid;
-    box-shadow: 1px 1px 3px 1px #333;
+/* Update the existing .reply_message styles */
+.tab-pane > .reply_message {
+    display: flex;
+    align-items: center;
+    position: initial; /* Change from absolute to initial to make it stack */
+    z-index: initial;  /* Reset z-index */
+    border: none;
+    bottom: initial; /* Reset bottom */
+    left: initial;   /* Reset left */
+    width: 100%;     /* Full width */
+    background: none !important; /* Same background as the input area */
+    border-left: 3px solid #8C1515; /* Vertical line on the left */
+    padding: 5px;
+    margin-bottom: 10px;
+    box-shadow: none; /* Remove shadow if not needed */
 }
 
-.tab-pane > .reply_message .message.quoted_message{
-    border:none;
-    margin: 5px 10px;
-    background:none;
-    float:none;
-    max-width:initial;
-    color:#666;
+.tab-pane > .reply_message .message.quoted_message {
+    border: none;
+    margin: 0;
+    background: none !important;
+    float: none;
+    width:100%;
+    max-width: initial;
+    color: #333; /* Adjust text color as needed */
+    position:relative;
 }
 
 .tab-pane > .reply_message .message.quoted_message dt {
-    position:initial;
+    position: initial;
+    color: #333;
+    float:left;
+    width:80%;
 }
+
 .tab-pane > .reply_message .message.quoted_message .message_body {
-    max-width:90%;
+    max-width: initial;
+    color: #333;
+    font-size: 92%;
+    line-height: 120%;
+    float:left;
+    width:80%;
 }
+
 .tab-pane > .reply_message .message.quoted_message .close {
-    position:absolute;
-    right:10px;
-    top:50%;
-    transform: translateY(-13px);
-    cursor:pointer;
+    margin-left: auto; /* Ensure the close button is on the right */
+    cursor: pointer;
+    float:right;
+    vertical-align:top;
 }
+
 
 .chat_window .notice .reply_quote,
 .chat_window .message_body .quoted_message .close,
@@ -688,8 +704,6 @@ button.whiteboard_btn {
 }
 
 .tab-pane > .reply_message{
-    border: 1px solid #5D4B3C;
-    background: #8F993E;
     border-left: 10px solid #6FA287;
 }
 
