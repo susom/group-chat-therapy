@@ -225,7 +225,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
                 throw new Exception('Incorrect payload passed');
             $complete_ids = [];
             foreach ($payload['participant_ids'] as $participant) {
-                $surveyCompletionList = $this->getUserSurveys(array('participant_id' => $participant, 'therapy_session_id' => $payload['therapy_session_id']));
+                $surveyCompletionList = $this->getUserSurveys(array('participant_id' => trim($participant), 'therapy_session_id' => trim($payload['therapy_session_id'])));
 //                if($surveyCompletionList)
                 if (count($surveyCompletionList)) {
                     $surveyCompletionList = json_decode($surveyCompletionList["result"], true);
@@ -477,8 +477,11 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
         $user_sessions = [];
 
         foreach ($full_sessions as $session) {
-            $participants_arr = !empty($session['ts_authorized_participants']) ? explode(",", $session['ts_authorized_participants']) : [];
-            $in_chat_arr = !empty($session['ts_chat_room_participants']) ? explode(",", $session['ts_chat_room_participants']) : [];
+//            $participants_arr = !empty($session['ts_authorized_participants']) ? explode(",", $session['ts_authorized_participants']) : [];
+            $participants_arr = !empty($session['ts_authorized_participants']) ? array_map('trim', explode(",", $session['ts_authorized_participants'])) : [];
+//            $in_chat_arr = !empty($session['ts_chat_room_participants']) ? explode(",", $session['ts_chat_room_participants']) : [];
+            $in_chat_arr = !empty($session['ts_chat_room_participants']) ? array_map('trim', explode(",", $session['ts_chat_room_participants'])) : [];
+
             if ($record['admin']) {
                 $session['ts_authorized_participants'] = $participants_arr; //Save as array
                 $session['ts_chat_room_participants'] = $in_chat_arr;
