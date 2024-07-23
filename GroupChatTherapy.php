@@ -110,8 +110,12 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
 
         $json = json_decode(REDCap::getData($params), true);
         if (count($json)) {
-            $trimmed = preg_replace('/\s+/', '', trim(current($json)[$index]));
-            return explode(',', $trimmed);
+            $expl = array_map("trim", explode(",", current($json)[$index]));
+            $replaced = array_map(function($value) {
+                return str_replace(' ', '_', trim($value));
+            }, $expl);
+
+            return $replaced;
         } else {
             return [];
         }
@@ -565,8 +569,9 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
 
             if (sizeof($json)) {
                 $data = current($json);
-                $participants_arr = !empty($data['ts_authorized_participants']) ? explode(",", $data['ts_authorized_participants']) : [];
-                $in_chat_arr = !empty($data['ts_chat_room_participants']) ? explode(",", $data['ts_chat_room_participants']) : [];
+
+                $participants_arr = !empty($data['ts_authorized_participants']) ? array_map("trim", explode(",", $data['ts_authorized_participants'])) : [];
+                $in_chat_arr = !empty($data['ts_chat_room_participants']) ? array_map("trim", explode(",", $data['ts_chat_room_participants'])) : [];
 
                 if ($payload['action'] === 'admit') {
                     $index = array_search($payload['participant_id'], $participants_arr);
