@@ -103,11 +103,13 @@ export const WaitingRoom = ({participantCompletion}) => {
                             b = <Badge bg="success">Finished</Badge>
                         else
                             b = <Badge bg="danger">Incomplete</Badge>
+                    } else {
+                        b = <Spinner className="spinner-button" size="sm"/>
                     }
 
                     return (
                         <Stack key={i} direction="horizontal" gap={3}>
-                            <div className="me-auto">{detail?.participant_first_name}</div>
+                            <div className="me-auto">{detail?.participant_display_name}</div>
                             {b}
                             {
                                 type === 'waitingRoom' ?

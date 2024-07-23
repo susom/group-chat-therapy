@@ -514,6 +514,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
                 "fields" => array(
                     "record_id",
                     "participant_first_name",
+                    "participant_display_name",
                     "admin",
                     "participant_status"
                 ),
