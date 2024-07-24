@@ -27,7 +27,7 @@ export default function Select() {
             (res) => {
                 if (res) {
                     setChatSessions(res)
-                    console.log(res)
+                    // console.log(res)
                 }
             },
             (err) => {

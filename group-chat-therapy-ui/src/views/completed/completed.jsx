@@ -39,7 +39,8 @@ export default function Completed() {
                     <Card.Body className="d-flex flex-column">
                         {/*<Card.Title as="h6">Thank you for completing the chat session!</Card.Title>*/}
                         <Alert variant="success">
-                            Thank you for completing the chat session!
+                            Thank you for completing the chat session! <br/>
+                            Please complete any assigned surveys and turn your video on to notify the admin when finished.
                         </Alert>
                         {!admin &&
                             <SurveyList
