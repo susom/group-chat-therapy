@@ -406,6 +406,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
                     "participant_otp_code",
                     "participant_otp_code_ts",
                     "participant_first_name",
+                    "participant_display_name",
                     "participant_last_name",
                     "record_id",
                     "admin"

@@ -827,3 +827,21 @@ button.send_message {
 .chat_title {
     color: #279989;
 }
+
+
+.nav-dropdown .dropdown-toggle {
+    color: white !important; /* Ensure text color is white */
+}
+
+.nav-dropdown .dropdown-menu {
+    background-color: #8C1515; /* Ensure dropdown background matches the header */
+    color: white; /* Ensure dropdown text color is white */
+}
+
+.nav-dropdown .dropdown-item {
+    color: white; /* Ensure dropdown item text color is white */
+}
+
+.nav-dropdown .dropdown-item:hover {
+    background-color: #2E2D29; /* Add hover effect for better UX */
+}

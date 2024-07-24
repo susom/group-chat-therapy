@@ -148,7 +148,7 @@ export const ChatContextProvider = ({children}) => {
                 module.getParticipants(payload, (res) => {
                     if (res) {
                         const participant_lookup = res?.data?.reduce((acc, item) => {
-                            acc[item.record_id] = item.participant_first_name;
+                            acc[item.record_id] = item.participant_display_name;
                             return acc;
                         }, {});
 

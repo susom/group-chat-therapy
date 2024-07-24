@@ -27,7 +27,7 @@ export const NavHeader = () => {
                     <Navbar.Brand>{currentUser?.admin === "1" ? "Admin" : "Participant"}</Navbar.Brand>
                     <Navbar.Toggle />
                     <Navbar.Collapse className="justify-content-end">
-                        <NavDropdown title={`Signed in as: ${currentUser?.participant_first_name}`}>
+                        <NavDropdown title={`Signed in as: ${currentUser?.participant_display_name}`}>
                             <NavDropdown.Item onClick={logout}>Logout</NavDropdown.Item>
                         </NavDropdown>
                     </Navbar.Collapse>
