@@ -90,15 +90,25 @@ a corresponding **Particpant detail** instrument must be completed with the matc
 
 ## Adding surveys to therapy sessions
 1. Navigate to the online designer and create a new instrument
-2. Enable the instrument as a survey
-3. Click on survey settings and set the **Redirect to URL** field to either:
+2. Look at the url in the header, the survey name is the text that occurs after "page="
+
+![TS4](./group-chat-therapy-ui/public/therapy_session_4.png)
+
+3. Enable the instrument as a survey
+4. Click on survey settings and set the **Redirect to URL** field to either:
    - For redirecting back to the landing page (pre-chat surveys)
-     - https://redcap.stanford.edu/redcap_v13.10.4/ExternalModules/?prefix=group_therapy_sms&page=pages%2Froot&pid=29380#/landing
+     - https://redcap.stanford.edu/redcap_v14.4.1/ExternalModules/?prefix=group_therapy_sms&page=pages%2Froot&pid=29380#/landing
    - For redirecting back to the completed page (post-chat surveys)
-     - https://redcap.stanford.edu/redcap_v13.10.4/ExternalModules/?prefix=group_therapy_sms&page=pages%2Froot&pid=29380#/completed
+     - https://redcap.stanford.edu/redcap_v14.4.1/ExternalModules/?prefix=group_therapy_sms&page=pages%2Froot&pid=29380#/completed
+
 
 ![TS3](./group-chat-therapy-ui/public/therapy_session_3.png)
 
-4. Navigate back to project setup
-5. Click on **Designate instruments for my events**
-6. Under **Arm 2 - Participants**, check the box in the Assessments column corresponding to the newly created survey
+5. Navigate back to project setup
+6. Click on **Designate instruments for my events**
+7. Under **Arm 2 - Participants**, check the box in the Assessments column corresponding to the newly created survey
+8. Navigate back to the therapy session and add the survey name as an element in the comma delimited list in either `ts_pre_survey_list` or `ts_post_survey_list`
+### NOTES
+  - Surveys added into therapy sessions are REQUIRED, therefore an user will not be automatically let in unless they have completed all of the assigned surveys for a given therapy session.
+    - Admins that let in users that have yet to complete 100% of surveys will not override this
+
