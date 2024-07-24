@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { SessionContext } from "./Session.jsx";
+import { useNavigate } from 'react-router-dom';
 
 export const ChatContext = createContext({
     data : {},
@@ -8,6 +9,8 @@ export const ChatContext = createContext({
 
 export const ChatContextProvider = ({children}) => {
     const session_context                                   = useContext(SessionContext);
+    const navigate = useNavigate();
+    const isAdmin = session_context.isAdmin;
 
     //RAW DATA PAYLOADS GO HERE
     const [data, setData]                                   = useState(); //raw INITIAL data
@@ -16,8 +19,8 @@ export const ChatContextProvider = ({children}) => {
     //ONE TIME IDs
     const [chatSessionID, setChatSessionID]                 = useState(null); //current chat id
     const [participantID, setParticipantID]                 = useState(null); //current participant id
-    const [isAdmin,setIsAdmin]                              = useState(false);
     const [participants, setParticipants]                   = useState([]);
+    const [isUserAdmitted, setIsUserAdmitted] = useState(false);
 
     //POLLING VARS
     const [intervalLength, setIntervalLength]               = useState(2000); //default 3 seconds? depending on ping back can increase or throttle
@@ -81,7 +84,7 @@ export const ChatContextProvider = ({children}) => {
             setParticipantID(session_context.sessionCache.current_user.record_id);
 
             let cur_user_admin = `${session_context.sessionCache.current_user.admin}` === "1";
-            setIsAdmin(cur_user_admin);
+            // setIsAdmin(cur_user_admin);
 
             const initialChats = {"groupChat": []};
 
@@ -135,6 +138,29 @@ export const ChatContextProvider = ({children}) => {
         setMentionCounts(newMentionCounts);
     }, [allChats]);
 
+    //TRACK TO SEE IF USER IS STILL ADMITTED INTO THE CHAT
+    useEffect(() => {
+        const checkUserAdmittance = () => {
+            const cache = session_context?.sessionCache;
+            const userId = cache?.current_user?.record_id;
+            const participants = cache?.selected_session?.ts_chat_room_participants;
+            const admitted = participants?.includes(userId);
+
+            console.log("Participants Is User Admitted:isAdmin:", participants, admitted, isAdmin);
+            setIsUserAdmitted(admitted);
+
+            // If the user is not admitted, navigate to landing
+            if (!isAdmin && !admitted) {
+                navigate('/landing'); // Add this line
+            }
+        };
+
+        const intervalId = setInterval(checkUserAdmittance, 5000); // Check every 5 seconds
+
+        return () => clearInterval(intervalId); // Clear interval on component unmount
+    }, [session_context]);
+
+
 
     // USE this to call JSMO for AJAX
     const callAjax = (payload, actionType) => {
@@ -167,7 +193,6 @@ export const ChatContextProvider = ({children}) => {
                 break;
         }
     }
-
 
     // ACTIONS PROCESSING
     function isMentioned(message, participantsLookUp, participant_id, sanitize = false) {
@@ -549,9 +574,11 @@ export const ChatContextProvider = ({children}) => {
             setSelectedChat,
             pendingMessages,
             addPendingMessage,
-            participantColorsMap
+            participantColorsMap,
+            isUserAdmitted
         }}>
             {children}
         </ChatContext.Provider>
+
     );
 }

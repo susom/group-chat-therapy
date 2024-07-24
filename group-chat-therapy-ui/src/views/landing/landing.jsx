@@ -1,5 +1,5 @@
-import React, {useContext, useEffect, useRef, useState} from "react";
-import {Link, Navigate, useNavigate, useLocation} from "react-router-dom";
+import React, { useContext, useEffect, useRef, useState } from "react";
+import { Link, Navigate, useNavigate, useLocation } from "react-router-dom";
 import Container from 'react-bootstrap/Container';
 import Alert from 'react-bootstrap/Alert';
 import ListGroup from "react-bootstrap/ListGroup";
@@ -8,27 +8,24 @@ import Card from "react-bootstrap/Card";
 import Button from "react-bootstrap/Button";
 import Spinner from "react-bootstrap/Spinner";
 
-import {NavHeader} from "../../components/NavHeader/navheader.jsx";
-import {WaitingRoom} from "../../components/WaitingRoom/waitingRoom.jsx";
+import { NavHeader } from "../../components/NavHeader/navheader.jsx";
+import { WaitingRoom } from "../../components/WaitingRoom/waitingRoom.jsx";
 import SurveyList from '../../components/SurveyList/surveylist.jsx';
 
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faArrowsRotate} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
 
-import {SessionContext} from "../../contexts/Session.jsx";
+import { SessionContext } from "../../contexts/Session.jsx";
 import './landing.css';
 
 export default function Landing() {
     const session_context = useContext(SessionContext);
+    const isAdmin = session_context.isAdmin;
     const navigate = useNavigate()
     const [participantCompletion, setParticipantCompletion] = useState([])
     const [error, setError] = useState('')
     const [showError, setShowError] = useState(false)
     const [surveysComplete, setSurveysComplete] = useState(false)
-    const timerIdRef = useRef(null);
-    const [isPollingEnabled, setIsPollingEnabled] = useState(true);
-    const isAdmin = session_context?.sessionCache?.current_user?.admin === "1"
-    const [refreshed, setRefreshed] = useState(false) //Set to prevent cached users from instantly joining room
 
     let jsmoModule;
     if (import.meta?.env?.MODE !== 'development')
@@ -38,32 +35,9 @@ export default function Landing() {
         navigate("/chat")
     }
 
-    useEffect(() => {
-        if(isPollingEnabled){
-            isAdmin ?  startPolling(checkSurveyStatus) : startPolling(checkEntry)
-        } else {
-            stopPolling()
-        }
-
-        return () => { //Cancel on unmount
-            stopPolling()
-        }
-    }, [isPollingEnabled]);
-
-    const startPolling = (fx) => {
-        timerIdRef.current = setInterval(fx, 3500);
-    };
-
-    const stopPolling = () => {
-        clearInterval(timerIdRef.current);
-    };
-
-    /**
-     * Admin: poll to refresh all user survey statuses
-     */
     const checkSurveyStatus = () => {
         const sel = session_context?.sessionCache?.selected_session
-        if(sel?.ts_authorized_participants.length){
+        if (sel?.ts_authorized_participants.length) {
             jsmoModule.checkUserCompletion(
                 {
                     'participant_ids': sel?.ts_authorized_participants,
@@ -71,38 +45,12 @@ export default function Landing() {
                 },
                 (res) => setParticipantCompletion(res),
                 (err) => {
-                    setIsPollingEnabled(false)
                     setError(err)
                     setShowError(true)
                     console.log(err)
                 }
             )
         }
-    }
-
-    /**
-     * User: poll to check whether an Admin has let individual into chat room
-     */
-    const checkEntry = () => {
-        let clone = session_context.sessionCache
-        jsmoModule.getUserSessions(
-            session_context?.sessionCache?.current_user,
-            (res) => {
-                if (res) {
-                    let selectedSession = res.filter(e=>e?.record_id === session_context?.sessionCache?.selected_session?.record_id)
-                    if(selectedSession)
-                        clone['selected_session'] = selectedSession[0]
-                    session_context?.setSessionCache(clone)
-                    setRefreshed(true)
-                }
-            },
-            (err) => {
-                setIsPollingEnabled(false)
-                setError(err)
-                setShowError(true)
-                console.log(err)
-            }
-        )
     }
 
     const renderError = () => {
@@ -128,7 +76,7 @@ export default function Landing() {
                             size="sm"
                             onClick={checkSurveyStatus}
                         >
-                            <FontAwesomeIcon icon={faArrowsRotate}/>
+                            <FontAwesomeIcon icon={faArrowsRotate} />
                         </Button>
                     </Card.Header>
                     <Card.Body>
@@ -149,8 +97,8 @@ export default function Landing() {
         return (
             <Alert className="mt-auto" variant="info">
                 <div className="d-flex align-items-center">
-                    <span>Waiting for Admin to enter chat    </span>
-                    <Spinner className="info-spinner ms-auto" animation="border" variant="info"/>
+                    <span>Waiting for Admin to enter chat </span>
+                    <Spinner className="info-spinner ms-auto" animation="border" variant="info" />
                 </div>
             </Alert>
         )
@@ -169,15 +117,14 @@ export default function Landing() {
                             setSurveysComplete={setSurveysComplete}
                         />
                         {
-                            !surveysComplete || !admitted || !refreshed ? renderAlert() : enterChat()
+                            !surveysComplete || !admitted ? renderAlert() : enterChat()
                         }
-
                     </Card.Body>
                     <Card.Footer>
                         <Button
                             className="float-end"
                             onClick={enterChat}
-                            disabled={!surveysComplete || !admitted || !refreshed}
+                            disabled={!surveysComplete || !admitted}
                         >Enter Chat</Button>
                     </Card.Footer>
                 </Card>
@@ -185,13 +132,12 @@ export default function Landing() {
         )
     }
 
-
     if (!session_context?.sessionCache?.current_user?.record_id) {
-        return <Navigate to="/"/>
+        return <Navigate to="/" />
     } else {
         return (
             <>
-                <NavHeader/>
+                <NavHeader />
                 {isAdmin ? renderAdmin() : renderParticipant()}
             </>
         )
