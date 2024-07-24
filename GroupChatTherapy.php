@@ -226,7 +226,7 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
     {
         try {
             if (empty($payload['participant_ids']) || empty($payload['therapy_session_id']))
-                throw new Exception('Incorrect payload passed');
+                throw new Exception('No user ids passed when checking user survey completion');
             $complete_ids = [];
             foreach ($payload['participant_ids'] as $participant) {
                 $surveyCompletionList = $this->getUserSurveys(array('participant_id' => trim($participant), 'therapy_session_id' => trim($payload['therapy_session_id'])));
@@ -481,10 +481,8 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
         $user_sessions = [];
 
         foreach ($full_sessions as $session) {
-//            $participants_arr = !empty($session['ts_authorized_participants']) ? explode(",", $session['ts_authorized_participants']) : [];
-            $participants_arr = !empty($session['ts_authorized_participants']) ? array_map('trim', explode(",", $session['ts_authorized_participants'])) : [];
-//            $in_chat_arr = !empty($session['ts_chat_room_participants']) ? explode(",", $session['ts_chat_room_participants']) : [];
-            $in_chat_arr = !empty($session['ts_chat_room_participants']) ? array_map('trim', explode(",", $session['ts_chat_room_participants'])) : [];
+            $participants_arr = $this->processParticipants($session['ts_authorized_participants']);
+            $in_chat_arr = $this->processParticipants($session['ts_chat_room_participants']);
 
             if ($record['admin']) {
                 $session['ts_authorized_participants'] = $participants_arr; //Save as array
@@ -499,6 +497,23 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
 
         return ["result" => json_encode($user_sessions)]; //Necessary result key for returning via JSMO
 
+    }
+
+    /**
+     * @param $participants
+     * @return array
+     */
+    private function processParticipants($participants) {
+        if (empty($participants)) {
+            return [];
+        }
+
+        $participants_arr = array_map('trim', explode(",", $participants));
+        $filtered = array_filter($participants_arr, function($value) {
+            return $value !== "";
+        });
+
+        return array_values($filtered); //ensure removed elements do not cause return type to be an object rather than array
     }
 
     /**
@@ -570,8 +585,10 @@ class GroupChatTherapy extends \ExternalModules\AbstractExternalModule
             if (sizeof($json)) {
                 $data = current($json);
 
-                $participants_arr = !empty($data['ts_authorized_participants']) ? array_map("trim", explode(",", $data['ts_authorized_participants'])) : [];
-                $in_chat_arr = !empty($data['ts_chat_room_participants']) ? array_map("trim", explode(",", $data['ts_chat_room_participants'])) : [];
+//                $participants_arr = !empty($data['ts_authorized_participants']) ? array_map("trim", explode(",", $data['ts_authorized_participants'])) : [];
+//                $in_chat_arr = !empty($data['ts_chat_room_participants']) ? array_map("trim", explode(",", $data['ts_chat_room_participants'])) : [];
+                $participants_arr = $this->processParticipants($data['ts_authorized_participants']);
+                $in_chat_arr = $this->processParticipants($data['ts_chat_room_participants']);
 
                 if ($payload['action'] === 'admit') {
                     $index = array_search($payload['participant_id'], $participants_arr);
