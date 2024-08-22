@@ -47,17 +47,18 @@ export const ChatContextProvider = ({children}) => {
     let timeoutRef = useRef();
 
     const participantColors = [
-        "#FF5733", // Red
-        "#33FF57", // Green
-        "#3357FF", // Blue
-        "#FF33A8", // Pink
-        "#FF8C33", // Orange
-        "#8C33FF", // Purple
-        "#33FFF8", // Teal
-        "#FF3333", // Bright Red
-        "#33FF33", // Bright Green
-        "#3333FF"  // Bright Blue
+        "#D04D2E", // Darkened Red
+        "#2EB849", // Darkened Green
+        "#2E49B8", // Darkened Blue
+        "#D02D8E", // Darkened Pink
+        "#D0742E", // Darkened Orange
+        "#742ED0", // Darkened Purple
+        "#2ED0D0", // Darkened Teal
+        "#D02E2E", // Darkened Bright Red
+        "#2ED02E", // Darkened Bright Green
+        "#2E2ED0"  // Darkened Bright Blue
     ];
+
 
     const [participantColorsMap, setParticipantColorsMap] = useState({});
 
