@@ -87,7 +87,7 @@
 
 .chat_window .chat_window_inner {
     margin:0;
-    padding:20px 0 10px;
+    padding:20px 0 40px;
     overflow:hidden;
 }
 
@@ -101,7 +101,7 @@
     float:left;
     width:auto;
     min-width:50%;
-    max-width:100%;
+    max-width:85%;
     position:relative;
     clear:both;
 }
@@ -408,6 +408,8 @@ dt.participant .reply_quote {
     flex-direction: column;
     align-items: center;
     gap: 0px; /* Optional: Add some space between SVGs */
+
+    box-shadow:0 0 3px #000;
 }
 
 
