@@ -33,6 +33,7 @@ function ChatRoomContent() {
     const session_context = useContext(SessionContext);
     const chat_context = useContext(ChatContext);
     const { pendingMessages } = useContext(ChatContext);
+    const [pendingMessageIdCounter, setPendingMessageIdCounter] = useState(0);
 
     const navigate = useNavigate()
 
@@ -149,7 +150,7 @@ function ChatRoomContent() {
 
             const { body: sanitizedBody } = chat_context.isMentioned({ body: message }, session_context.participantsLookUp, participant_id, true);
             const newAction = {
-                id: 12345,
+                id: `pending-${pendingMessageIdCounter}`,
                 isFake: true,
                 type: "message",
                 sessionID: chat_session_id,
@@ -162,6 +163,9 @@ function ChatRoomContent() {
                 character_history: keystrokes
             };
 
+            // Increment the counter for the next pending message
+            setPendingMessageIdCounter(prevId => prevId + 1);
+
             chat_context.sendAction(newAction);
             chat_context.addPendingMessage(newAction, selectedChat);
 
@@ -172,6 +176,7 @@ function ChatRoomContent() {
             setReplyTo(null);
         }
     };
+
 
     function handleChatClick(chatKey) {
         chat_context.resetMentions(chatKey);

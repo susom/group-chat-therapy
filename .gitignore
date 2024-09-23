@@ -9,4 +9,10 @@
 /.idea/*
 
 *node_modules
+*/dist/assessment_config_example.png
+*/dist/index.html
+*/dist/manifest.json
+*/dist/participant_*
+*/dist/therapy_session_*
+*/dist/vite.svg
 

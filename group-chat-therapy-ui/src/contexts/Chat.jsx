@@ -269,32 +269,47 @@ export const ChatContextProvider = ({children}) => {
     }
 
     const processAction = (action, actionsArray, allChats) => {
+        // Check if the action has already been processed
+        if (action.id && actionsArray.some(existingAction => String(existingAction.id) === String(action.id))) {
+            // Skip processing this action
+            return {
+                actionsArray,
+                allChats,
+                newMessageCount: 0,
+                chatKey: null,
+            };
+        }
+
         // MAKE "DEEP" COPIES
         let updatedActionsArray;
-        let foundMatch      = false;
+        let foundMatch = false;
 
-        let newAllChats     = JSON.parse(JSON.stringify(allChats));
-        let allChatsKey     = "groupChat";
+        // Deep copy of allChats to avoid mutating state directly
+        let newAllChats = JSON.parse(JSON.stringify(allChats));
+        let allChatsKey = "groupChat";
 
-        if(action.recipients?.length > 0){
+        if (action.recipients?.length > 0) {
             allChatsKey = participantID === action.user ? action.recipients.pop() : action.user;
         }
 
-        let isNewMessage    = 0;
+        let isNewMessage = 0;
 
-        switch(action.type) {
+        switch (action.type) {
             case 'delete':
-                // console.log("delete", action);
+                // Remove the message from all chats
                 Object.keys(newAllChats).forEach(chatKey => {
                     newAllChats[chatKey] = newAllChats[chatKey].filter(
-                        message => message.id !== parseInt(action.target)
+                        message => String(message.id) !== String(action.target)
                     );
-                    if (newAllChats.hasOwnProperty(chatKey) && newAllChats[chatKey].length === 0) {
+                    if (newAllChats[chatKey].length === 0) {
                         delete newAllChats[chatKey];
                     }
                 });
 
-                updatedActionsArray = actionsArray.filter(prevAction => prevAction.id !== action.id && prevAction.id !== parseInt(action.target));
+                // Remove the action from the actions array
+                updatedActionsArray = actionsArray.filter(
+                    prevAction => String(prevAction.id) !== String(action.id) && String(prevAction.id) !== String(action.target)
+                );
                 break;
 
             case 'notice':
@@ -308,57 +323,90 @@ export const ChatContextProvider = ({children}) => {
                 if (!newAllChats[allChatsKey]) {
                     newAllChats[allChatsKey] = [];
                 }
-                newAllChats[allChatsKey].push(new_notice);
+
+                // Check for duplicate notice before adding
+                if (!newAllChats[allChatsKey].some(
+                    msg => msg.type === 'notice' && msg.timestamp === action.timestamp && msg.body === action.body
+                )) {
+                    newAllChats[allChatsKey].push(new_notice);
+                }
 
                 updatedActionsArray = [...actionsArray, action];
                 break;
 
             case 'message':
-                const { body, containsMention } = isMentioned(action, session_context.participantsLookUp, participantID);
+                const { body, containsMention } = isMentioned(
+                    action,
+                    session_context.participantsLookUp,
+                    participantID
+                );
 
                 if (!newAllChats[allChatsKey]) {
                     newAllChats[allChatsKey] = [];
                 }
 
-                newAllChats[allChatsKey].push({
-                    id: action.id,
-                    user: action.user,
-                    body: body,
-                    timestamp: action.timestamp,
-                    read_by: [],
-                    reactions: [],
-                    target: action.target,
-                    type: 'message',
-                    containsMention: containsMention
-                });
+                // Remove corresponding pending message based on 'client_ts'
+                if (action.client_ts) {
+                    // Remove from pendingMessages
+                    setPendingMessages(prevPending => {
+                        const updatedPending = { ...prevPending };
+                        if (updatedPending[allChatsKey]) {
+                            updatedPending[allChatsKey] = updatedPending[allChatsKey].filter(
+                                pendingMsg => pendingMsg.client_ts !== action.client_ts
+                            );
+                        }
+                        return updatedPending;
+                    });
 
-                // Increment the newMessageCounts if:
-                // 1. Not currently viewing this chat, and
-                // 2. Message was not sent by the current user
-                if (allChatsKey !== selectedChat && action.user !== participantID) {
-                    isNewMessage = 1;
+                    // Remove from newAllChats
+                    newAllChats[allChatsKey] = newAllChats[allChatsKey].filter(
+                        msg => msg.client_ts !== action.client_ts
+                    );
                 }
 
+                // Check for duplicate message before adding
+                if (!newAllChats[allChatsKey].some(msg => String(msg.id) === String(action.id))) {
+                    newAllChats[allChatsKey].push({
+                        id: action.id,
+                        user: action.user,
+                        body: body,
+                        timestamp: action.timestamp,
+                        read_by: [],
+                        reactions: [],
+                        target: action.target,
+                        type: 'message',
+                        containsMention: containsMention,
+                        client_ts: action.client_ts // Include client_ts in message
+                    });
+
+                    // Increment the newMessageCounts if:
+                    // 1. Not currently viewing this chat, and
+                    // 2. Message was not sent by the current user
+                    if (allChatsKey !== selectedChat && action.user !== participantID) {
+                        isNewMessage = 1;
+                    }
+                }
 
                 updatedActionsArray = [...actionsArray, action];
                 break;
-
-
 
             case 'message_read':
                 for (const chatKey in newAllChats) {
                     if (foundMatch) break;
 
                     newAllChats[chatKey].some(message => {
-                        if (message.id === parseInt(action.target)) {
+                        if (String(message.id) === String(action.target)) {
                             if (!message.read_by) {
                                 message.read_by = [];
                             }
-                            message.read_by.push(action);
+                            // Check for duplicate read action before adding
+                            if (!message.read_by.some(readAction => String(readAction.id) === String(action.id))) {
+                                message.read_by.push(action);
+                            }
                             foundMatch = true;
-                            return true; // This breaks out of the some() loop
+                            return true;
                         }
-                        return false; // Continue iterating
+                        return false;
                     });
                 }
 
@@ -370,15 +418,18 @@ export const ChatContextProvider = ({children}) => {
                     if (foundMatch) break;
 
                     newAllChats[chatKey].some(message => {
-                        if (message.id === parseInt(action.target)) {
+                        if (String(message.id) === String(action.target)) {
                             if (!message.reactions) {
                                 message.reactions = [];
                             }
-                            message.reactions.push(action);
+                            // Check for duplicate reaction before adding
+                            if (!message.reactions.some(reaction => String(reaction.id) === String(action.id))) {
+                                message.reactions.push(action);
+                            }
                             foundMatch = true;
-                            return true; // This breaks out of the some() loop
+                            return true;
                         }
-                        return false; // Continue iterating
+                        return false;
                     });
                 }
 
@@ -387,10 +438,10 @@ export const ChatContextProvider = ({children}) => {
 
             case 'whiteboard':
                 if (session_context?.sessionCache) {
-                    // Create a shallow copy of data
+                    // Create a shallow copy of sessionCache
                     const copyof = { ...session_context.sessionCache };
 
-                    // Create a copy of selected_session
+                    // Update the selected_session with new whiteboard content
                     copyof.selected_session = {
                         ...copyof.selected_session,
                         ts_whiteboard: action.body
@@ -399,28 +450,29 @@ export const ChatContextProvider = ({children}) => {
                     session_context.setSessionCache(copyof);
                 }
 
-                updatedActionsArray = actionsArray.filter(prevAction => prevAction.type !== 'whiteboard');
+                // Remove previous whiteboard actions
+                updatedActionsArray = actionsArray.filter(
+                    prevAction => prevAction.type !== 'whiteboard'
+                );
                 break;
 
             case 'endChatSession':
                 setIsPollingPaused(true);
-
-                //deactivate session
                 setIsSessionActive(false);
                 break;
 
             default:
-                // ADD THIS ACTION TO THE ARRAY
+                // Add the action to the array
                 updatedActionsArray = [...actionsArray, action];
                 break;
         }
 
         return {
-            actionsArray : updatedActionsArray,
-            allChats : newAllChats,
+            actionsArray: updatedActionsArray,
+            allChats: newAllChats,
             newMessageCount: isNewMessage,
-            chatKey : allChatsKey
-        }
+            chatKey: allChatsKey
+        };
     };
 
 
