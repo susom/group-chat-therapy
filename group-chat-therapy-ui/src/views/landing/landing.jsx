@@ -97,7 +97,7 @@ export default function Landing() {
         return (
             <Alert className="mt-auto" variant="info">
                 <div className="d-flex align-items-center">
-                    <span>Waiting for Admin to enter chat </span>
+                    <span>Waiting for Therapist to enter chat </span>
                     <Spinner className="info-spinner ms-auto" animation="border" variant="info" />
                 </div>
             </Alert>
