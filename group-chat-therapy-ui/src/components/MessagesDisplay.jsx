@@ -22,16 +22,29 @@ export default function MessagesDisplay({ messages, replyTo, setReplyTo, pending
         setReplyMessageId(null);
     };
 
-    const scrollToBottom = () => {
+    const scrollToBottom = (forceScroll = false) => {
         const messageContainer = messagesEndRef.current?.parentNode; // .chat_window_inner
         const scrollableContainer = messageContainer?.parentNode;    // .chat_window
-
+    
         if (scrollableContainer) {
-            scrollableContainer.scrollTop = scrollableContainer.scrollHeight;
+            const isAtBottom = scrollableContainer.scrollHeight - scrollableContainer.scrollTop <= scrollableContainer.clientHeight + 5;
+    
+            if (forceScroll || isAtBottom) {
+                scrollableContainer.scrollTop = scrollableContainer.scrollHeight;
+            }
         }
     };
-
-    useEffect(scrollToBottom, [allMessages]);
+    
+    // Run once when the component mounts
+    useEffect(() => {
+        scrollToBottom(true);  // Force scroll to bottom only when the user first joins
+    }, []);
+    
+    // Only scroll when a new message arrives, but respect user's manual scrolling
+    useEffect(() => {
+        scrollToBottom(false);  // Scroll only if they are already at the bottom
+    }, [allMessages]);
+    
 
     return (
         <>
